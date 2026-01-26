@@ -24,7 +24,6 @@ Una plataforma centralizada donde estudiantes de distintos centros educativos (I
     *   *Navigation Bar/Rail* para navegación principal.
 
 ### Especificaciones Técnicas (Android)
-Para cumplir con los requisitos académicos y de escalabilidad:
 *   **Arquitectura**: MVVM (Model-View-ViewModel) + Repository Pattern.
 *   **Componentes UI**:
     *   **Fragments**: Gestión de navegación entre pantallas principales (Home, Perfil, Buscador).
@@ -44,6 +43,8 @@ erDiagram
     USER ||--o{ INTERACTION : "realiza"
     USER }|--|| CENTER : "pertenece a"
     CENTER ||--o{ POST : "contiene"
+    USER ||--o{ REPORT : "reporta"
+    POST ||--o{ REPORT : "tiene"
 
     USER {
         int id PK
@@ -70,6 +71,7 @@ erDiagram
         string subject
         string course_level
         string type "TASK, NOTE"
+        string status "ACTIVE, ARCHIVED, BANNED"
         string file_url
         datetime created_at
         int user_id FK
@@ -87,6 +89,14 @@ erDiagram
     INTERACTION {
         int id PK
         string type "LIKE, USEFUL, FAVORITE"
+        int user_id FK
+        int post_id FK
+    }
+
+    REPORT {
+        int id PK
+        string reason
+        string status "PENDING, RESOLVED"
         int user_id FK
         int post_id FK
     }
