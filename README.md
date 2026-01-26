@@ -5,7 +5,7 @@ Este repositorio contiene el prototipo y la documentación técnica para la apli
 ## 1. Análisis y Requisitos
 
 ### Visión del Producto
-Una plataforma centralizada donde estudiantes de distintos centros educativos (IES, FP, Academias) pueden compartir, organizar y validar material académico (apuntes, tareas, exámenes) para evitar la pérdida de información entre cursos y fomentar la colaboración.
+Una plataforma centralizada donde estudiantes de distintos centros educativos (IES, FP, Academias) pueden compartir, organizar y validar material académico (apuntes, tareas) para evitar la pérdida de información entre cursos y fomentar la colaboración.
 
 ### Tipos de Usuario ("Persona")
 *   **El Alumno Colaborador (User Persona)**: Estudiante de FP o Bachillerato, tecnológicamente activo, que busca material de años anteriores para estudiar o quiere compartir sus soluciones para ganar reputación. Valora el orden y la facilidad de búsqueda.
