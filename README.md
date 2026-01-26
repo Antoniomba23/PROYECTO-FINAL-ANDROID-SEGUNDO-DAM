@@ -111,6 +111,9 @@ A continuación se detallan las historias de usuario principales y los endpoints
 
 ## 4. Prototipo Visual (Mockups)
 
+> **Nota sobre Herramientas**: Para este Sprint I, se ha optado por **Mockups de Alta Fidelidad** generados digitalmente. Esta elección se justifica por la necesidad de iterar rápidamente sobre los conceptos de *Material Design 3* y visualizar el producto final antes de la implementación técnica en Figma o Android Studio.
+
+
 ### App Android
 **Login Screen**
 Diseño limpio minimalista centrado en el acceso rápido.
