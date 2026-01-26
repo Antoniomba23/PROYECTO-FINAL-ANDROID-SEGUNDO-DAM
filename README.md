@@ -23,6 +23,16 @@ Una plataforma centralizada donde estudiantes de distintos centros educativos (I
     *   *Floating Action Button (FAB)* para subir nuevo contenido.
     *   *Navigation Bar/Rail* para navegación principal.
 
+### Especificaciones Técnicas (Android)
+Para cumplir con los requisitos académicos y de escalabilidad:
+*   **Arquitectura**: MVVM (Model-View-ViewModel) + Repository Pattern.
+*   **Componentes UI**:
+    *   **Fragments**: Gestión de navegación entre pantallas principales (Home, Perfil, Buscador).
+    *   **RecyclerView**: Visualización eficiente de listados de apuntes y comentarios.
+    *   **Layouts**: XML layouts con ConstraintLayout y Material Components.
+*   **Networking**: Retrofit para consumo de API Rest.
+
+
 ---
 
 ## 2. Modelo Entidad-Relación (ERD)
