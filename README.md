@@ -144,5 +144,8 @@ Vista adaptada para pantallas grandes con navegación lateral y gestión de cont
 
 ### Perfil 
 Vista del perfil de un miemebro de la aplicación
+![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/Especialidades.png)
+
+
 ### Autores
 Proyecto desarrollado por Antonio, Jorge y Cristian como proyecto final de Programación Multimedia y de Dispositivos Móviles, DAM 2º curso.
