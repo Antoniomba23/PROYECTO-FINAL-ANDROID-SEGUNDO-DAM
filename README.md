@@ -127,7 +127,12 @@ A continuación se detallan las historias de usuario principales y los endpoints
 ### App Android
 **Login Screen**
 Diseño limpio minimalista centrado en el acceso rápido.
-![Login Android](docs/images/android_login.png)
+![Login Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/InicarSesion.png)
+
+
+**Register Screen**
+Diseño limpio minimalista centrado en el acceso rápido.
+![Login Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/register.png)
 
 **Home Screen (Feed)**
 Listado de apuntes filtrados por centro, tarjetas con información clave (Asignatura, Autor).
