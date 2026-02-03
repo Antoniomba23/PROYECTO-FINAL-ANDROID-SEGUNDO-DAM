@@ -138,9 +138,23 @@ Diseño limpio minimalista centrado en el acceso rápido.
 Listado de apuntes filtrados por centro, tarjetas con información clave (Asignatura, Autor).
 ![Home Android](docs/images/android_home.png)
 
+**Menú Centros**
+La página principal de todos los centros de una api, con numerosas tarjetas, indicando su nombre, que tipo de centro son, y si son públicos o privados
+![Home Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/Men%C3%BACentros.jpeg)
+
+**Menú  de especialidades **
+La página principal de un centro con todas sus especialidades, y si son de formación profesional o grado universitario
+![Home Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/Especialidades.png)
+
+
+
+
 **Detail Screen**
 Vista detallada del apunte con previsualización de archivo y sección de comentarios.
 ![Detail Android](docs/images/android_detail.png)
+
+
+
 
 ### App Web (React)
 **Dashboard de Escritorio**
