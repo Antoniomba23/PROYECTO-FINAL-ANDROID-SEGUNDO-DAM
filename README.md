@@ -137,6 +137,11 @@ Diseño limpio minimalista centrado en el acceso rápido.
 **Home Screen (Feed)**
 Listado de apuntes filtrados por centro, tarjetas con información clave (Asignatura, Autor).
 ![Home Android](docs/images/android_home.png)
+### Subir apuntes
+
+Esto será una ventana que se nos abrirá cuando queramos crear una nuevo apunte o una nueva tarea, si le pulsamos al símbolito de (+)
+
+![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/subirApunte.jpeg)
 
 **Menú Centros**
 La página principal de todos los centros de una api, con numerosas tarjetas, indicando su nombre, que tipo de centro son, y si son públicos o privados
@@ -165,6 +170,10 @@ Vista del perfil de un miemebro de la aplicación
 ### Menú Hamburguesa 
 Será un menú de tipo Hamburguesa que estará presente en la pantalla principal, con diferentes apartados
 ![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/Men%C3%BAhamburguesa.png)
+
+
+
+
 
 
 ### App Web (React)
