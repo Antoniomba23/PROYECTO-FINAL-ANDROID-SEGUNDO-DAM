@@ -148,12 +148,23 @@ La página principal de un centro con todas sus especialidades, y si son de form
 
 
 
+**Menú  de Foros **
+ cuanto te metes a una especialidad, aparecen una serie de diferentes apuntes en los que tambieén hay foros para que los usuarios puedan dar su opinión, 
+![Home Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/foros_app.png)
+
 
 **Detail Screen**
 Vista detallada del apunte con previsualización de archivo y sección de comentarios.
 ![Detail Android](docs/images/android_detail.png)
 
 
+### Perfil 
+Vista del perfil de un miemebro de la aplicación
+![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/perfil.png)
+
+### Menú Hamburguesa 
+Será un menú de tipo Hamburguesa que estará presente en la pantalla principal, con diferentes apartados
+![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/Men%C3%BAhamburguesa.png)
 
 
 ### App Web (React)
@@ -161,9 +172,7 @@ Vista detallada del apunte con previsualización de archivo y sección de coment
 Vista adaptada para pantallas grandes con navegación lateral y gestión de contenido.
 ![Web Dashboard](docs/images/web_dashboard.png)
 
-### Perfil 
-Vista del perfil de un miemebro de la aplicación
-![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/Especialidades.png)
+
 
 
 ### Autores
