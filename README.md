@@ -185,5 +185,7 @@ Vista detallada del apunte con previsualización de archivo y sección de coment
 Vista adaptada para pantallas grandes con navegación lateral y gestión de contenido.
 ![Web Dashboard](docs/images/web_dashboard.png)
 
+### Perfil 
+Vista del perfil de un miemebro de la aplicación
 ### Autores
 Proyecto desarrollado por Antonio, Jorge y Cristian como proyecto final de Programación Multimedia y de Dispositivos Móviles, DAM 2º curso.
