@@ -1,6 +1,49 @@
-# Proyecto Final: App Colaborativa de Apuntes y Tareas
+# 📱 Proyecto Final DAM: App Colaborativa Multi-Plataforma
 
-Este repositorio contiene el prototipo y la documentación técnica para la aplicación de gestión académica colaborativa.
+Este repositorio contiene el código y documentación para una aplicación de gestión académica colaborativa desarrollada con **Android Studio**, **Django** y **React**.
+
+## 👥 Equipo de Desarrollo
+
+- **Antonio** - Android Development
+- **Jorge** - Android Development  
+- **Cristian** - Android Development
+
+## 🏗️ Estructura del Proyecto
+
+```
+DAM-Proyecto-Final/
+├── android/          # 📱 Aplicación móvil nativa (Android Studio)
+├── django-backend/   # 🔧 API REST y Backend (Django + DRF)
+├── react-frontend/   # 🌐 Aplicación web (React)
+└── docs/            # 📚 Documentación técnica
+    ├── android-plan.md    # Plan de desarrollo Android
+    ├── git-guide.md       # Guía de Git/GitHub
+    └── images/            # Mockups y capturas
+```
+
+## 🚀 Guías de Inicio Rápido
+
+### Para Desarrolladores Android
+1. Lee [`docs/android-plan.md`](docs/android-plan.md) para conocer tu asignación de tareas
+2. Lee [`docs/git-guide.md`](docs/git-guide.md) para configurar Git
+3. Crea tu rama de trabajo: `git checkout -b feature/dev#-nombre-funcionalidad`
+
+### Configuración Inicial
+```bash
+# Clonar el repositorio
+git clone git@github.com:Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM.git
+cd PROYECTO-FINAL-ANDROID-SEGUNDO-DAM
+
+# Crear tu rama de trabajo
+git checkout -b feature/tu-nombre-funcionalidad
+
+# Ver documentación
+cat docs/android-plan.md
+```
+
+---
+
+## 📋 Visión del Producto
 
 ## 1. Análisis y Requisitos
 
@@ -38,67 +81,67 @@ Una plataforma centralizada donde estudiantes de distintos centros educativos (I
 
 ```mermaid
 erDiagram
-    USER ||--o{ POST : "publica"
-    USER ||--o{ COMMENT : "escribe"
-    USER ||--o{ INTERACTION : "realiza"
-    USER }|--|| CENTER : "pertenece a"
-    CENTER ||--o{ POST : "contiene"
-    USER ||--o{ REPORT : "reporta"
-    POST ||--o{ REPORT : "tiene"
+    USUARIO ||--o{ PUBLICACION : "publica"
+    USUARIO ||--o{ COMENTARIO : "escribe"
+    USUARIO ||--o{ INTERACCION : "realiza"
+    USUARIO }|--|| CENTRO : "pertenece a"
+    CENTRO ||--o{ PUBLICACION : "contiene"
+    USUARIO ||--o{ REPORTE : "reporta"
+    PUBLICACION ||--o{ REPORTE : "tiene"
 
-    USER {
+    USUARIO {
         int id PK
-        string username
+        string nombre_usuario
         string email
         string password_hash
         string avatar_url
-        string role "STUDENT, ADMIN"
-        int center_id FK
+        string rol "ESTUDIANTE, ADMIN"
+        int centro_id FK
     }
 
-    CENTER {
+    CENTRO {
         int id PK
-        string name
-        string city
-        string province
-        string type "IES, FP, Private"
-        boolean is_verified
+        string nombre
+        string ciudad
+        string provincia
+        string tipo "IES, FP, Privado"
+        boolean esta_verificado
     }
 
-    POST {
+    PUBLICACION {
         int id PK
-        string description
-        string subject
-        string course_level
-        string type "TASK, NOTE"
-        string status "ACTIVE, ARCHIVED, BANNED"
-        string file_url
-        datetime created_at
-        int user_id FK
-        int center_id FK
+        string descripcion
+        string asignatura
+        string curso
+        string tipo "TAREA, APUNTE"
+        string estado "ACTIVO, ARCHIVADO, BANEADO"
+        string archivo_url
+        datetime fecha_creacion
+        int usuario_id FK
+        int centro_id FK
     }
 
-    COMMENT {
+    COMENTARIO {
         int id PK
-        string content
-        datetime created_at
-        int user_id FK
-        int post_id FK
+        string contenido
+        datetime fecha_creacion
+        int usuario_id FK
+        int publicacion_id FK
     }
 
-    INTERACTION {
+    INTERACCION {
         int id PK
-        string type "LIKE, USEFUL, FAVORITE"
-        int user_id FK
-        int post_id FK
+        string tipo "ME_GUSTA, UTIL, FAVORITO"
+        int usuario_id FK
+        int publicacion_id FK
     }
 
-    REPORT {
+    REPORTE {
         int id PK
-        string reason
-        string status "PENDING, RESOLVED"
-        int user_id FK
-        int post_id FK
+        string motivo
+        string estado "PENDIENTE, RESUELTO"
+        int usuario_id FK
+        int publicacion_id FK
     }
 ```
 
