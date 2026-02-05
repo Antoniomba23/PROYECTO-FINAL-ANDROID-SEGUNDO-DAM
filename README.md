@@ -127,22 +127,62 @@ A continuación se detallan las historias de usuario principales y los endpoints
 ### App Android
 **Login Screen**
 Diseño limpio minimalista centrado en el acceso rápido.
-![Login Android](docs/images/android_login.png)
+![Login Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/InicarSesion.png)
+
+
+**Register Screen**
+Diseño limpio minimalista centrado en el acceso rápido.
+![Login Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/register.png)
 
 **Home Screen (Feed)**
 Listado de apuntes filtrados por centro, tarjetas con información clave (Asignatura, Autor).
 ![Home Android](docs/images/android_home.png)
+### Subir apuntes
+
+Esto será una ventana que se nos abrirá cuando queramos crear una nuevo apunte o una nueva tarea, si le pulsamos al símbolito de (+)
+
+![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/subirApunte.jpeg)
+
+**Menú Centros**
+La página principal de todos los centros de una api, con numerosas tarjetas, indicando su nombre, que tipo de centro son, y si son públicos o privados
+![Home Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/Men%C3%BACentros.jpeg)
+
+**Menú  de especialidades **
+La página principal de un centro con todas sus especialidades, y si son de formación profesional o grado universitario
+![Home Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/Especialidades.png)
+
+
+
+**Menú  de Foros **
+ cuanto te metes a una especialidad, aparecen una serie de diferentes apuntes en los que tambieén hay foros para que los usuarios puedan dar su opinión, 
+![Home Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/foros_app.png)
+
 
 **Detail Screen**
 Vista detallada del apunte con previsualización de archivo y sección de comentarios.
 ![Detail Android](docs/images/android_detail.png)
+
+
+### Perfil 
+Vista del perfil de un miemebro de la aplicación
+![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/perfil.png)
+
+### Menú Hamburguesa 
+Será un menú de tipo Hamburguesa que estará presente en la pantalla principal, con diferentes apartados
+![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/Men%C3%BAhamburguesa.png)
+
+
+
+
+
 
 ### App Web (React)
 **Dashboard de Escritorio**
 Vista adaptada para pantallas grandes con navegación lateral y gestión de contenido.
 ![Web Dashboard](docs/images/web_dashboard.png)
 
-### Perfil 
-Vista del perfil de un miemebro de la aplicación
+
+
+
 ### Autores
 Proyecto desarrollado por Antonio, Jorge y Cristian como proyecto final de Programación Multimedia y de Dispositivos Móviles, DAM 2º curso.
