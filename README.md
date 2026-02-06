@@ -131,6 +131,7 @@ Diseño limpio minimalista centrado en el acceso rápido.
 
 
 **Register Screen**
+
 Diseño limpio minimalista centrado en el acceso rápido.
 ![Login Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/main/docs/images/register.png)
 
@@ -144,30 +145,36 @@ Esto será una ventana que se nos abrirá cuando queramos crear una nuevo apunte
 ![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/main/docs/images/subirApunte.jpeg)
 
 **Menú Centros**
+
 La página principal de todos los centros de una api, con numerosas tarjetas, indicando su nombre, que tipo de centro son, y si son públicos o privados
 ![Home Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/main/docs/images/Men%C3%BACentros.jpeg)
 
 **Menú  de especialidades**
+
 La página principal de un centro con todas sus especialidades, y si son de formación profesional o grado universitario
 ![Home Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/main/docs/images/Especialidades.png)
 
 
 
 **Menú  de Foros**
+
  cuanto te metes a una especialidad, aparecen una serie de diferentes apuntes en los que tambieén hay foros para que los usuarios puedan dar su opinión, 
 ![Home Android](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/main/docs/images/foros_app.png)
 
 
 **Detail Screen**
+
 Vista detallada del apunte con previsualización de archivo y sección de comentarios.
 ![Detail Android](docs/images/android_detail.png)
 
 
-### Perfil 
+### Perfil
+
 Vista del perfil de un miemebro de la aplicación
 ![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/perfil.png)
 
 ### Menú Hamburguesa 
+
 Será un menú de tipo Hamburguesa que estará presente en la pantalla principal, con diferentes apartados
 ![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/main/docs/images/Men%C3%BAhamburguesa.png)
 
