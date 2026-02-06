@@ -184,7 +184,7 @@ Listado de apuntes filtrados por centro, tarjetas con información clave (Asigna
 
 Esto será una ventana que se nos abrirá cuando queramos crear una nuevo apunte o una nueva tarea, si le pulsamos al símbolito de (+)
 
-![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/master/docs/images/subirApunte.jpeg)
+![Web Dashboard](https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM/blob/main/docs/images/subirApunte.jpeg)
 
 **Menú Centros**
 La página principal de todos los centros de una api, con numerosas tarjetas, indicando su nombre, que tipo de centro son, y si son públicos o privados
