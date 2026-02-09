@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/BlancoHumno"
+    tools:context=".Register">
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/Registerlgv1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.2" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/Registerlgv2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.8" />
+
+
+    <TextView
+        android:id="@+id/TituloRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        android:text="Únete "
+        android:textColor="@color/azulClaro"
+        android:textSize="35dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/Registerlgv2"
+        app:layout_constraintStart_toStartOf="@+id/Registerlgv1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/emailRegister"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:boxBackgroundColor="@color/BlancoHumno"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusBottomEnd="25dp"
+        app:placeholderText="Correo electrónico"
+        app:boxCornerRadiusBottomStart="25dp"
+        app:boxCornerRadiusTopEnd="25dp"
+        app:boxCornerRadiusTopStart="25dp"
+        app:boxStrokeColor="@color/azulClaro"
+        app:boxStrokeWidth="1.5dp"
+        app:layout_constraintEnd_toEndOf="@id/Registerlgv2"
+        app:layout_constraintStart_toStartOf="@id/Registerlgv1"
+        app:layout_constraintTop_toBottomOf="@id/TituloRegister">
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+
+
+            android:textColor="@color/azulClaro" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/contraseñaREgister"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:boxBackgroundColor="@color/BlancoHumno"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusBottomEnd="25dp"
+        app:placeholderText="contraseña"
+        app:boxCornerRadiusBottomStart="25dp"
+        app:boxCornerRadiusTopEnd="25dp"
+        app:boxCornerRadiusTopStart="25dp"
+        app:boxStrokeColor="@color/azulClaro"
+        app:boxStrokeWidth="1.5dp"
+        app:layout_constraintEnd_toEndOf="@id/Registerlgv2"
+        app:layout_constraintStart_toStartOf="@id/Registerlgv1"
+        app:layout_constraintTop_toBottomOf="@id/emailRegister"
+        app:passwordToggleEnabled="true">
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+
+
+            android:textColor="@color/azulClaro" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/ContraseñaREgister"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:boxBackgroundColor="@color/BlancoHumno"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusBottomEnd="25dp"
+        app:placeholderText="Contraseña"
+        app:boxCornerRadiusBottomStart="25dp"
+        app:boxCornerRadiusTopEnd="25dp"
+        app:boxCornerRadiusTopStart="25dp"
+        app:boxStrokeColor="@color/azulClaro"
+        app:boxStrokeWidth="1.5dp"
+        app:layout_constraintEnd_toEndOf="@id/Registerlgv2"
+        app:layout_constraintStart_toStartOf="@id/Registerlgv1"
+        app:layout_constraintTop_toBottomOf="@id/contraseñaREgister"
+        app:passwordToggleEnabled="true">
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+
+
+            android:textColor="@color/azulClaro" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/ConfirmarcontraseñaREgister"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:boxBackgroundColor="@color/BlancoHumno"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusBottomEnd="25dp"
+        app:placeholderText="Confirmar contraseña"
+        app:boxCornerRadiusBottomStart="25dp"
+        app:boxCornerRadiusTopEnd="25dp"
+        app:boxCornerRadiusTopStart="25dp"
+        app:boxStrokeColor="@color/azulClaro"
+        app:boxStrokeWidth="1.5dp"
+        app:layout_constraintEnd_toEndOf="@id/Registerlgv2"
+        app:layout_constraintStart_toStartOf="@id/Registerlgv1"
+        app:layout_constraintTop_toBottomOf="@id/contraseñaREgister"
+        app:passwordToggleEnabled="true">
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+
+
+            android:textColor="@color/azulClaro" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/Direccion"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:boxBackgroundColor="@color/BlancoHumno"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusBottomEnd="25dp"
+        app:placeholderText="Dirección"
+        app:boxCornerRadiusBottomStart="25dp"
+        app:boxCornerRadiusTopEnd="25dp"
+        app:boxCornerRadiusTopStart="25dp"
+        app:boxStrokeColor="@color/azulClaro"
+        app:boxStrokeWidth="1.5dp"
+        app:layout_constraintEnd_toEndOf="@id/Registerlgv2"
+        app:layout_constraintStart_toStartOf="@id/Registerlgv1"
+        app:layout_constraintTop_toBottomOf="@id/ConfirmarcontraseñaREgister"
+
+        >
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:textColor="@color/azulClaro" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/NumTeléfono"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:boxBackgroundColor="@color/BlancoHumno"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusBottomEnd="25dp"
+        app:placeholderText="Número de Teléfono"
+        app:boxCornerRadiusBottomStart="25dp"
+        app:boxCornerRadiusTopEnd="25dp"
+        app:boxCornerRadiusTopStart="25dp"
+        app:boxStrokeColor="@color/azulClaro"
+        app:boxStrokeWidth="1.5dp"
+        app:layout_constraintEnd_toEndOf="@id/Registerlgv2"
+        app:layout_constraintStart_toStartOf="@id/Registerlgv1"
+        app:layout_constraintTop_toBottomOf="@id/Direccion"
+
+        >
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+
+
+            android:textColor="@color/azulClaro" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/RegisterButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="25dp"
+        android:backgroundTint="@color/azulClaro"
+        android:text="Regístrarse"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/Registerlgv2"
+        app:layout_constraintStart_toStartOf="@+id/Registerlgv1"
+        app:layout_constraintTop_toBottomOf="@id/NumTeléfono"
+
+        />
+
+    <TextView
+
+
+        android:id="@+id/preguntaREgister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="¿Aún no tiene una cuenta?,Puse aquí para registrarse"
+        android:textColor="@color/black"
+        android:textSize="15dp"
+        app:layout_constraintEnd_toEndOf="@+id/Registerlgv2"
+        app:layout_constraintStart_toStartOf="@+id/Registerlgv1"
+        app:layout_constraintTop_toBottomOf="@id/RegisterButton" />
+
+    <TextView
+
+        android:id="@+id/HipervinculoRegistrarse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="Iniciar Sesión"
+        android:textColor="@color/azulClaro"
+        android:textSize="15dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/Registerlgv2"
+        app:layout_constraintStart_toStartOf="@+id/Registerlgv1"
+        app:layout_constraintTop_toBottomOf="@id/preguntaREgister"
+
+        />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

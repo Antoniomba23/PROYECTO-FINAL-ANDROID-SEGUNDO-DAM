@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:background="@color/BlancoHumno"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Login">
+
+    <TextView
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/LoginLogo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="35dp"
+        android:textStyle="bold"
+        android:textColor="@color/azulClaro"
+        android:paddingTop="35px"
+        android:textSize="75px"
+        android:text="Bienvenido de Nuevo"/>
+
+
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/LoginGLv1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.2"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/LoginGLv2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.8"/>
+
+    <ImageView
+        android:id="@+id/LoginLogo"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/logo"
+        app:layout_constraintBottom_toTopOf="@+id/TextoInputUsr"
+        app:layout_constraintTop_toTopOf="@id/LoginGLv1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/CorreoLoginTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/LoginLogo"
+        android:textSize="45sp"
+      />
+
+    <com.google.android.material.textfield.TextInputLayout
+
+
+        app:placeholderText="Correo Electronico"
+        app:boxCornerRadiusBottomEnd="25dp"
+        app:boxCornerRadiusBottomStart="25dp"
+        app:boxCornerRadiusTopEnd="25dp"
+        app:boxCornerRadiusTopStart="25dp"
+        app:boxBackgroundColor="@color/BlancoHumno"
+        app:boxStrokeWidth="1.5dp"
+        app:boxStrokeColor="@color/azulClaro"
+        app:boxBackgroundMode="outline"
+        android:id="@+id/TextoInputUsr"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/CorreoLoginTV"
+        app:layout_constraintLeft_toRightOf="@+id/LoginGLv1"
+        app:layout_constraintRight_toLeftOf="@id/LoginGLv2"
+        android:layout_marginTop="25dp"
+
+        >
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/azulClaro"
+
+
+           />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/ContrasenaLogin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/TextoInputUsr"
+        app:layout_constraintLeft_toRightOf="@+id/LoginGLv1"
+        app:layout_constraintRight_toLeftOf="@id/LoginGLv2"
+        android:layout_marginTop="20dp"
+        app:placeholderText="Contraseña"
+        app:boxCornerRadiusBottomEnd="25dp"
+        app:boxCornerRadiusBottomStart="25dp"
+        app:boxCornerRadiusTopEnd="25dp"
+        app:boxCornerRadiusTopStart="25dp"
+        app:boxBackgroundColor="@color/BlancoHumno"
+        app:boxStrokeWidth="1.5dp"
+        app:boxStrokeColor="@color/azulClaro"
+        app:boxBackgroundMode="outline"
+        app:passwordToggleEnabled="true"
+
+
+        >
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/azulClaro"
+
+
+           />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/loginButton"
+        android:backgroundTint="@color/azulClaro"
+        android:textStyle="bold"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/ContrasenaLogin"
+        android:layout_marginTop="20dp"
+        app:layout_constraintLeft_toRightOf="@id/LoginGLv1"
+        app:layout_constraintRight_toLeftOf="@id/LoginGLv2"
+        android:text="Iniciar Sesión"
+        android:layout_marginBottom="25dp"
+        />
+
+
+    <TextView
+
+
+        android:id="@+id/AccederRegistro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="¿Aún no tiene una cuenta?,Puse aquí para registrarse"
+        android:textColor="@color/black"
+        android:textSize="15dp"
+        app:layout_constraintLeft_toRightOf="@id/LoginGLv1"
+        app:layout_constraintRight_toLeftOf="@id/LoginGLv2"
+        app:layout_constraintTop_toBottomOf="@id/loginButton"
+        android:layout_marginTop="40dp"
+        />
+
+    <TextView
+
+        android:textStyle="bold"
+        android:id="@+id/HipervinculoRegistrarse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Regístrate"
+        android:textColor="@color/azulClaro"
+        android:textSize="15dp"
+        app:layout_constraintLeft_toRightOf="@id/LoginGLv1"
+        app:layout_constraintRight_toLeftOf="@id/LoginGLv2"
+        app:layout_constraintTop_toBottomOf="@id/AccederRegistro"
+        android:layout_marginTop="40dp"
+
+        />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

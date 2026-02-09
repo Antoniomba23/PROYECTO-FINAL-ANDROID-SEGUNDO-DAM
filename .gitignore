@@ -1,0 +1,47 @@
+<<<<<<< HEAD
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+=======
+# General
+.DS_Store
+Thumbs.db
+*.swp
+
+# Android/IntelliJ
+*.iml
+.gradle
+/local.properties
+/.idea/
+>>>>>>> 095161b2bf96765173ddcb6c4fe0d086c2dd0606
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+<<<<<<< HEAD
+=======
+
+# Node/Web
+node_modules/
+dist/
+build/
+.env
+.env.local
+.npm
+coverage/
+
+# Python/Django 
+__pycache__/
+*.py[cod]
+venv/
+.env
+db.sqlite3
+>>>>>>> 095161b2bf96765173ddcb6c4fe0d086c2dd0606
