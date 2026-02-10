@@ -9,78 +9,76 @@
 
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/cardview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="35dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
+        android:background="@color/AzulMuyBlanco"
+        android:padding="55dp"
+        app:cardBackgroundColor="@color/AzulMuyBlanco"
         app:cardCornerRadius="25dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:id="@+id/cardview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="55dp"
-
-        android:layout_marginEnd="5dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginTop="5dp">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
-            android:padding="15dp"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="15dp">
 
             <TextView
                 android:id="@+id/titulocentro"
-                android:textStyle="bold"
-                android:textSize="35dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="instituto" />
+                android:text="instituto"
+                android:textSize="35dp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/ubicacion"
-                android:textSize="21dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ubicación" />
+                android:text="ubicación"
+                android:textSize="21dp" />
 
             <LinearLayout
-                android:padding="15dp"
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="15dp">
 
-                <View
-                    android:layout_width="w"
-                    android:layout_height=""
+                <TextView
+                    android:id="@+id/tipoAccesibilidad"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="25dp"
+                    android:background="@drawable/shape_rectangle1"
+                    android:padding="10dp"
+                    android:text="Privado"
+                    android:textColor="@color/BlancoHumno"
+                    android:textSize="21dp"
 
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tipoInstituto"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="25dp"
-                    android:text="asdf"
-
+                    android:layout_marginRight="20dp"
+                    android:background="@drawable/shape_rectangle"
+                    android:padding="10dp"
+                    android:text="Bachillerato"
+                    android:textColor="@color/BlancoHumno"
                     android:textSize="21dp"
+                    android:textStyle="bold"
 
-                     />
-                <TextView
+                    />
 
-                    android:id="@+id/especialidadInstituto"
-
-                    android:textSize="21dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="asdf" />
-
-
-
-        </LinearLayout>
-
-
-
-
-
+            </LinearLayout>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
