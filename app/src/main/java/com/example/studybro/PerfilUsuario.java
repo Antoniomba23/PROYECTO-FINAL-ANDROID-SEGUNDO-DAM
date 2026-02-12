@@ -160,7 +160,7 @@ public class PerfilUsuario extends AppCompatActivity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(PerfilUsuario.this);
                 LayoutInflater inflater = LayoutInflater.from(PerfilUsuario.this);
                 View view = inflater.inflate(R.layout.alert_dialog_nombre_user, null);
-                RadioGroup radioGroup2 = findViewById(R.id.grupoNombresUsuario);
+                RadioGroup radioGroup2 = view.findViewById(R.id.grupoNombresUsuario);
 
 
                 builder.setTitle("Estudiante")
@@ -187,6 +187,7 @@ public class PerfilUsuario extends AppCompatActivity {
 
                                 String tituloView;
                                 String mensaje;
+
                                 TextInputLayout textInputLayout = view2.findViewById(R.id.idTExtoINputLayout);
 
 
@@ -221,19 +222,21 @@ public class PerfilUsuario extends AppCompatActivity {
                                                 textInputLayout.setErrorEnabled(true);
                                                 textInputLayout.setError("Este campo no puede  contener caracteres en blanco");
                                             } else {
-                                                nameTitleCenter.setText(texto);
+
+                                                if(textoOpcion.equals("NombreUsuario"))
+                                                    nameStudent.setText(texto);
+                                                else {
+                                                    descripcionNombreAlumno.setText(texto);
+                                                }
                                             }
 
                                         });
-
-
-
+                                builder2.create().show();
 
                             }
                         });
 
                 builder.create().show();
-
 
             }
         });
