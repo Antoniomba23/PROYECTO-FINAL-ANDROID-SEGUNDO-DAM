@@ -49,26 +49,20 @@ public class Login extends AppCompatActivity {
 
                 boolean canContinue = true;
 
-
                 if (FormUtils.isTilEmpty(username)){
                     username.setErrorEnabled(true);
                     username.setError("Necesitas  acceder con un nombre de usuario");
                     canContinue = false;
                 }
-
-
                 if (FormUtils.isTilEmpty(password)){
                     password.setErrorEnabled(true);
                     password.setError("La contaseña esta vacía");
                     canContinue = false;
 
                 } else if (!FormUtils.checkPassword(FormUtils.getTilText(password),hashedPassword)) {
-
-
                     password.setErrorEnabled(true);
                     username.setError("La contraseña es incorrecta");
                     canContinue = false;
-
                 }
 
                 if (canContinue) {

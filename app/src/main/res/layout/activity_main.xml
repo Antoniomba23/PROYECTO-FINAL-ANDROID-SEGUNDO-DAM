@@ -2,8 +2,9 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/mainMenuPrincipal"
     android:layout_width="match_parent"
+    android:background="@drawable/encabezado"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
@@ -12,6 +13,7 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
+
         android:background="@color/azulClaro"
         android:id="@+id/EncabezaodPrincpal"
         app:layout_constraintTop_toTopOf="parent"
@@ -47,6 +49,8 @@
 
         <ImageButton
 
+            android:id="@+id/iconoPersona"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
 
@@ -65,13 +69,15 @@
 
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/buscador"
+
         android:layout_width="match_parent"
+        android:id="@+id/buscarTExtipnput"
         android:layout_margin="20dp"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/EncabezaodPrincpal">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/buscador"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Buscar centro "/>
@@ -81,11 +87,10 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_marginTop="25dp"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/historic_Events_Recycle"
-
-        app:layout_constraintTop_toBottomOf="@+id/buscador"
+        app:layout_constraintTop_toBottomOf="@+id/buscarTExtipnput"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         >

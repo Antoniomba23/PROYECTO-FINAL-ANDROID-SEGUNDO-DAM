@@ -45,9 +45,9 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.SostenDeVi
     public void onBindViewHolder(@NonNull SostenDeVistas sosten, int position) {
 
         sosten.nombreCentro.setText(centros.get(position).getNombreCentro());
-        sosten.tvTipoInsituto.setText(centros.get(position).getNombreCentro());
-        sosten.location.setText(centros.get(position).getNombreCentro());
-        sosten.tipoAccesibilidad.setText(centros.get(position).getNombreCentro());
+        sosten.tvTipoInsituto.setText(centros.get(position).getTipoEducacion());
+        sosten.location.setText(centros.get(position).getLocalizacion());
+        sosten.tipoAccesibilidad.setText(centros.get(position).getTipoAccesibilidad());
 
 
         sosten.card.setOnClickListener(new View.OnClickListener() {

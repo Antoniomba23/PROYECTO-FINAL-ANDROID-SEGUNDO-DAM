@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StudyBro">
         <activity
+            android:name=".PerfilUsuario"
+            android:exported="false" />
+        <activity
             android:name=".Tarjeta"
             android:exported="false" />
         <activity

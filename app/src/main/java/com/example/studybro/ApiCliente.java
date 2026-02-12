@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiCliente {
 
 
-    public static String BASE_URL = "https://dragonball-api.com/api/";
+    public static String BASE_URL = "https://datos.madrid.es/";
 
 
     public static Retrofit retrofit;

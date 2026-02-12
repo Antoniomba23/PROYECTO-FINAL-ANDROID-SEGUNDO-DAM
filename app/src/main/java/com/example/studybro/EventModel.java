@@ -29,10 +29,6 @@ public class EventModel {
         this.nombreCentro = nombreCentro;
     }
 
-    public void getNombrePersonaje(String nombrePersonaje) {
-        this.nombreCentro = nombrePersonaje;
-    }
-
 
     public String getLocalizacion() {
         return Localizacion;
