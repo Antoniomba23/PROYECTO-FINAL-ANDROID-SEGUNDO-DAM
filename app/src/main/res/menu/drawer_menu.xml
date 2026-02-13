@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:id="@+id/group1" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/home"
+            android:title="Página Principal" />
+    </group>
+
+    <group android:id="@+id/group2" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_saved"
+            android:icon="@drawable/bookmark"
+            android:title="Guardados" />
+    </group>
+
+    <group android:id="@+id/group3" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_apuntes"
+            android:icon="@drawable/assigment"
+            android:title="Mis Apuntes" />
+    </group>
+
+    <group android:id="@+id/group5">
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/exit_to_app"
+            android:title="Cerrar Sesión" />
+    </group>
+
+</menu>
