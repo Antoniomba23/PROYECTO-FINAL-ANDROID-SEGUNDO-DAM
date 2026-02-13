@@ -25,7 +25,7 @@
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Elige un centro"
+            android:text="Archivos guardados"
             android:textColor="@color/BlancoHumno"
             android:textSize="25dp"
             android:textStyle="bold"
@@ -81,23 +81,12 @@
             android:id="@+id/buscador"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Buscar centro "/>
+            android:hint="Buscar guardados "/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_marginTop="25dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/historic_Events_Recycle"
-        app:layout_constraintTop_toBottomOf="@+id/buscarTExtipnput"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        >
 
-
-    </androidx.recyclerview.widget.RecyclerView>
 
 
 

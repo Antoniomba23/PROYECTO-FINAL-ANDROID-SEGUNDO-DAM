@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="seccionGuardados" type="id" />
+    <item name="seccionApuntes" type="id" />
+    <item name="seccionSesion" type="id" />
+</resources>

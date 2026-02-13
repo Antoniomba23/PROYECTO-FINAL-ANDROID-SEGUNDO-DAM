@@ -1,10 +1,13 @@
 package com.example.studybro;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -13,6 +16,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -40,6 +44,94 @@ public class PerfilUsuario extends AppCompatActivity {
         TextView nameStudent = findViewById(R.id.nombreEstudiante);
         TextView descripcionNombreAlumno = findViewById(R.id.descripcionNOmbreAlumno);
         TextView descripcionNombreEstudio = findViewById(R.id.descripcionNombreEstudio);
+
+        ConstraintLayout desplegable = findViewById(R.id.seccionDEsplegable);
+
+
+        ImageButton menuHamburguesa = findViewById(R.id.menuHamburguesaPerfil);
+
+        menuHamburguesa.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                desplegable.setVisibility(View.VISIBLE);
+            }
+
+
+        });
+
+
+        ImageButton menuHamburguesaDesplegable = findViewById(R.id.desplegableHamburegesaPerfil);
+
+        menuHamburguesaDesplegable.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                desplegable.setVisibility(View.GONE);
+            }
+
+
+        });
+
+
+        LinearLayout seccionMenuPrincipal = findViewById(R.id.seccionMenuPrincipal);
+
+        LinearLayout seccionGuardados = findViewById(R.id.seccionGuardados);
+
+        LinearLayout secccionApuntes = findViewById(R.id.seccionApuntes);
+
+        LinearLayout seccionSesion = findViewById(R.id.seccionSesion);
+
+
+
+        seccionMenuPrincipal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                Intent intent = new Intent(PerfilUsuario.this, MainActivity.class);
+                startActivity(intent);
+
+            }
+        });
+
+        seccionGuardados.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                Intent intent = new Intent(PerfilUsuario.this, Guardados.class);
+                startActivity(intent);
+
+
+            }
+        });
+
+        secccionApuntes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                Intent intent = new Intent(PerfilUsuario.this, MisApuntes.class);
+                startActivity(intent);
+
+
+            }
+        });
+
+        seccionSesion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                Intent intent = new Intent(PerfilUsuario.this, Login.class);
+                startActivity(intent);
+
+
+            }
+        });
+
+
 
 
         botonCentro.setOnClickListener(new View.OnClickListener() {
@@ -211,7 +303,7 @@ public class PerfilUsuario extends AppCompatActivity {
                                         })
                                         .setPositiveButton("Aceptar", (dialog2, which2) -> {
 
-                                           String texto =  editText2.getText().toString();
+                                            String texto = editText2.getText().toString();
 
                                             if (texto.isEmpty()) {
                                                 textInputLayout.setErrorEnabled(true);
@@ -223,7 +315,7 @@ public class PerfilUsuario extends AppCompatActivity {
                                                 textInputLayout.setError("Este campo no puede  contener caracteres en blanco");
                                             } else {
 
-                                                if(textoOpcion.equals("NombreUsuario"))
+                                                if (textoOpcion.equals("NombreUsuario"))
                                                     nameStudent.setText(texto);
                                                 else {
                                                     descripcionNombreAlumno.setText(texto);

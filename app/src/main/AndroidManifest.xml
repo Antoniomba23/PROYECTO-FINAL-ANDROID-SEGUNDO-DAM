@@ -12,6 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StudyBro">
         <activity
+            android:name=".MisApuntes"
+            android:exported="false" />
+        <activity
+            android:name=".Guardados"
+            android:exported="false" />
+        <activity
+            android:name=".MenuDesplegable"
+            android:exported="false"
+            android:label="@string/title_activity_menu_desplegable"
+            android:theme="@style/Theme.StudyBro.NoActionBar" />
+        <activity
             android:name=".PerfilUsuario"
             android:exported="false" />
         <activity

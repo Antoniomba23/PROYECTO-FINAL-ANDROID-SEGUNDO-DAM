@@ -5,18 +5,23 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
@@ -57,15 +62,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
 
-
-
-
         super.onCreate(savedInstanceState);
         try {
 
 
             EdgeToEdge.enable(this);
             setContentView(R.layout.activity_main);
+
+
+
+
 
             ImageButton imageButton = findViewById(R.id.iconoPersona);
 
@@ -98,11 +104,18 @@ public class MainActivity extends AppCompatActivity {
             TextInputEditText editText = findViewById(R.id.buscador);
             if (editText != null) {
                 editText.addTextChangedListener(new TextWatcher() {
-                    @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                    @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
                         filtrar(s.toString());
                     }
-                    @Override public void afterTextChanged(Editable s) {}
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                    }
                 });
             }
 
@@ -159,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                                     desc = "infantil";
                                 } else if (desc.toLowerCase().contains("uni")) {
                                     desc = "Universidad";
-                                } else{
+                                } else {
                                     desc = "insituto";
 
 
