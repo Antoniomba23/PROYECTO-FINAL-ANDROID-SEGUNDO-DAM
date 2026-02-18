@@ -41,8 +41,20 @@ public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Centro centro = listaCentros.get(position);
         holder.nombre.setText(centro.nombre);
-        holder.ubicacion.setText(centro.direccion);
-        holder.tipo.setText(centro.ciudad); // Usamos ciudad como tipo/ubicación extra temporalmente
+        
+        // Combinar dirección y ciudad para la ubicación
+        String ubicacionTexto = "";
+        if (centro.direccion != null && !centro.direccion.isEmpty()) {
+            ubicacionTexto += centro.direccion;
+        }
+        if (centro.ciudad != null && !centro.ciudad.isEmpty()) {
+            if (!ubicacionTexto.isEmpty()) ubicacionTexto += ", ";
+            ubicacionTexto += centro.ciudad;
+        }
+        holder.ubicacion.setText(ubicacionTexto.isEmpty() ? "Ubicación desconocida" : ubicacionTexto);
+        
+        // El TextView de contador (tvPostCount) lo usamos para mostrar "Ver Detalles" por ahora
+        holder.contador.setText("Ver detalles");
         
         holder.itemView.setOnClickListener(v -> listener.onItemClick(centro));
     }
@@ -53,13 +65,13 @@ public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.View
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView nombre, ubicacion, tipo;
+        public TextView nombre, ubicacion, contador;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            nombre = itemView.findViewById(R.id.tvCentroNombre);
-            ubicacion = itemView.findViewById(R.id.tvCentroUbicacion);
-            tipo = itemView.findViewById(R.id.tvCentroTipo);
+            nombre = itemView.findViewById(R.id.tvCenterName);
+            ubicacion = itemView.findViewById(R.id.tvLocation);
+            contador = itemView.findViewById(R.id.tvPostCount);
         }
     }
 }

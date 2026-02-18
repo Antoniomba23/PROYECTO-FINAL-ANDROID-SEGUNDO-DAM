@@ -17,8 +17,6 @@ import com.dam.studybro.modelos.CentroMadrid;
 import com.dam.studybro.modelos.RespuestaDatosMadrid;
 import com.dam.studybro.red.ClienteApi;
 import com.dam.studybro.red.ServicioApi;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +49,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         executorService = Executors.newSingleThreadExecutor();
 
         // Configurar RecyclerView
-        recyclerView = findViewById(R.id.rvPublicaciones); // Reusamos el ID por ahora o lo cambiamos en XML
+        recyclerView = findViewById(R.id.recyclerViewCenters); // Corregido ID
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adaptador = new AdaptadorCentros(new ArrayList<>(), centro -> {
             Intent intent = new Intent(ActividadPrincipal.this, ActividadPerfilCentro.class);
@@ -65,17 +63,14 @@ public class ActividadPrincipal extends AppCompatActivity {
         obtenerDatosDeApi();
 
         // Configurar Botones
-        FloatingActionButton fab = findViewById(R.id.fabNuevaPublicacion);
-        fab.setOnClickListener(v -> startActivity(new Intent(this, ActividadNuevaPublicacion.class)));
+        // Botón Ir a Publicaciones (Demo)
+        findViewById(R.id.btnIrPublicaciones).setOnClickListener(v -> {
+             startActivity(new Intent(this, ActividadPublicaciones.class));
+        });
 
-        BottomNavigationView navView = findViewById(R.id.bottom_navigation);
-        navView.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_profile) {
-                startActivity(new Intent(this, ActividadPerfil.class));
-                return true;
-            }
-            return false;
+        // Botón Perfil (Toolbar)
+        findViewById(R.id.btnProfile).setOnClickListener(v -> {
+            startActivity(new Intent(this, ActividadPerfil.class));
         });
     }
 

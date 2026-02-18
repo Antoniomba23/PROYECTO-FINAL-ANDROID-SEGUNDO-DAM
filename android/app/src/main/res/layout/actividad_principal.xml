@@ -105,6 +105,13 @@
                 android:textColor="@color/text_secondary"
                 android:visibility="gone"
                 android:layout_marginTop="40dp"/>
+            
+            <Button
+                android:id="@+id/btnIrPublicaciones"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ir a Publicaciones (Nivel 3)"
+                android:layout_marginTop="20dp"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

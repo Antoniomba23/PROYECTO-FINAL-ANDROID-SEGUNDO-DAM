@@ -1,4 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">StudyBro</string>
+    <string name="subjects_title">Asignaturas</string>
+    <string name="no_subjects">No hay asignaturas registradas</string>
+    <string name="detail_title">Detalle de Publicación</string>
+    <string name="mark_useful">Útil</string>
+    <string name="mark_favorite">Favorito</string>
+    <string name="add_comment_hint">Escribe un comentario...</string>
+    <string name="send">Enviar</string>
+    <string name="new_post_title">Nueva Publicación</string>
+    <string name="appbar_scrolling_view_behavior" translatable="false">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
+    <string name="no_posts">No hay publicaciones disponibles</string>
+    <string name="fab_new_post">Nueva publicación</string>
+    <string name="home_title">Inicio</string>
+    <string name="profile_title">Perfil</string>
+    <string name="search_centers_hint">Buscar centros...</string>
+    <string name="centers_title">Centros Educativos</string>
+    <string name="no_centers">No se encontraron centros</string>
+    <string name="specialties_title">Especialidades</string>
+    <string name="no_specialties">No hay especialidades</string>
+    <string name="logout">Cerrar Sesión</string>
+    <string name="my_posts">Mis Publicaciones</string>
+    
+    <!-- Formulario Nueva Publicación -->
+    <string name="title_hint">Título</string>
+    <string name="description_hint">Descripción</string>
+    <string name="subject_hint">Asignatura</string>
+    <string name="course_hint">Curso</string>
+    <string name="type_hint">Tipo (Apuntes, Examen, etc.)</string>
+    <string name="select_file">Seleccionar Archivo</string>
+    <string name="publish_button">Publicar</string>
 </resources>
