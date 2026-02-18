@@ -48,6 +48,18 @@ public class ActividadPrincipal extends AppCompatActivity {
                 BaseDatosApp.class, "studybro-db").build();
         executorService = Executors.newSingleThreadExecutor();
 
+        // Check Session (Guest vs Student)
+        android.content.SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        boolean isGuest = prefs.getInt("centro_id", -1) == -1;
+        String userEmail = prefs.getString("email_usuario", "Invitado");
+
+        if (isGuest) {
+            getSupportActionBar().setSubtitle("Modo Invitado");
+            // Ocultar botones de "Mi Perfil" si fuera necesario, para demo lo dejamos
+        } else {
+            getSupportActionBar().setSubtitle(userEmail);
+        }
+
         // Configurar RecyclerView
         recyclerView = findViewById(R.id.recyclerViewCenters); // Corregido ID
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -57,6 +69,22 @@ public class ActividadPrincipal extends AppCompatActivity {
             startActivity(intent);
         });
         recyclerView.setAdapter(adaptador);
+
+        // BUSCADOR UNIVERSAL (Nivel UI)
+        com.google.android.material.textfield.TextInputEditText etSearch = findViewById(R.id.etSearch);
+        etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Filtrar lista
+                adaptador.filtrar(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
 
         // Cargar datos (Primero DB, luego API)
         cargarDatosLocales();

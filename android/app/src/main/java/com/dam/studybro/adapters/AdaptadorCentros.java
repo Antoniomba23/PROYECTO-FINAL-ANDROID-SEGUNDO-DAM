@@ -13,6 +13,7 @@ import java.util.List;
 public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.ViewHolder> {
 
     private List<Centro> listaCentros;
+    private List<Centro> listaCentrosOriginal; // Copia para filtrar
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
@@ -21,11 +22,33 @@ public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.View
 
     public AdaptadorCentros(List<Centro> listaCentros, OnItemClickListener listener) {
         this.listaCentros = listaCentros;
+        this.listaCentrosOriginal = new java.util.ArrayList<>(listaCentros);
         this.listener = listener;
     }
 
     public void actualizarDatos(List<Centro> nuevosCentros) {
         this.listaCentros = nuevosCentros;
+        this.listaCentrosOriginal = new java.util.ArrayList<>(nuevosCentros);
+        notifyDataSetChanged();
+    }
+
+    // Método para filtrar (Buscador)
+    public void filtrar(String texto) {
+        if (texto.isEmpty()) {
+            listaCentros.clear();
+            listaCentros.addAll(listaCentrosOriginal);
+        } else {
+            List<Centro> filtrados = new java.util.ArrayList<>();
+            texto = texto.toLowerCase();
+            for (Centro c : listaCentrosOriginal) {
+                if (c.nombre.toLowerCase().contains(texto) || 
+                    (c.ciudad != null && c.ciudad.toLowerCase().contains(texto))) {
+                    filtrados.add(c);
+                }
+            }
+            listaCentros.clear();
+            listaCentros.addAll(filtrados);
+        }
         notifyDataSetChanged();
     }
 
