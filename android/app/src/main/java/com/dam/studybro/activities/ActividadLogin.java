@@ -24,10 +24,19 @@ public class ActividadLogin extends AppCompatActivity {
     private TextInputEditText campoContrasena;
     private Button botonEntrar;
     private TextView botonIrRegistro;
+    
+    // DB y Executor
+    private com.dam.studybro.database.BaseDatosApp db;
+    private java.util.concurrent.ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Inicializar DB y Executor
+        db = androidx.room.Room.databaseBuilder(getApplicationContext(),
+                com.dam.studybro.database.BaseDatosApp.class, "studybro-db").build();
+        executorService = java.util.concurrent.Executors.newSingleThreadExecutor();
 
         // Nivel 4: SharedPreferences (La Libreta)
         // Comprobar si ya hay alguien logueado
@@ -35,68 +44,79 @@ public class ActividadLogin extends AppCompatActivity {
         boolean estaLogueado = preferencias.getBoolean("sesion_iniciada", false);
 
         if (estaLogueado) {
-            // Si ya está logueado, vamos directo al Home
             irAHome();
-            return; // Importante para no cargar el layout de Login
+            return;
         }
 
-        setContentView(R.layout.actividad_login); // Layout renombrado
+        setContentView(R.layout.actividad_login);
         
-        // Vincular Vistas (Nivel 1: findViewById)
+        // Vincular Vistas
         campoCorreo = findViewById(R.id.etCorreo);
         campoContrasena = findViewById(R.id.etContrasena);
         botonEntrar = findViewById(R.id.btnEntrar);
         botonIrRegistro = findViewById(R.id.btnIrRegistro);
 
-        // Eventos (Nivel 1: setOnClickListener)
-        botonEntrar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hacerLogin();
-            }
-        });
+        // Eventos
+        botonEntrar.setOnClickListener(v -> hacerLogin());
 
-        botonIrRegistro.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Nivel 2: Intents (El Vehículo)
-                Intent intentoRegistro = new Intent(ActividadLogin.this, ActividadRegistro.class);
-                startActivity(intentoRegistro);
-            }
+        botonIrRegistro.setOnClickListener(v -> {
+            Intent intentoRegistro = new Intent(ActividadLogin.this, ActividadRegistro.class);
+            startActivity(intentoRegistro);
         });
     }
 
     private void hacerLogin() {
-        // Manejo de Texto (Nivel 1: getText().toString())
         String correo = campoCorreo.getText().toString();
         String contrasena = campoContrasena.getText().toString();
 
-        // Validación simple
         if (correo.isEmpty() || contrasena.isEmpty()) {
             Toast.makeText(this, "Por favor, rellena todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Simulación de login exitoso (Aquí iría la comprobación con BD)
-        // Nivel 4: Usamos Seguridad para hashear (solo como ejemplo por ahora)
-        String hash = Seguridad.encriptarPassword(contrasena);
-        
-        // Guardar en la "Libreta" que hemos entrado
+        // Lógica de Login Real en segundo plano
+        executorService.execute(() -> {
+            // Buscamos usuario en la BD
+            com.dam.studybro.database.Usuario usuario = db.usuarioDao().buscarPorCorreo(correo);
+
+            runOnUiThread(() -> {
+                if (usuario != null) {
+                    // Verificar contraseña (en una app real se usa hash, aquí simulamos que coinciden si el usuario existe para la demo, o se compara simple)
+                    // Para simplificar en nivel principiante, asumimos que si existe el email es correcto para la demo
+                    // O comparamos con el campo password si lo tuviéramos en claro (mala práctica) o hash.
+                    // Vamos a comparar:
+                    if (usuario.passwordHash.equals(Seguridad.encriptarPassword(contrasena))) {
+                        // Login Exitoso
+                        guardarSesion(usuario);
+                    } else {
+                        Toast.makeText(ActividadLogin.this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(ActividadLogin.this, "Usuario no encontrado", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    private void guardarSesion(com.dam.studybro.database.Usuario usuario) {
         SharedPreferences preferencias = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferencias.edit();
         editor.putBoolean("sesion_iniciada", true);
-        editor.putString("email_usuario", correo);
+        editor.putString("email_usuario", usuario.email);
+        
+        // GUARDAMOS EL ID DEL CENTRO (O -1 SI ES NULL/INVITADO)
+        int centroId = usuario.centroId != null ? usuario.centroId : -1;
+        editor.putInt("centro_id", centroId);
+        
         editor.apply();
 
-        Toast.makeText(this, "Bienvenido " + correo, Toast.LENGTH_SHORT).show();
-
-        // Nivel 2: Navegación a Home
+        Toast.makeText(this, "Bienvenido " + usuario.nombre, Toast.LENGTH_SHORT).show();
         irAHome();
     }
 
     private void irAHome() {
         Intent intentoHome = new Intent(ActividadLogin.this, ActividadPrincipal.class);
         startActivity(intentoHome);
-        finish(); // Cerramos login para que no pueda volver atrás
+        finish();
     }
 }
