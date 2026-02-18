@@ -8,10 +8,13 @@ import java.util.List;
 @Dao
 public interface AsignaturaDao {
     @Insert
-    void insertar(Asignatura asignatura);
+    long insertar(Asignatura asignatura);
 
     @Query("SELECT * FROM asignaturas")
     List<Asignatura> obtenerTodas();
+
+    @Query("SELECT COUNT(*) FROM asignaturas")
+    int contar();
 
     @Query("SELECT * FROM asignaturas WHERE especialidad_id = :especialidadId")
     List<Asignatura> obtenerPorEspecialidad(int especialidadId);

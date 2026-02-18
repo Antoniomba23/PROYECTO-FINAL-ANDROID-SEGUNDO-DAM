@@ -87,6 +87,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         });
 
         // Cargar datos (Primero DB, luego API)
+        com.dam.studybro.database.DatabaseSeeder.sembrarDatos(db);
         cargarDatosLocales();
         obtenerDatosDeApi();
 

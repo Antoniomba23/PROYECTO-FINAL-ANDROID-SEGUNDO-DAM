@@ -8,7 +8,7 @@ import java.util.List;
 @Dao
 public interface EspecialidadDao {
     @Insert
-    void insertar(Especialidad especialidad);
+    long insertar(Especialidad especialidad);
 
     @Query("SELECT * FROM especialidades")
     List<Especialidad> obtenerTodas();
