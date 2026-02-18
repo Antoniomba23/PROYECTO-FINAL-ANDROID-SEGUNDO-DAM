@@ -83,63 +83,85 @@ Una plataforma centralizada donde estudiantes de distintos centros educativos (I
 erDiagram
     USUARIO ||--o{ PUBLICACION : "publica"
     USUARIO ||--o{ COMENTARIO : "escribe"
-    USUARIO ||--o{ INTERACCION : "realiza"
-    USUARIO }|--|| CENTRO : "pertenece a"
-    CENTRO ||--o{ PUBLICACION : "contiene"
-    USUARIO ||--o{ REPORTE : "reporta"
-    PUBLICACION ||--o{ REPORTE : "tiene"
+    USUARIO ||--o{ INTERACCION : "da like/fav"
+    USUARIO ||--o{ VALORACION_CENTRO : "reseña"
+    
+    USUARIO }|--|| CENTRO : "pertenece a (opcional)"
+    USUARIO }|--|| ESPECIALIDAD : "cursa (opcional)"
 
+    CENTRO ||--o{ VALORACION_CENTRO : "recibe"
+    ESPECIALIDAD ||--o{ ASIGNATURA : "contiene"
+    ASIGNATURA ||--o{ PUBLICACION : "clasifica"
+
+    %% --- TABLAS DE USUARIOS Y CENTROS ---
     USUARIO {
         int id PK
-        string nombre_usuario
+        string nombre
         string email
         string password_hash
         string avatar_url
         string rol "ESTUDIANTE, ADMIN"
-        int centro_id FK
+        int centro_id FK "NULLABLE (Puede ser nulo)"
+        int especialidad_id FK "NULLABLE (Puede ser nulo)"
     }
 
     CENTRO {
         int id PK
-        string nombre
+        string nombre "Ej: IES San Vicente"
         string ciudad
-        string provincia
-        string tipo "IES, FP, Privado"
-        boolean esta_verificado
+        string direccion
+        string web_url
+        float valoracion_media "Cache: 0.0 a 5.0"
+        string codigo_api "ID externo para sincronizar"
     }
 
-    PUBLICACION {
+    VALORACION_CENTRO {
         int id PK
-        string descripcion
-        string asignatura
-        string curso
-        string tipo "TAREA, APUNTE"
-        string estado "ACTIVO, ARCHIVADO, BANEADO"
-        string archivo_url
-        datetime fecha_creacion
+        int puntuacion "1 a 5"
+        string comentario
+        datetime fecha
         int usuario_id FK
         int centro_id FK
+    }
+
+    %% --- TABLAS ACADÉMICAS (CATÁLOGOS) ---
+    ESPECIALIDAD {
+        int id PK
+        string nombre "Ej: DAW, DAM, Enfermería"
+        string codigo_api "ID externo"
+    }
+
+    ASIGNATURA {
+        int id PK
+        string nombre "Ej: Programación"
+        int curso "1 o 2 (Nivel)"
+        int especialidad_id FK
+    }
+
+    %% --- TABLAS DE CONTENIDO ---
+    PUBLICACION {
+        int id PK
+        string titulo
+        string descripcion
+        string archivo_url
+        string tipo "TAREA, APUNTE"
+        string anio_escolar "Ej: '2023-2024' (Texto fijo)"
+        datetime fecha_subida
+        int usuario_id FK
+        int asignatura_id FK
     }
 
     COMENTARIO {
         int id PK
         string contenido
-        datetime fecha_creacion
+        datetime fecha
         int usuario_id FK
         int publicacion_id FK
     }
 
     INTERACCION {
         int id PK
-        string tipo "ME_GUSTA, UTIL, FAVORITO"
-        int usuario_id FK
-        int publicacion_id FK
-    }
-
-    REPORTE {
-        int id PK
-        string motivo
-        string estado "PENDIENTE, RESUELTO"
+        string tipo "ME_GUSTA, GUARDADO"
         int usuario_id FK
         int publicacion_id FK
     }
