@@ -98,16 +98,25 @@
                             android:textStyle="bold"/>
 
                         <TextView
-                            android:id="@+id/tvPostsCount"
+                            android:id="@+id/tvRating"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="125 Publicaciones"
-                            android:textSize="12sp"
-                            android:textColor="@color/secondary"
+                            android:text="★ 4.5"
+                            android:textSize="14sp"
+                            android:textColor="@android:color/holo_orange_dark"
                             android:textStyle="bold"
                             android:gravity="end"/>
                     </LinearLayout>
+                    
+                    <!-- Botón Valorar -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnValorar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Valorar Centro"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_marginTop="8dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
