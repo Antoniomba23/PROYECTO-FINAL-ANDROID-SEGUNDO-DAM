@@ -27,15 +27,20 @@ public class Centro {
     @ColumnInfo(name = "codigo_api")
     public String codigoApi;
 
+    @ColumnInfo(name = "imagen_url")
+    public String imagenUrl;
+
+
     // Constructor vacío requerido por Room
     public Centro() {}
 
-    public Centro(String nombre, String ciudad, String direccion, String webUrl, float valoracionMedia, String codigoApi) {
+    public Centro(String nombre, String ciudad, String direccion, String webUrl, float valoracionMedia, String codigoApi, String imagenUrl) {
         this.nombre = nombre;
         this.ciudad = ciudad;
         this.direccion = direccion;
         this.webUrl = webUrl;
         this.valoracionMedia = valoracionMedia;
         this.codigoApi = codigoApi;
+        this.imagenUrl = imagenUrl;
     }
 }

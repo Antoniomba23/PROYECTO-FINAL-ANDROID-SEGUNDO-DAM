@@ -44,8 +44,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         setContentView(R.layout.actividad_principal);
 
         // Inicializar Base de Datos y Executor
-        db = Room.databaseBuilder(getApplicationContext(),
-                BaseDatosApp.class, "studybro-db").build();
+        db = BaseDatosApp.getInstance(getApplicationContext());
         executorService = Executors.newSingleThreadExecutor();
 
         // Check Session (Guest vs Student)
@@ -142,6 +141,8 @@ public class ActividadPrincipal extends AppCompatActivity {
                     nuevo.nombre = cApi.title != null ? cApi.title : "Sin nombre";
                     nuevo.codigoApi = cApi.id;
                     nuevo.valoracionMedia = 0.0f; // Inicial
+                    // Imagen aleatoria para pruebas (Placeholder)
+                    nuevo.imagenUrl = "https://picsum.photos/seed/" + cApi.id + "/400/200";
                     
                     if (cApi.address != null) {
                         nuevo.direccion = cApi.address.streetAddress;

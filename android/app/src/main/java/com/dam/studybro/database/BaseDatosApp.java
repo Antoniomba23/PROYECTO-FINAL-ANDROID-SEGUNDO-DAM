@@ -15,7 +15,7 @@ import androidx.room.RoomDatabase;
         Comentario.class,
         Interaccion.class,
         ValoracionCentro.class
-}, version = 1)
+}, version = 2)
 public abstract class BaseDatosApp extends RoomDatabase {
     public abstract UsuarioDao usuarioDao();
     public abstract CentroDao centroDao();
@@ -25,4 +25,21 @@ public abstract class BaseDatosApp extends RoomDatabase {
     public abstract ComentarioDao comentarioDao();
     public abstract InteraccionDao interaccionDao();
     public abstract ValoracionCentroDao valoracionCentroDao();
+
+    // Singleton Pattern
+    private static volatile BaseDatosApp INSTANCE;
+
+    public static BaseDatosApp getInstance(android.content.Context context) {
+        if (INSTANCE == null) {
+            synchronized (BaseDatosApp.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = androidx.room.Room.databaseBuilder(context.getApplicationContext(),
+                                    BaseDatosApp.class, "studybro-db")
+                            .fallbackToDestructiveMigration() // IMPORTANTE: Borra BD si cambia versión
+                            .build();
+                }
+            }
+        }
+        return INSTANCE;
+    }
 }

@@ -26,8 +26,8 @@ public class ActividadPerfilCentro extends AppCompatActivity {
         setContentView(R.layout.actividad_perfil_centro);
 
         // 1. Inicializar DB
-        db = androidx.room.Room.databaseBuilder(getApplicationContext(),
-                com.dam.studybro.database.BaseDatosApp.class, "studybro-db").build();
+        // 1. Inicializar DB
+        db = com.dam.studybro.database.BaseDatosApp.getInstance(getApplicationContext());
         executorService = java.util.concurrent.Executors.newSingleThreadExecutor();
 
         // 2. Obtener ID del Intent

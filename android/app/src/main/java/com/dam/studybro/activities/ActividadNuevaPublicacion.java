@@ -23,8 +23,7 @@ public class ActividadNuevaPublicacion extends AppCompatActivity {
         setContentView(R.layout.actividad_nueva_publicacion);
 
         // 1. Init DB
-        db = androidx.room.Room.databaseBuilder(getApplicationContext(),
-                com.dam.studybro.database.BaseDatosApp.class, "studybro-db").build();
+        db = com.dam.studybro.database.BaseDatosApp.getInstance(getApplicationContext());
         executorService = java.util.concurrent.Executors.newSingleThreadExecutor();
 
         // 2. Bind Views

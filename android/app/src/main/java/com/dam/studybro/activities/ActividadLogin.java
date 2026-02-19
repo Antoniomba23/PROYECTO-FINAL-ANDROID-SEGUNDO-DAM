@@ -34,8 +34,8 @@ public class ActividadLogin extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Inicializar DB y Executor
-        db = androidx.room.Room.databaseBuilder(getApplicationContext(),
-                com.dam.studybro.database.BaseDatosApp.class, "studybro-db").build();
+        // Inicializar DB y Executor
+        db = com.dam.studybro.database.BaseDatosApp.getInstance(getApplicationContext());
         executorService = java.util.concurrent.Executors.newSingleThreadExecutor();
 
         // Nivel 4: SharedPreferences (La Libreta)
