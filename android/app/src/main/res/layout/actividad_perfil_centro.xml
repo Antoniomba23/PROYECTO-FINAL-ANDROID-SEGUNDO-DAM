@@ -39,6 +39,12 @@
                 app:cardElevation="@dimen/card_elevation"
                 app:cardCornerRadius="@dimen/card_corner_radius">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingBottom="16dp">
+
                     <!-- Imagen del Centro -->
                     <ImageView
                         android:id="@+id/ivCenterImage"
@@ -59,7 +65,8 @@
                         android:textSize="24sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_primary"
-                        android:layout_marginBottom="8dp"/>
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginHorizontal="16dp"/>
 
                     <!-- Ubicación -->
                     <LinearLayout
@@ -67,7 +74,8 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
+                        android:layout_marginBottom="12dp"
+                        android:layout_marginHorizontal="16dp">
 
                         <ImageView
                             android:layout_width="16dp"
@@ -90,7 +98,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="12dp">
+                        android:layout_marginBottom="12dp"
+                        android:layout_marginHorizontal="16dp">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnWeb"
@@ -115,7 +124,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:layout_marginHorizontal="16dp">
                         <TextView
                             android:id="@+id/tvRating"
                             android:layout_width="match_parent"
