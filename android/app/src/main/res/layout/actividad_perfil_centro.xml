@@ -39,11 +39,16 @@
                 app:cardElevation="@dimen/card_elevation"
                 app:cardCornerRadius="@dimen/card_corner_radius">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/padding_large">
+                    <!-- Imagen del Centro -->
+                    <ImageView
+                        android:id="@+id/ivCenterImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_launcher_background"
+                        android:contentDescription="Foto del centro"
+                        android:layout_marginBottom="16dp"
+                        android:clipToOutline="true"/>
 
                     <!-- Nombre del centro -->
                     <TextView
@@ -80,65 +85,86 @@
                             android:layout_marginStart="8dp"/>
                     </LinearLayout>
 
+                    <!-- Web y Valorar -->
+                     <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnWeb"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Web Oficial"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_marginEnd="8dp"/>
+                        
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnValorar"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Valorar"
+                            style="@style/Widget.MaterialComponents.Button"/>
+                    </LinearLayout>
+
                     <!-- Estadísticas -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical">
-
-                        <TextView
-                            android:id="@+id/tvSpecialtiesCount"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="5 Especialidades"
-                            android:textSize="12sp"
-                            android:textColor="@color/primary"
-                            android:textStyle="bold"/>
-
                         <TextView
                             android:id="@+id/tvRating"
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             android:text="★ 4.5"
-                            android:textSize="14sp"
+                            android:textSize="18sp"
                             android:textColor="@android:color/holo_orange_dark"
                             android:textStyle="bold"
-                            android:gravity="end"/>
+                            android:gravity="center"/>
                     </LinearLayout>
-                    
-                    <!-- Botón Valorar -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnValorar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Valorar Centro"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_marginTop="8dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Título de especialidades -->
+            <!-- Título Especialidades -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/specialties_title"
+                android:text="Especialidades"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
-                android:layout_marginStart="@dimen/margin_medium"
-                android:layout_marginTop="@dimen/margin_medium"
-                android:layout_marginBottom="@dimen/margin_small"/>
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"/>
 
-            <!-- RecyclerView de especialidades -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewSpecialties"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
                 android:padding="8dp"/>
+
+            <!-- Título Reseñas -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reseñas"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewReviews"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:padding="8dp"/>
+
 
             <!-- Mensaje cuando no hay especialidades -->
             <TextView
