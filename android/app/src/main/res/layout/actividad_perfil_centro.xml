@@ -45,16 +45,12 @@
                     android:orientation="vertical"
                     android:paddingBottom="16dp">
 
-                    <!-- Imagen del Centro -->
-                    <ImageView
                         android:id="@+id/ivCenterImage"
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/ic_launcher_background"
+                        android:src="@drawable/ic_launcher_foreground"
                         android:contentDescription="Foto del centro"
-                        android:layout_marginBottom="16dp"
-                        android:clipToOutline="true"/>
 
                     <!-- Nombre del centro -->
                     <TextView
