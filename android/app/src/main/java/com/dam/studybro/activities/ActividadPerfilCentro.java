@@ -77,7 +77,7 @@ public class ActividadPerfilCentro extends AppCompatActivity {
                     if (centroActual.imagenUrl != null && !centroActual.imagenUrl.isEmpty()) {
                         com.bumptech.glide.Glide.with(this)
                                 .load(centroActual.imagenUrl)
-                                .placeholder(R.drawable.ic_launcher_background) // Fallback
+                                .placeholder(R.drawable.ic_launcher_foreground) // Fallback
                                 .into(ivImagen);
                     }
                 }
