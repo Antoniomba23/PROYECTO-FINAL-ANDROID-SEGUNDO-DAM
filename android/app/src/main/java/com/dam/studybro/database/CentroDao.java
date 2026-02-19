@@ -3,6 +3,7 @@ package com.dam.studybro.database;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 import java.util.List;
 
 @Dao
@@ -18,4 +19,7 @@ public interface CentroDao {
 
     @Query("SELECT * FROM centros WHERE codigo_api = :codigoApi LIMIT 1")
     Centro obtenerPorCodigoApi(String codigoApi);
+
+    @Update
+    void actualizar(Centro centro);
 }
