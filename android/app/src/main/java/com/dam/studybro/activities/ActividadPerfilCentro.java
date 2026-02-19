@@ -100,9 +100,12 @@ public class ActividadPerfilCentro extends AppCompatActivity {
             java.util.List<com.dam.studybro.database.Especialidad> lista = db.especialidadDao().obtenerTodas();
             runOnUiThread(() -> {
                 com.dam.studybro.adapters.AdaptadorEspecialidades adp = new com.dam.studybro.adapters.AdaptadorEspecialidades(lista, especialidad -> {
-                    // Click en Especialidad -> Navegar a Asignaturas (Nivel 2/3)
-                    Toast.makeText(this, "Seleccionado: " + especialidad.nombre, Toast.LENGTH_SHORT).show();
-                    // AQUÍ IRÍA EL INTENT A ACTIVIDAD_ASIGNATURAS
+                    // Click en Especialidad -> Navegar a Asignaturas
+                    android.content.Intent intent = new android.content.Intent(ActividadPerfilCentro.this, ActividadAsignaturas.class);
+                    // Como el ID de especialidad es long pero el Dao devolvía long, y en la entidad es int?
+                    // Revisemos Entidad Especialidad. Si es int, cast.
+                    intent.putExtra("especialidad_id", especialidad.id);
+                    startActivity(intent);
                 });
                 rvEspecialidades.setAdapter(adp);
             });

@@ -20,34 +20,79 @@ public class ActividadPublicaciones extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private AdaptadorPublicaciones adaptador;
+    private com.dam.studybro.database.BaseDatosApp db;
+    private java.util.concurrent.ExecutorService executorService;
+    private int asignaturaId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.actividad_publicaciones); // Layout renombrado
+        setContentView(R.layout.actividad_publicaciones);
 
-        // 1. Configurar RecyclerView (El Restaurante)
+        // Toolbar
+        getSupportActionBar().setTitle("Publicaciones");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // 1. Init DB
+        db = com.dam.studybro.database.BaseDatosApp.getInstance(getApplicationContext());
+        executorService = java.util.concurrent.Executors.newSingleThreadExecutor();
+
+        // 2. Intent Data
+        asignaturaId = getIntent().getIntExtra("asignatura_id", -1);
+        String nombreAsignatura = getIntent().getStringExtra("nombre_asignatura");
+        if (nombreAsignatura != null) {
+            getSupportActionBar().setSubtitle(nombreAsignatura);
+        }
+
+        // 3. Configurar RecyclerView
         recyclerView = findViewById(R.id.recyclerViewPosts);
-        
-        // LayoutManager (El Gerente) - Lista Vertical
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // 2. Datos (La Comida - Mock de prueba)
-        List<Publicacion> listaComida = new ArrayList<>();
-        // Publicacion(titulo, descripcion, tipo, fechaSubida, usuarioId, asignaturaId)
-        listaComida.add(new Publicacion("Apuntes Java", "Tema 1: Variables", "APUNTE", System.currentTimeMillis(), 1, 1));
-        listaComida.add(new Publicacion("Examen Pasado", "Examen 2023 Final", "EXAMEN", System.currentTimeMillis() - 3600000, 2, 3));
-        listaComida.add(new Publicacion("Duda Android", "¿Cómo funciona RecyclerView?", "DUDA", System.currentTimeMillis() - 7200000, 3, 2));
-        listaComida.add(new Publicacion("Resumen Hilos", "ProcessBuilder y Process", "APUNTE", System.currentTimeMillis() - 86400000, 4, 2));
+        // 4. Cargar Datos
+        cargarPublicaciones();
 
-        // 3. Adaptador (El Camarero)
-        adaptador = new AdaptadorPublicaciones(listaComida);
-        recyclerView.setAdapter(adaptador);
-
-        Toast.makeText(this, "Cargadas " + listaComida.size() + " publicaciones", Toast.LENGTH_SHORT).show();
-
-        // 4. FAB para Nueva Publicación (Nivel 2: Navegación)
+        // 5. FAB
         com.google.android.material.floatingactionbutton.FloatingActionButton fab = findViewById(R.id.fabNewPost);
-        fab.setOnClickListener(v -> startActivity(new Intent(this, ActividadNuevaPublicacion.class)));
+        fab.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ActividadNuevaPublicacion.class);
+            if (asignaturaId != -1) {
+                intent.putExtra("asignatura_id_preselected", asignaturaId);
+            }
+            startActivity(intent);
+        });
+    }
+
+    private void cargarPublicaciones() {
+        executorService.execute(() -> {
+            List<Publicacion> lista;
+            if (asignaturaId != -1) {
+                lista = db.publicacionDao().obtenerPorAsignatura(asignaturaId);
+            } else {
+                lista = db.publicacionDao().obtenerTodas();
+            }
+
+            runOnUiThread(() -> {
+                adaptador = new AdaptadorPublicaciones(lista);
+                recyclerView.setAdapter(adaptador);
+                
+                if (lista.isEmpty()) {
+                    Toast.makeText(this, "No hay publicaciones aún", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Cargadas " + lista.size() + " publicaciones", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        cargarPublicaciones(); // Recargar al volver de "Nueva Publicación"
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }
