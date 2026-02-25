@@ -26,8 +26,8 @@ public interface CentroDao {
     @Query("SELECT * FROM centros WHERE id = :id LIMIT 1")
     Centro obtenerPorId(int id);
 
-    @Query("SELECT * FROM centros WHERE codigo_api = :codigoApi LIMIT 1")
-    Centro obtenerPorCodigoApi(String codigoApi);
+    @Query("SELECT codigo_api FROM centros")
+    List<String> obtenerTodosLosCodigosApi();
 
     @Update
     void actualizar(Centro centro);
