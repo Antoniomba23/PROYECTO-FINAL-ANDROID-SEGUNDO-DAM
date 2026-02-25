@@ -12,10 +12,11 @@ import androidx.room.RoomDatabase;
         Especialidad.class,
         Asignatura.class,
         Publicacion.class,
+        Comentario.class,
         Interaccion.class,
         ValoracionCentro.class,
         CentroEspecialidad.class
-}, version = 6)
+}, version = 7)
 public abstract class BaseDatosApp extends RoomDatabase {
     public abstract UsuarioDao usuarioDao();
     public abstract CentroDao centroDao();
