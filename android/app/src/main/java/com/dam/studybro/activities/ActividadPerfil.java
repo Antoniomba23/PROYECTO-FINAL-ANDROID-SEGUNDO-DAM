@@ -25,6 +25,7 @@ import com.dam.studybro.adapters.AdaptadorPublicaciones;
 import com.dam.studybro.database.BaseDatosApp;
 import com.dam.studybro.database.Publicacion;
 import com.dam.studybro.supabase.ClienteSupabase;
+import com.dam.studybro.supabase.ServicioStorage;
 import com.google.android.material.button.MaterialButton;
 
 import java.io.ByteArrayOutputStream;
@@ -36,7 +37,6 @@ import java.util.concurrent.Executors;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
