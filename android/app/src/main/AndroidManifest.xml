@@ -16,15 +16,22 @@
         android:theme="@style/Theme.StudyBro"
         tools:targetApi="31">
 
-        <!-- Activity Principal (Login al inicio) -->
+        <!-- Pantalla de inicio (Splash) -->
         <activity
-            android:name=".activities.ActividadPrincipal"
+            android:name=".activities.ActividadSplash"
             android:exported="true"
             android:theme="@style/Theme.StudyBro.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <!-- Activity Principal -->
+        <activity
+            android:name=".activities.ActividadPrincipal"
+            android:exported="true"
+            android:theme="@style/Theme.StudyBro.NoActionBar">
         </activity>
 
         <activity android:name=".activities.ActividadRegistro"
