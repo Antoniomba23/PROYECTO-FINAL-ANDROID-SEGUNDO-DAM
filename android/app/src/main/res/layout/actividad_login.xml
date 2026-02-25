@@ -27,6 +27,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Correo Electrónico"
+            android:textColor="@color/black"
+            android:textColorHint="@color/text_secondary"
             android:inputType="textEmailAddress"/>
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -40,6 +42,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Contraseña"
+            android:textColor="@color/black"
+            android:textColorHint="@color/text_secondary"
             android:inputType="textPassword"/>
     </com.google.android.material.textfield.TextInputLayout>
 

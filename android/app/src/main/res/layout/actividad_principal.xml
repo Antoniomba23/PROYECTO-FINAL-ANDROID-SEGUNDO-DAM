@@ -50,9 +50,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/search_centers_hint"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/text_secondary"
                         android:inputType="text"
                         android:maxLines="1"
                         android:drawableStart="@drawable/ic_search"
+                        android:drawableTint="@color/text_secondary"
                         android:drawablePadding="12dp"
                         android:padding="12dp"/>
                 </com.google.android.material.textfield.TextInputLayout>
