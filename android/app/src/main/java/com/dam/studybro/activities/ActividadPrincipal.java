@@ -100,11 +100,18 @@ public class ActividadPrincipal extends AppCompatActivity
         recyclerView.setAdapter(adaptador);
 
         // Buscador
-        com.google.android.material.textfield.TextInputEditText etSearch = findViewById(R.id.etSearch);
+        // Buscador con Debouncing para evitar ANR con +2000 centros
+        android.os.Handler searchHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+        Runnable searchRunnable = () -> {
+            String text = etSearch.getText().toString();
+            adaptador.filtrar(text);
+        };
+
         etSearch.addTextChangedListener(new android.text.TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                adaptador.filtrar(s.toString());
+                searchHandler.removeCallbacks(searchRunnable);
+                searchHandler.postDelayed(searchRunnable, 300); // Esperar 300ms antes de filtrar
             }
             @Override public void afterTextChanged(android.text.Editable s) {}
         });

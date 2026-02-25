@@ -32,22 +32,25 @@ public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.View
         notifyDataSetChanged();
     }
 
-    // Método para filtrar (Buscador)
+    // Método para filtrar (Buscador) - Optimizado para +2000 elementos
     public void filtrar(String texto) {
-        if (texto.isEmpty()) {
-            listaCentros.clear();
-            listaCentros.addAll(listaCentrosOriginal);
+        if (texto == null || texto.isEmpty()) {
+            this.listaCentros = new java.util.ArrayList<>(listaCentrosOriginal);
         } else {
+            String query = texto.toLowerCase().trim();
             List<Centro> filtrados = new java.util.ArrayList<>();
-            texto = texto.toLowerCase();
+            
             for (Centro c : listaCentrosOriginal) {
-                if (c.nombre.toLowerCase().contains(texto) || 
-                    (c.ciudad != null && c.ciudad.toLowerCase().contains(texto))) {
+                // Comprobaciones rápidas
+                if (c.nombre != null && c.nombre.toLowerCase().contains(query)) {
+                    filtrados.add(c);
+                    continue;
+                }
+                if (c.ciudad != null && c.ciudad.toLowerCase().contains(query)) {
                     filtrados.add(c);
                 }
             }
-            listaCentros.clear();
-            listaCentros.addAll(filtrados);
+            this.listaCentros = filtrados;
         }
         notifyDataSetChanged();
     }
