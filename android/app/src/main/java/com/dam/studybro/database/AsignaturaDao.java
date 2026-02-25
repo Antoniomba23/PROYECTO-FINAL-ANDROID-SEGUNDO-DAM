@@ -18,4 +18,7 @@ public interface AsignaturaDao {
 
     @Query("SELECT * FROM asignaturas WHERE especialidad_id = :especialidadId")
     List<Asignatura> obtenerPorEspecialidad(int especialidadId);
+
+    @Query("SELECT * FROM asignaturas WHERE id = :id LIMIT 1")
+    Asignatura obtenerPorId(int id);
 }
