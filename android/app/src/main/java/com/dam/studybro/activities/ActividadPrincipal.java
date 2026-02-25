@@ -100,6 +100,8 @@ public class ActividadPrincipal extends AppCompatActivity
         recyclerView.setAdapter(adaptador);
 
         // Buscador
+        com.google.android.material.textfield.TextInputEditText etSearch = findViewById(R.id.etSearch);
+
         // Buscador con Debouncing para evitar ANR con +2000 centros
         android.os.Handler searchHandler = new android.os.Handler(android.os.Looper.getMainLooper());
         Runnable searchRunnable = () -> {
