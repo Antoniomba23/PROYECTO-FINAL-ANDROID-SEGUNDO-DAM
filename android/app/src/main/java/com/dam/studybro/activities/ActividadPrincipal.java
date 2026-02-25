@@ -45,7 +45,8 @@ public class ActividadPrincipal extends AppCompatActivity
     private RecyclerView recyclerView;
     private AdaptadorCentros adaptador;
     private BaseDatosApp db;
-    private ExecutorService executorService;
+    private ExecutorService executorService;        // lecturas / seeder
+    private ExecutorService executorEscritura;      // escrituras de API
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -57,7 +58,8 @@ public class ActividadPrincipal extends AppCompatActivity
 
         // BD y Executor
         db = BaseDatosApp.getInstance(getApplicationContext());
-        executorService = Executors.newSingleThreadExecutor();
+        executorService   = Executors.newSingleThreadExecutor();
+        executorEscritura = Executors.newSingleThreadExecutor();
 
         //  Toolbar con botón hamburguesa
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -109,11 +111,13 @@ public class ActividadPrincipal extends AppCompatActivity
         });
 
 
-        // Cargar datos
+        // 1. Sembrar datos y cargar la lista, todo en hilo de fondo (sin pasar por UI en medio)
         executorService.execute(() -> {
             com.dam.studybro.database.DatabaseSeeder.sembrarDatos(db);
+            List<Centro> centros = db.centroDao().obtenerTodos();
             runOnUiThread(() -> {
-                cargarDatosLocales();
+                adaptador.actualizarDatos(centros);
+                // 2. Lanzar la llamada a la API solo cuando la UI ya está lista
                 obtenerDatosDeApi();
             });
         });
@@ -205,7 +209,8 @@ public class ActividadPrincipal extends AppCompatActivity
     }
 
     private void guardarDatosEnBaseDeDatos(List<CentroMadrid> centrosApi) {
-        executorService.execute(() -> {
+        // Usamos executorEscritura para no bloquear el executor de lectura/seeder
+        executorEscritura.execute(() -> {
             // Limitar a 50 centros para no saturar el emulador
             int limite = Math.min(centrosApi.size(), 50);
 
