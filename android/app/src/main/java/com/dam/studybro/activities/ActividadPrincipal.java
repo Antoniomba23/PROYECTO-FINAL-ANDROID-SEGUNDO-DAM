@@ -151,8 +151,6 @@ public class ActividadPrincipal extends AppCompatActivity
 
         if (id == R.id.nav_inicio) {
             // Ya estamos aquí, sólo cierra el drawer
-        } else if (id == R.id.nav_publicaciones) {
-            startActivity(new Intent(this, ActividadPublicaciones.class));
         } else if (id == R.id.nav_perfil) {
             startActivity(new Intent(this, ActividadPerfil.class));
         } else if (id == R.id.nav_cambiar_centro) {
