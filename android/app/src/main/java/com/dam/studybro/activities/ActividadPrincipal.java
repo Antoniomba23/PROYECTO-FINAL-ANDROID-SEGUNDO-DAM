@@ -209,32 +209,39 @@ public class ActividadPrincipal extends AppCompatActivity
     private void guardarDatosEnBaseDeDatos(List<CentroMadrid> centrosApi) {
         // Usamos executorEscritura para no bloquear el executor de lectura/seeder
         executorEscritura.execute(() -> {
-            // Limitar a 50 centros para no saturar el emulador
-            int limite = Math.min(centrosApi.size(), 50);
+            // 1. Obtener todos los códigos ya existentes para evitar duplicados eficientemente
+            List<String> codigosExistentesList = db.centroDao().obtenerTodosLosCodigosApi();
+            java.util.HashSet<String> codigosExistentes = new java.util.HashSet<>(codigosExistentesList);
 
             List<Centro> nuevos = new ArrayList<>();
-            for (int i = 0; i < limite; i++) {
-                CentroMadrid cApi = centrosApi.get(i);
-                if (db.centroDao().obtenerPorCodigoApi(cApi.id) != null) continue;
+            for (CentroMadrid cApi : centrosApi) {
+                // Comprobación rápida en memoria (O(1)) en lugar de consulta a BD (O(logN))
+                if (codigosExistentes.contains(cApi.id)) continue;
 
                 Centro nuevo = new Centro();
                 nuevo.nombre          = cApi.title != null ? cApi.title : "Sin nombre";
                 nuevo.codigoApi       = cApi.id;
                 nuevo.valoracionMedia = 0.0f;
                 nuevo.imagenUrl       = "https://picsum.photos/seed/" + cApi.id + "/400/200";
+                
                 if (cApi.address != null) {
                     nuevo.direccion = cApi.address.streetAddress;
                     nuevo.ciudad    = cApi.address.locality;
                 }
+                
                 if (cApi.organization != null) {
                     nuevo.webUrl = "https://www.madrid.es";
                 }
+                
                 nuevos.add(nuevo);
+                // Evitamos que 'nuevos' crezca infinitamente si hubiera un error en la API
+                // pero permitimos cargar todo el dataset normal (+2000)
             }
 
-            // Inserción masiva en una sola transacción
+            // Inserción masiva en una sola transacción (muy rápido)
             if (!nuevos.isEmpty()) {
                 db.centroDao().insertarLista(nuevos);
+                Log.d("API_SYNC", "Insertados " + nuevos.size() + " centros nuevos");
             }
 
             cargarDatosLocales();
