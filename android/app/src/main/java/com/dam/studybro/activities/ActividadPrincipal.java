@@ -21,6 +21,8 @@ import com.dam.studybro.R;
 import com.dam.studybro.adapters.AdaptadorCentros;
 import com.dam.studybro.database.BaseDatosApp;
 import com.dam.studybro.database.Centro;
+import com.dam.studybro.database.Especialidad;
+import com.dam.studybro.database.CentroEspecialidad;
 import com.dam.studybro.modelos.CentroMadrid;
 import com.dam.studybro.modelos.RespuestaDatosMadrid;
 import com.dam.studybro.red.ClienteApi;
@@ -230,12 +232,12 @@ public class ActividadPrincipal extends AppCompatActivity
             }
 
             List<Centro> nuevos = new ArrayList<>();
-            List<CentroEspecialidad> relaciones = new ArrayList<>();
+            List<String> codigosNuevos = new ArrayList<>();
 
             for (CentroMadrid cApi : centrosApi) {
-                // Comprobación rápida en memoria (O(1))
                 if (codigosExistentes.contains(cApi.id)) continue;
 
+                codigosNuevos.add(cApi.id);
                 Centro nuevo = new Centro();
                 nuevo.nombre          = cApi.title != null ? cApi.title : "Sin nombre";
                 nuevo.codigoApi       = cApi.id;
@@ -287,11 +289,24 @@ public class ActividadPrincipal extends AppCompatActivity
                 Log.d("API_SYNC", "Insertados " + nuevos.size() + " centros nuevos");
                 
                 // Paso 2: Vincular especialidades para los centros RECIÉN insertados
-                // Recuperamos de nuevo para tener los IDs reales generados por Room
-                List<Centro> centrosNuevosBD = db.centroDao().obtenerTodosPorCodigosApi(new ArrayList<>(codigosExistentes)); 
-                // (Nota: necesitaríamos un método que devuelva solo los que acabamos de meter, 
-                // o simplificar vinculando por codigoApi si el esquema lo permitiera).
-                // Para no complicar el DAO, vincularemos en el perfil al vuelo o haremos un seeder posterior.
+                List<Centro> centrosRecienInsertados = db.centroDao().obtenerTodosPorCodigosApi(codigosNuevos);
+                List<CentroEspecialidad> relacionesNuevas = new ArrayList<>();
+
+                for (Centro centroBD : centrosRecienInsertados) {
+                    if (centroBD.descripcion != null) {
+                        String descLower = centroBD.descripcion.toLowerCase();
+                        for (java.util.Map.Entry<String, Integer> entry : mapaEspecialidades.entrySet()) {
+                            if (descLower.contains(entry.getKey())) {
+                                relacionesNuevas.add(new CentroEspecialidad(centroBD.id, entry.getValue()));
+                            }
+                        }
+                    }
+                }
+
+                if (!relacionesNuevas.isEmpty()) {
+                    db.centroEspecialidadDao().insertarLista(relacionesNuevas);
+                    Log.d("API_SYNC", "Vinculadas " + relacionesNuevas.size() + " especialidades reales");
+                }
             }
 
             cargarDatosLocales();
