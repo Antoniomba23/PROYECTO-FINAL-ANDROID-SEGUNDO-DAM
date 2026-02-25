@@ -237,10 +237,16 @@ public class ActividadPrincipal extends AppCompatActivity
                     nuevo.direccion = cApi.address.streetAddress;
                     nuevo.ciudad    = cApi.address.locality;
                 }
-                
+
                 if (cApi.organization != null) {
-                    nuevo.webUrl = "https://www.madrid.es";
+                    nuevo.descripcion   = cApi.organization.organizationDesc;
+                    nuevo.horario       = cApi.organization.schedule;
+                    nuevo.accesibilidad = cApi.organization.accesibility;
+                    nuevo.servicios     = cApi.organization.services;
+                    nuevo.webUrl        = cApi.relation != null ? cApi.relation : "https://www.madrid.es";
                 }
+                
+                nuevo.urlDetalle = cApi.relation;
                 
                 nuevos.add(nuevo);
                 // Evitamos que 'nuevos' crezca infinitamente si hubiera un error en la API

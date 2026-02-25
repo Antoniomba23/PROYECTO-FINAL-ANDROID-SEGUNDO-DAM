@@ -12,6 +12,9 @@ public class CentroMadrid {
     @SerializedName("address")
     public Direccion address;
 
+    @SerializedName("relation")
+    public String relation;
+
     @SerializedName("organization")
     public Organizacion organization;
 
