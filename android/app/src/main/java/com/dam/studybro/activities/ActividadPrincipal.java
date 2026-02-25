@@ -56,8 +56,7 @@ public class ActividadPrincipal extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.actividad_principal);
 
-        // BD y Executor
-        db = BaseDatosApp.getInstance(getApplicationContext());
+        // Executors primero; la BD se inicializa en background para no bloquear el hilo principal
         executorService   = Executors.newSingleThreadExecutor();
         executorEscritura = Executors.newSingleThreadExecutor();
 
@@ -111,13 +110,14 @@ public class ActividadPrincipal extends AppCompatActivity
         });
 
 
-        // 1. Sembrar datos y cargar la lista, todo en hilo de fondo (sin pasar por UI en medio)
+        // 1. La BD se inicializa en background (el primer acceso crea/migra el archivo .db)
         executorService.execute(() -> {
+            db = BaseDatosApp.getInstance(getApplicationContext());
             com.dam.studybro.database.DatabaseSeeder.sembrarDatos(db);
             List<Centro> centros = db.centroDao().obtenerTodos();
             runOnUiThread(() -> {
                 adaptador.actualizarDatos(centros);
-                // 2. Lanzar la llamada a la API solo cuando la UI ya está lista
+                // 2. Petición a la API solo cuando la UI ya tiene datos
                 obtenerDatosDeApi();
             });
         });
