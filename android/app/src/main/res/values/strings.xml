@@ -29,4 +29,8 @@
     <string name="type_hint">Tipo (Apuntes, Examen, etc.)</string>
     <string name="select_file">Seleccionar Archivo</string>
     <string name="publish_button">Publicar</string>
+
+    <!-- Navigation Drawer -->
+    <string name="navigation_drawer_open">Abrir menú</string>
+    <string name="navigation_drawer_close">Cerrar menú</string>
 </resources>

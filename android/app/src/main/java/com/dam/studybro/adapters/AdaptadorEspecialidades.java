@@ -3,11 +3,11 @@ package com.dam.studybro.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.dam.studybro.R;
 import com.dam.studybro.database.Especialidad;
-import com.google.android.material.chip.Chip;
 import java.util.List;
 
 public class AdaptadorEspecialidades extends RecyclerView.Adapter<AdaptadorEspecialidades.ViewHolder> {
@@ -35,8 +35,9 @@ public class AdaptadorEspecialidades extends RecyclerView.Adapter<AdaptadorEspec
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Especialidad item = lista.get(position);
-        holder.chip.setText(item.nombre);
-        holder.chip.setOnClickListener(v -> listener.onItemClick(item));
+        holder.tvNombre.setText(item.nombre);
+        // Clic en toda la tarjeta
+        holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
     }
 
     @Override
@@ -50,11 +51,11 @@ public class AdaptadorEspecialidades extends RecyclerView.Adapter<AdaptadorEspec
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        Chip chip;
+        TextView tvNombre;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            chip = itemView.findViewById(R.id.chipSpecialty);
+            tvNombre = itemView.findViewById(R.id.tvEspecialidadNombre);
         }
     }
 }

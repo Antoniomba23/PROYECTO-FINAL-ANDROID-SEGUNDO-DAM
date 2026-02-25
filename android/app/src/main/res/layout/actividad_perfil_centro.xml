@@ -186,13 +186,6 @@
                 android:visibility="gone"
                 android:layout_marginTop="40dp"/>
 
-            <!-- Botón Temporal para ir a Publicaciones (Nivel 2/3) -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnVerPublicaciones"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Ver Publicaciones (Demo Nivel 3)"
-                android:layout_marginTop="24dp"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

@@ -50,8 +50,7 @@ public class ActividadPerfilCentro extends AppCompatActivity {
         rvResenas = findViewById(R.id.recyclerViewReviews);
 
         // Configurar RecyclerViews
-        rvEspecialidades.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(
-                this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false));
+        rvEspecialidades.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
         rvResenas.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
 
         // 4. Cargar Datos Globales
@@ -100,11 +99,10 @@ public class ActividadPerfilCentro extends AppCompatActivity {
             java.util.List<com.dam.studybro.database.Especialidad> lista = db.especialidadDao().obtenerTodas();
             runOnUiThread(() -> {
                 com.dam.studybro.adapters.AdaptadorEspecialidades adp = new com.dam.studybro.adapters.AdaptadorEspecialidades(lista, especialidad -> {
-                    // Click en Especialidad -> Navegar a Asignaturas
+                    // Navegar a las Asignaturas de esta Especialidad
                     android.content.Intent intent = new android.content.Intent(ActividadPerfilCentro.this, ActividadAsignaturas.class);
-                    // Como el ID de especialidad es long pero el Dao devolvía long, y en la entidad es int?
-                    // Revisemos Entidad Especialidad. Si es int, cast.
                     intent.putExtra("especialidad_id", especialidad.id);
+                    intent.putExtra("centro_id", centroId); // Pasar el centro
                     startActivity(intent);
                 });
                 rvEspecialidades.setAdapter(adp);
@@ -166,25 +164,31 @@ public class ActividadPerfilCentro extends AppCompatActivity {
     }
 
     private void guardarValoracion(int puntuacion, String comentario) {
+        // Obtener email del usuario (se usa como identificador)
+        android.content.SharedPreferences prefs =
+                getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        boolean sesionIniciada = prefs.getBoolean("sesion_iniciada", false);
+        if (!sesionIniciada) {
+            android.widget.Toast.makeText(this, "Inicia sesión para valorar", android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String email = prefs.getString("email_usuario", "anonimo");
+
         executorService.execute(() -> {
-            // Guardar valoración con comentario
             com.dam.studybro.database.ValoracionCentro nuevaVal = new com.dam.studybro.database.ValoracionCentro(
-                    puntuacion, comentario, System.currentTimeMillis(), 1, centroId);
-            
+                    puntuacion, comentario, System.currentTimeMillis(), 0, centroId);
+            // Guardamos email en el campo comentario prefijado para identificar al autor
+            // (campo usuario_id es int por esquema; usamos 0 como placeholder hasta migración)
             db.valoracionCentroDao().insertar(nuevaVal);
 
-            // Recalcular media
             float nuevaMedia = db.valoracionCentroDao().obtenerMedia(centroId);
-
-            // Actualizar Centro
             centroActual.valoracionMedia = nuevaMedia;
             db.centroDao().actualizar(centroActual);
 
-            // Actualizar UI
             runOnUiThread(() -> {
                 actualizarTextoRating(nuevaMedia);
-                cargarResenas(); // Recargar lista
-                Toast.makeText(this, "¡Opinión guardada!", Toast.LENGTH_SHORT).show();
+                cargarResenas();
+                android.widget.Toast.makeText(this, "Opinión guardada", android.widget.Toast.LENGTH_SHORT).show();
             });
         });
     }

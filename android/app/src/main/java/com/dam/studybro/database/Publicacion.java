@@ -5,12 +5,12 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
+/**
+ * Publicacion — sin FK a usuarios (el auth ahora es Supabase, no Room local).
+ * Se guarda el UUID de Supabase como String en usuario_id.
+ */
 @Entity(tableName = "publicaciones",
         foreignKeys = {
-            @ForeignKey(entity = Usuario.class,
-                        parentColumns = "id",
-                        childColumns = "usuario_id",
-                        onDelete = ForeignKey.CASCADE),
             @ForeignKey(entity = Asignatura.class,
                         parentColumns = "id",
                         childColumns = "asignatura_id",
@@ -27,10 +27,10 @@ public class Publicacion {
     public String descripcion;
 
     @ColumnInfo(name = "archivo_url")
-    public String archivoUrl;
+    public String archivoUrl;  // URL pública del archivo subido a Supabase Storage
 
     @ColumnInfo(name = "tipo")
-    public String tipo; // "TAREA", "APUNTE"
+    public String tipo; // "APUNTE", "EXAMEN", "DUDA", "TAREA"
 
     @ColumnInfo(name = "anio_escolar")
     public String anioEscolar;
@@ -39,19 +39,10 @@ public class Publicacion {
     public long fechaSubida;
 
     @ColumnInfo(name = "usuario_id")
-    public int usuarioId;
+    public String usuarioId;  // UUID de Supabase (String, no int)
 
     @ColumnInfo(name = "asignatura_id")
     public int asignaturaId;
 
     public Publicacion() {}
-
-    public Publicacion(String titulo, String descripcion, String tipo, long fechaSubida, int usuarioId, int asignaturaId) {
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-        this.tipo = tipo;
-        this.fechaSubida = fechaSubida;
-        this.usuarioId = usuarioId;
-        this.asignaturaId = asignaturaId;
-    }
 }

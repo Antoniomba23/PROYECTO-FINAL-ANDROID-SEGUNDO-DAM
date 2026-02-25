@@ -17,10 +17,27 @@ import java.util.List;
  */
 public class AdaptadorPublicaciones extends RecyclerView.Adapter<AdaptadorPublicaciones.ClaseViewHolder> {
 
-    private List<Publicacion> listaPublicaciones;
+    public interface OnPublicacionClickListener {
+        void onClick(Publicacion publicacion);
+    }
 
-    public AdaptadorPublicaciones(List<Publicacion> listaPublicaciones) {
+    private List<Publicacion> listaPublicaciones;
+    private final OnPublicacionClickListener listener;
+
+    public AdaptadorPublicaciones(List<Publicacion> listaPublicaciones, OnPublicacionClickListener listener) {
         this.listaPublicaciones = listaPublicaciones;
+        this.listener = listener;
+    }
+
+    // Compatibilidad con código que no pasa listener
+    public AdaptadorPublicaciones(List<Publicacion> listaPublicaciones) {
+        this(listaPublicaciones, null);
+    }
+
+    public void actualizarDatos(List<Publicacion> nuevas) {
+        listaPublicaciones.clear();
+        listaPublicaciones.addAll(nuevas);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -48,6 +65,11 @@ public class AdaptadorPublicaciones extends RecyclerView.Adapter<AdaptadorPublic
         long diff = System.currentTimeMillis() - publicacion.fechaSubida;
         String tiempo = diff < 3600000 ? "Hace un momento" : "Hace " + (diff / 3600000) + "h";
         holder.tvDate.setText(tiempo);
+
+        // Click → abrir detalle
+        if (listener != null) {
+            holder.itemView.setOnClickListener(v -> listener.onClick(publicacion));
+        }
     }
 
     @Override

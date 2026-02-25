@@ -1,213 +1,206 @@
-# 📱 Proyecto Final DAM: App Colaborativa Multi-Plataforma
+# StudyBro — Aplicación Android para compartir material académico
 
-Este repositorio contiene el código y documentación para una aplicación de gestión académica colaborativa desarrollada con **Android Studio**, **Django** y **React**.
-
-## 👥 Equipo de Desarrollo
-
-- **Antonio** - Android Development
-- **Jorge** - Android Development  
-- **Cristian** - Android Development
-
-## 🏗️ Estructura del Proyecto
-
-```
-DAM-Proyecto-Final/
-├── android/          # 📱 Aplicación móvil nativa (Android Studio)
-├── django-backend/   # 🔧 API REST y Backend (Django + DRF)
-├── react-frontend/   # 🌐 Aplicación web (React)
-└── docs/            # 📚 Documentación técnica
-    ├── android-plan.md    # Plan de desarrollo Android
-    ├── git-guide.md       # Guía de Git/GitHub
-    └── images/            # Mockups y capturas
-```
-
-## 🚀 Guías de Inicio Rápido
-
-### Para Desarrolladores Android
-1. Lee [`docs/android-plan.md`](docs/android-plan.md) para conocer tu asignación de tareas
-2. Lee [`docs/git-guide.md`](docs/git-guide.md) para configurar Git
-3. Crea tu rama de trabajo: `git checkout -b feature/dev#-nombre-funcionalidad`
-
-### Configuración Inicial
-```bash
-# Clonar el repositorio
-git clone git@github.com:Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM.git
-cd PROYECTO-FINAL-ANDROID-SEGUNDO-DAM
-
-# Crear tu rama de trabajo
-git checkout -b feature/tu-nombre-funcionalidad
-
-# Ver documentación
-cat docs/android-plan.md
-```
+Proyecto final del ciclo de Desarrollo de Aplicaciones Multiplataforma (DAM), 2.º curso.
+Desarrollado por Antonio, Jorge y Cristian.
 
 ---
 
-## 📋 Visión del Producto
+## Descripción
 
-## 1. Análisis y Requisitos
+StudyBro es una aplicación Android nativa para que estudiantes de FP compartan apuntes, exámenes y dudas organizados por centro educativo y asignatura. La idea es que el material que se sube en un curso quede disponible para los alumnos del siguiente, evitando que se pierda de un año para otro.
 
-### Visión del Producto
-Una plataforma centralizada donde estudiantes de distintos centros educativos (IES, FP, Academias) pueden compartir, organizar y validar material académico (apuntes, tareas) para evitar la pérdida de información entre cursos y fomentar la colaboración.
-
-### Tipos de Usuario ("Persona")
-*   **El Alumno Colaborador (User Persona)**: Estudiante de FP o Bachillerato, tecnológicamente activo, que busca material de años anteriores para estudiar o quiere compartir sus soluciones para ganar reputación. Valora el orden y la facilidad de búsqueda.
-*   **El Administrador**: Encargado de validar la veracidad de los centros registrados y moderar contenido inapropiado.
-
-### Diseño UI/UX
-*   **Paradigma**: Google Material Design 3.
-*   **Paleta de Colores**:
-    *   *Primary*: Azul Acero (`#4A90E2`) - Confianza y calma.
-    *   *Secondary*: Naranja Suave (`#FF8C42`) - Creatividad y acción.
-    *   *Background*: Blanco Humo (`#F5F5F5`) - Limpieza.
-*   **Tipografía**: `Roboto` (Android standard) y `Inter` (Web).
-*   **Componentes Clave**:
-    *   *Cards* para publicaciones (Título, Tags, Usuario, Acciones).
-    *   *Floating Action Button (FAB)* para subir nuevo contenido.
-    *   *Navigation Bar/Rail* para navegación principal.
-
-### Especificaciones Técnicas (Android)
-*   **Arquitectura**: MVVM (Model-View-ViewModel) + Repository Pattern.
-*   **Componentes UI**:
-    *   **Fragments**: Gestión de navegación entre pantallas principales (Home, Perfil, Buscador).
-    *   **RecyclerView**: Visualización eficiente de listados de apuntes y comentarios.
-    *   **Layouts**: XML layouts con ConstraintLayout y Material Components.
-*   **Networking**: Retrofit para consumo de API Rest.
-
+Los usuarios pueden registrarse y loguarse, seleccionar su centro educativo, buscar publicaciones por asignatura, añadir comentarios, marcar publicaciones como útiles o guardarlas en favoritos, y subir sus propios apuntes o archivos.
 
 ---
 
-## 2. Modelo Entidad-Relación (ERD)
+## Tecnologías usadas
+
+### Android (principal)
+
+- Java, Android Studio
+- Room (base de datos local SQLite)
+- Retrofit (peticiones HTTP a la API de Madrid y a Supabase)
+- Material Design 3 (componentes UI: Cards, NavigationDrawer, Chips, etc.)
+- Supabase Auth (autenticación de usuarios)
+- Supabase Storage (almacenamiento de archivos subidos)
+- SharedPreferences (sesión del usuario y centro seleccionado)
+
+### Backend / Datos externos
+
+- Supabase (autenticación, base de datos y almacenamiento de archivos)
+- API pública de datos abiertos de la Comunidad de Madrid (catálogo de centros educativos)
+
+---
+
+## Funcionalidades implementadas
+
+### Autenticación
+
+- Registro e inicio de sesión mediante email y contraseña (Supabase Auth)
+- Persistencia de sesión con SharedPreferences
+- Cierre de sesión con confirmación
+
+### Selección de centro
+
+- Al iniciar sesión por primera vez, el usuario puede buscar y seleccionar su centro educativo
+- Los centros se cargan desde la API de Madrid y se guardan localmente en Room
+- La selección queda guardada y puede modificarse desde el menú lateral
+
+### Navegación principal (menú hamburguesa)
+
+- Navigation Drawer con acceso a: Inicio, Publicaciones, Mi Perfil, Iniciar sesión / Cerrar sesión, Cambiar centro
+- La cabecera del drawer muestra el email y el centro del usuario si hay sesión activa
+- Las opciones de perfil y cambiar centro solo aparecen si el usuario ha iniciado sesión
+
+### Publicaciones
+
+- Listado de publicaciones filtrables por asignatura
+- Formulario para crear nueva publicación: título, descripción, tipo (apunte, examen, duda, tarea), asignatura y archivo adjunto
+- Los archivos se suben a Supabase Storage
+
+### Pantalla de detalle de publicación
+
+- Muestra los datos completos de la publicación
+- Botón "Útil" (like) y "Favorito": si ya has marcado uno, vuelve a pulsarlo para quitarlo, con contador en tiempo real
+- Sección de comentarios: lista con autor y fecha relativa, campo de texto para añadir uno nuevo
+
+### Perfil de usuario
+
+- Muestra el nombre (extraído del email), email y centro asignado
+- Estadísticas: número de publicaciones propias, likes recibidos y favoritos recibidos
+- Lista de las publicaciones del usuario
+- Acceso directo a crear nueva publicación
+- Botón de cerrar sesión con diálogo de confirmación
+
+### Base de datos local (Room)
+
+- Entidades: Centro, Especialidad, Asignatura, Publicacion, Comentario, Interaccion, ValoracionCentro
+- Seeder automático que rellena las asignaturas y especialidades de DAM y DAW si la BD está vacía
+
+---
+
+## Estructura del proyecto
+
+```
+android/
+  app/src/main/java/com/dam/studybro/
+    activities/         -- Todas las pantallas (Activities)
+    adapters/           -- Adaptadores para los RecyclerView
+    database/           -- Entidades Room, DAOs y DatabaseSeeder
+    modelos/            -- Modelos para la respuesta de la API externa
+    red/                -- Cliente Retrofit para la API de Madrid
+    supabase/           -- Cliente Retrofit para Supabase
+```
+
+## Modelo de base de datos (Room)
+
+La base de datos local usa Room sobre SQLite. La autenticación la gestiona Supabase, por lo que la tabla `usuarios` existe pero el identificador de usuario en publicaciones, comentarios e interacciones es el email de Supabase tipo String, no una clave foránea local.
 
 ```mermaid
 erDiagram
-    USUARIO ||--o{ PUBLICACION : "publica"
-    USUARIO ||--o{ COMENTARIO : "escribe"
-    USUARIO ||--o{ INTERACCION : "da like/fav"
-    USUARIO ||--o{ VALORACION_CENTRO : "reseña"
-    
-    USUARIO }|--|| CENTRO : "pertenece a (opcional)"
-    USUARIO }|--|| ESPECIALIDAD : "cursa (opcional)"
-
     CENTRO ||--o{ VALORACION_CENTRO : "recibe"
+    CENTRO ||--o{ ASIGNATURA : "no directo"
     ESPECIALIDAD ||--o{ ASIGNATURA : "contiene"
     ASIGNATURA ||--o{ PUBLICACION : "clasifica"
-
-    %% --- TABLAS DE USUARIOS Y CENTROS ---
-    USUARIO {
-        int id PK
-        string nombre
-        string email
-        string password_hash
-        string avatar_url
-        string rol "ESTUDIANTE, ADMIN"
-        int centro_id FK "NULLABLE (Puede ser nulo)"
-        int especialidad_id FK "NULLABLE (Puede ser nulo)"
-    }
+    PUBLICACION ||--o{ COMENTARIO : "tiene"
+    PUBLICACION ||--o{ INTERACCION : "recibe"
 
     CENTRO {
         int id PK
-        string nombre "Ej: IES San Vicente"
+        string nombre
         string ciudad
         string direccion
         string web_url
-        float valoracion_media "Cache: 0.0 a 5.0"
-        string codigo_api "ID externo para sincronizar"
+        string imagen_url
+        float valoracion_media
+        string codigo_api
     }
 
-    VALORACION_CENTRO {
-        int id PK
-        int puntuacion "1 a 5"
-        string comentario
-        datetime fecha
-        int usuario_id FK
-        int centro_id FK
-    }
-
-    %% --- TABLAS ACADÉMICAS (CATÁLOGOS) ---
     ESPECIALIDAD {
         int id PK
-        string nombre "Ej: DAW, DAM, Enfermería"
-        string codigo_api "ID externo"
+        string nombre
+        string abreviatura
     }
 
     ASIGNATURA {
         int id PK
-        string nombre "Ej: Programación"
-        int curso "1 o 2 (Nivel)"
+        string nombre
+        int curso
         int especialidad_id FK
     }
 
-    %% --- TABLAS DE CONTENIDO ---
     PUBLICACION {
         int id PK
         string titulo
         string descripcion
         string archivo_url
-        string tipo "TAREA, APUNTE"
-        string anio_escolar "Ej: '2023-2024' (Texto fijo)"
-        datetime fecha_subida
-        int usuario_id FK
+        string tipo
+        string anio_escolar
+        long fecha_subida
+        string usuario_id "email Supabase"
         int asignatura_id FK
     }
 
     COMENTARIO {
         int id PK
         string contenido
-        datetime fecha
-        int usuario_id FK
+        long fecha
+        string usuario_id "email Supabase"
         int publicacion_id FK
     }
 
     INTERACCION {
         int id PK
-        string tipo "ME_GUSTA, GUARDADO"
-        int usuario_id FK
+        string tipo "ME_GUSTA o GUARDADO"
+        string usuario_id "email Supabase"
         int publicacion_id FK
+    }
+
+    VALORACION_CENTRO {
+        int id PK
+        int puntuacion
+        string comentario
+        long fecha
+        int usuario_id FK
+        int centro_id FK
     }
 ```
 
----
-
-## 3. Historias de Usuario y API Rest
-
-A continuación se detallan las historias de usuario principales y los endpoints necesarios para satisfacerlas.
-
-| ID | Historia de Usuario | Endpoint(s) Asociado(s) |
-|----|---------------------|-------------------------|
-| **HU-01** | Como alumno, quiero registrarme y seleccionar mi centro para poder acceder al contenido. | `POST /api/auth/register`<br>`GET /api/centers` |
-| **HU-02** | Como alumno, quiero ver un listado de publicaciones de mi centro filtradas por asignatura para estudiar eficiente. | `GET /api/posts?center_id={id}&subject={name}` |
-| **HU-03** | Como alumno, quiero subir un PDF con mis apuntes para compartirlos con la clase. | `POST /api/posts` (Multipart/form-data) |
-| **HU-04** | Como alumno, quiero comentar en una publicación para resolver una duda sobre la tarea. | `POST /api/posts/{id}/comments` |
-| **HU-05** | Como alumno, quiero marcar como "útil" un apunte para agradecer al autor. | `POST /api/posts/{id}/interactions` |
-| **HU-06** | Como admin, quiero validar una solicitud de nuevo centro para que aparezca en el listado oficial. | `PATCH /api/centers/{id}/verify` |
+La tabla `usuarios` de Room existe pero no se usa para el login (ese rol lo cubre Supabase Auth). El centro y la sesion del usuario se almacenan en SharedPreferences.
 
 ---
 
-## 4. Prototipo Visual (Mockups)
+## Pantallas de la aplicación
 
-> **Nota sobre Herramientas**: Para este Sprint I, se ha optado por **Mockups de Alta Fidelidad** generados digitalmente. Esta elección se justifica por la necesidad de iterar rápidamente sobre los conceptos de *Material Design 3* y visualizar el producto final antes de la implementación técnica en Figma o Android Studio.
+| Pantalla | Clase |
+|---|---|
+| Pantalla principal (lista de centros) | `ActividadPrincipal` |
+| Login | `ActividadLogin` |
+| Registro | `ActividadRegistro` |
+| Seleccionar centro | `ActividadSeleccionarCentro` |
+| Lista de publicaciones | `ActividadPublicaciones` |
+| Detalle de publicación | `ActividadDetalle` |
+| Nueva publicación | `ActividadNuevaPublicacion` |
+| Perfil de usuario | `ActividadPerfil` |
+| Perfil de centro | `ActividadPerfilCentro` |
+| Asignaturas | `ActividadAsignaturas` |
 
+---
 
-### App Android
-**Login Screen**
-Diseño limpio minimalista centrado en el acceso rápido.
-![Login Android](docs/images/android_login.png)
+## Configuración del entorno
 
-**Home Screen (Feed)**
-Listado de apuntes filtrados por centro, tarjetas con información clave (Asignatura, Autor).
-![Home Android](docs/images/android_home.png)
+Clonar el repositorio y abrirlo con Android Studio. Sincronizar dependencias con Gradle. No es necesario configurar ningún archivo de entorno adicional, las claves de Supabase están incluidas en el código para facilitar la corrección.
 
-**Detail Screen**
-Vista detallada del apunte con previsualización de archivo y sección de comentarios.
-![Detail Android](docs/images/android_detail.png)
+```bash
+git clone https://github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM.git
+```
 
-### App Web (React)
-**Dashboard de Escritorio**
-Vista adaptada para pantallas grandes con navegación lateral y gestión de contenido.
-![Web Dashboard](docs/images/web_dashboard.png)
+Conectar un dispositivo físico o iniciar un emulador con API 29 o superior y pulsar Run.
 
-### Perfil 
-Vista del perfil de un miemebro de la aplicación
-### Autores
-Proyecto desarrollado por Antonio, Jorge y Cristian como proyecto final de Programación Multimedia y de Dispositivos Móviles, DAM 2º curso.
+---
+
+## Autor
+
+- Antonio Mba Nzang
+
+2.º DAM — Proyecto Final de Programación Multimedia y Dispositivos Móviles

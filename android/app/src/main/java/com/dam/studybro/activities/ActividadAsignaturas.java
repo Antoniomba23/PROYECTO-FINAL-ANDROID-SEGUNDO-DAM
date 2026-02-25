@@ -20,55 +20,64 @@ public class ActividadAsignaturas extends AppCompatActivity {
     private BaseDatosApp db;
     private ExecutorService executorService;
     private int especialidadId;
+    private int centroId; // Recibimos y reenviamos el centro
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.actividad_asignaturas);
 
-        // Toolbar
-        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setNavigationOnClickListener(v -> finish());
+        // Usar el ActionBar del tema
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Asignaturas");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
-        // Init
+        // Inicializar
         db = BaseDatosApp.getInstance(getApplicationContext());
         executorService = Executors.newSingleThreadExecutor();
-        
-        // Get Intent
+
+        // Recibir datos del Intent
         especialidadId = getIntent().getIntExtra("especialidad_id", -1);
+        centroId = getIntent().getIntExtra("centro_id", -1);
+
         if (especialidadId == -1) {
             Toast.makeText(this, "Especialidad no válida", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Setup RecyclerView
+        // Configurar lista
         recyclerView = findViewById(R.id.recyclerViewSubjects);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Load Data
-        loadSubjects();
+        cargarAsignaturas();
     }
 
-    private void loadSubjects() {
+    private void cargarAsignaturas() {
         executorService.execute(() -> {
             List<Asignatura> lista = db.asignaturaDao().obtenerPorEspecialidad(especialidadId);
             runOnUiThread(() -> {
                 AdaptadorAsignaturas adapter = new AdaptadorAsignaturas(lista, asignatura -> {
-                    // Click -> Ir a Publicaciones de esta Asignatura
+                    // Ir a Publicaciones de esta Asignatura (con centro_id)
                     Intent intent = new Intent(ActividadAsignaturas.this, ActividadPublicaciones.class);
                     intent.putExtra("asignatura_id", asignatura.id);
                     intent.putExtra("nombre_asignatura", asignatura.nombre);
+                    intent.putExtra("centro_id", centroId);
                     startActivity(intent);
                 });
                 recyclerView.setAdapter(adapter);
-                
+
                 if (lista.isEmpty()) {
-                    Toast.makeText(this, "No hay asignaturas registradas", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "No hay asignaturas para esta especialidad", Toast.LENGTH_SHORT).show();
                 }
             });
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }

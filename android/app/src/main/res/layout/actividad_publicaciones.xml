@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pantalla de lista de publicaciones de una materia específica -->
-<androidx.coordinatorlayout.widget.CoordinatorLayout 
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <!-- AppBar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -21,56 +19,83 @@
             app:navigationIcon="@drawable/ic_arrow_back"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Contenido -->
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefresh"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <FrameLayout
+        <!-- Barra de búsqueda + ordenación -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:gravity="center_vertical"
+            android:background="@color/surface">
 
-            <!-- RecyclerView de publicaciones -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerViewPosts"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="8dp"
-                android:clipToPadding="false"/>
-
-            <!-- Mensaje cuando no hay posts -->
-            <TextView
-                android:id="@+id/tvNoPosts"
-                android:layout_width="wrap_content"
+            <!-- Buscador -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/no_posts"
-                android:textSize="@dimen/text_subtitle"
-                android:textColor="@color/text_secondary"
-                android:visibility="gone"/>
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                app:startIconDrawable="@drawable/ic_search">
 
-            <!-- ProgressBar -->
-            <ProgressBar
-                android:id="@+id/progressBar"
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etBuscar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Buscar publicación..."
+                    android:inputType="text"
+                    android:imeOptions="actionSearch"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Spinner de orden -->
+            <Spinner
+                android:id="@+id/spinnerOrden"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone"/>
-        </FrameLayout>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
 
-    <!-- FAB para nueva publicación -->
+        <!-- Lista de publicaciones -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerPublicaciones"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:clipToPadding="false"/>
+
+        <!-- Mensaje vacío -->
+        <TextView
+            android:id="@+id/tvNoPublicaciones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="No hay publicaciones para esta asignatura"
+            android:textColor="@color/text_secondary"
+            android:padding="32dp"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+    <!-- FAB nueva publicación (solo usuarios logueados) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabNewPost"
+        android:id="@+id/fabNuevaPublicacion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/margin_medium"
-        android:contentDescription="@string/fab_new_post"
+        android:layout_margin="16dp"
         android:src="@drawable/ic_add"
-        app:tint="@color/on_secondary"
-        app:backgroundTint="@color/secondary"/>
+        android:contentDescription="Nueva publicación"
+        android:visibility="gone"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

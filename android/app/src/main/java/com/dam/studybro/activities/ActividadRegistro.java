@@ -1,59 +1,100 @@
 package com.dam.studybro.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.dam.studybro.R;
+import com.dam.studybro.supabase.ClienteSupabase;
+import com.dam.studybro.supabase.ServicioAuth;
 import com.google.android.material.textfield.TextInputEditText;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
- * Activity de Registro - Pantalla de creación de cuenta
- * Responsable: Antonio
+ * Registro usando Supabase Auth. Crea la cuenta en la nube.
  */
 public class ActividadRegistro extends AppCompatActivity {
-    
-    // Variables
-    private TextInputEditText campoNombre;
-    private TextInputEditText campoCorreoRegistro;
-    private TextInputEditText campoContrasenaRegistro;
+
+    private TextInputEditText campoNombre, campoCorreo, campoContrasena;
     private Button botonRegistrar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.actividad_registro); // Layout renombrado
-        
-        // Vincular Vistas
-        campoNombre = findViewById(R.id.etNombreUsuario);
-        campoCorreoRegistro = findViewById(R.id.etCorreoRegistro);
-        campoContrasenaRegistro = findViewById(R.id.etContrasenaRegistro);
+        setContentView(R.layout.actividad_registro);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Crear cuenta");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        campoNombre    = findViewById(R.id.etNombreUsuario);
+        campoCorreo    = findViewById(R.id.etCorreoRegistro);
+        campoContrasena = findViewById(R.id.etContrasenaRegistro);
         botonRegistrar = findViewById(R.id.btnRegistrar);
 
-        // Eventos
-        botonRegistrar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                registrarUsuario();
-            }
-        });
+        botonRegistrar.setOnClickListener(v -> registrarUsuario());
     }
 
     private void registrarUsuario() {
-        String nombre = campoNombre.getText().toString();
-        String correo = campoCorreoRegistro.getText().toString();
-        String contrasena = campoContrasenaRegistro.getText().toString();
+        String nombre    = campoNombre.getText().toString().trim();
+        String correo    = campoCorreo.getText().toString().trim();
+        String contrasena = campoContrasena.getText().toString();
 
         if (nombre.isEmpty() || correo.isEmpty() || contrasena.isEmpty()) {
             Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (contrasena.length() < 6) {
+            Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        // Aquí iría la lógica de guardar en Base de Datos (Nivel 4)
-        Toast.makeText(this, "Usuario registrado: " + nombre, Toast.LENGTH_SHORT).show();
-        
-        // Volver atrás (o ir al login/home)
+        botonRegistrar.setEnabled(false);
+        botonRegistrar.setText("Creando cuenta...");
+
+        // Llamada a Supabase Auth → signup
+        ServicioAuth auth = ClienteSupabase.getAuth();
+        Call<ServicioAuth.RespuestaAuth> llamada = auth.registrar(
+                new ServicioAuth.PeticionAuth(correo, contrasena));
+
+        llamada.enqueue(new Callback<ServicioAuth.RespuestaAuth>() {
+            @Override
+            public void onResponse(Call<ServicioAuth.RespuestaAuth> call,
+                                   Response<ServicioAuth.RespuestaAuth> response) {
+                botonRegistrar.setEnabled(true);
+                botonRegistrar.setText("Crear cuenta");
+
+                if (response.isSuccessful()) {
+                    Toast.makeText(ActividadRegistro.this,
+                            "¡Cuenta creada! Ya puedes iniciar sesión.", Toast.LENGTH_LONG).show();
+                    // Volver al login
+                    startActivity(new Intent(ActividadRegistro.this, ActividadLogin.class));
+                    finish();
+                } else {
+                    // P.ej: email ya registrado
+                    Toast.makeText(ActividadRegistro.this,
+                            "Error al registrar. ¿Ya tienes cuenta con ese email?",
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ServicioAuth.RespuestaAuth> call, Throwable t) {
+                botonRegistrar.setEnabled(true);
+                botonRegistrar.setText("Crear cuenta");
+                Toast.makeText(ActividadRegistro.this,
+                        "Sin conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
         finish();
+        return true;
     }
 }

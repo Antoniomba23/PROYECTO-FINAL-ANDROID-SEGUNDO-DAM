@@ -13,4 +13,10 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <!-- Tema sin ActionBar del sistema → se usa en ActividadPrincipal con Toolbar propio -->
+    <style name="Theme.StudyBro.NoActionBar" parent="Theme.StudyBro">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 </resources>

@@ -19,20 +19,32 @@
         <!-- Activity Principal (Login al inicio) -->
         <activity
             android:name=".activities.ActividadPrincipal"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.StudyBro.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.ActividadRegistro" />
-        <activity android:name=".activities.ActividadLogin" />
-        <activity android:name=".activities.ActividadDetalle" />
-        <activity android:name=".activities.ActividadPerfil" />
-        <activity android:name=".activities.ActividadNuevaPublicacion" />
-        <activity android:name=".activities.ActividadPublicaciones" />
-        <activity android:name=".activities.ActividadPerfilCentro" />
+        <activity android:name=".activities.ActividadRegistro"
+            android:theme="@style/Theme.StudyBro.NoActionBar"/>
+        <activity android:name=".activities.ActividadLogin"
+            android:theme="@style/Theme.StudyBro.NoActionBar"/>
+        <activity android:name=".activities.ActividadDetalle"
+            android:theme="@style/Theme.StudyBro.NoActionBar"/>
+        <activity android:name=".activities.ActividadPerfil"
+            android:theme="@style/Theme.StudyBro.NoActionBar"/>
+        <activity android:name=".activities.ActividadNuevaPublicacion"
+            android:theme="@style/Theme.StudyBro.NoActionBar"/>
+        <activity android:name=".activities.ActividadPublicaciones"
+            android:theme="@style/Theme.StudyBro.NoActionBar"/>
+        <activity android:name=".activities.ActividadPerfilCentro"
+            android:theme="@style/Theme.StudyBro.NoActionBar"/>
+        <activity android:name=".activities.ActividadAsignaturas"
+            android:theme="@style/Theme.StudyBro.NoActionBar"/>
+        <activity android:name=".activities.ActividadSeleccionarCentro"
+            android:theme="@style/Theme.StudyBro.NoActionBar"/>
 
     </application>
 

@@ -145,32 +145,68 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Botones de interacción -->
+                    <!-- Botones de interacción con contadores -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center">
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnUseful"
+                        <!-- Útil -->
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/mark_useful"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            app:icon="@drawable/ic_thumb_up"
-                            android:layout_marginEnd="8dp"/>
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:layout_marginEnd="8dp">
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnFavorite"
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnUseful"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/mark_useful"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                app:icon="@drawable/ic_thumb_up"/>
+
+                            <TextView
+                                android:id="@+id/tvContadorUtil"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:layout_gravity="center"
+                                android:layout_marginTop="2dp"/>
+                        </LinearLayout>
+
+                        <!-- Favorito -->
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/mark_favorite"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            app:icon="@drawable/ic_favorite"
-                            android:layout_marginStart="8dp"/>
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:layout_marginStart="8dp">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnFavorite"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/mark_favorite"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                app:icon="@drawable/ic_favorite"/>
+
+                            <TextView
+                                android:id="@+id/tvContadorFav"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:layout_gravity="center"
+                                android:layout_marginTop="2dp"/>
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
