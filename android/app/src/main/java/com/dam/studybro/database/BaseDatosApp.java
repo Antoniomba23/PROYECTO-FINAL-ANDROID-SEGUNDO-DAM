@@ -12,10 +12,10 @@ import androidx.room.RoomDatabase;
         Especialidad.class,
         Asignatura.class,
         Publicacion.class,
-        Comentario.class,
         Interaccion.class,
-        ValoracionCentro.class
-}, version = 5)
+        ValoracionCentro.class,
+        CentroEspecialidad.class
+}, version = 6)
 public abstract class BaseDatosApp extends RoomDatabase {
     public abstract UsuarioDao usuarioDao();
     public abstract CentroDao centroDao();
@@ -25,6 +25,7 @@ public abstract class BaseDatosApp extends RoomDatabase {
     public abstract ComentarioDao comentarioDao();
     public abstract InteraccionDao interaccionDao();
     public abstract ValoracionCentroDao valoracionCentroDao();
+    public abstract CentroEspecialidadDao centroEspecialidadDao();
 
     // Singleton Pattern
     private static volatile BaseDatosApp INSTANCE;

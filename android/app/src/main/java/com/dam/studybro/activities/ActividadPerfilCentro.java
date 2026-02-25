@@ -123,14 +123,36 @@ public class ActividadPerfilCentro extends AppCompatActivity {
 
     private void cargarEspecialidades() {
         executorService.execute(() -> {
-            // MOSTRAR TODAS COMO CATÁLOGO (Simulación)
-            java.util.List<com.dam.studybro.database.Especialidad> lista = db.especialidadDao().obtenerTodas();
+            // 1. Intentar obtener especialidades vinculadas
+            java.util.List<com.dam.studybro.database.Especialidad> lista = 
+                    db.centroEspecialidadDao().obtenerPorCentro(centroId);
+            
+            // 2. Si no hay vinculaciones, parseamos la descripción (Lazy Seeder)
+            if (lista.isEmpty() && centroActual != null && centroActual.descripcion != null) {
+                java.util.List<com.dam.studybro.database.Especialidad> todas = db.especialidadDao().obtenerTodas();
+                java.util.List<com.dam.studybro.database.CentroEspecialidad> nuevasRelaciones = new java.util.ArrayList<>();
+                String descLower = centroActual.descripcion.toLowerCase();
+
+                for (com.dam.studybro.database.Especialidad esp : todas) {
+                    if (descLower.contains(esp.nombre.toLowerCase())) {
+                        nuevasRelaciones.add(new com.dam.studybro.database.CentroEspecialidad(centroId, esp.id));
+                    }
+                }
+
+                if (!nuevasRelaciones.isEmpty()) {
+                    db.centroEspecialidadDao().insertarLista(nuevasRelaciones);
+                    // Recargar lista vinculada
+                    lista = db.centroEspecialidadDao().obtenerPorCentro(centroId);
+                }
+            }
+
+            final java.util.List<com.dam.studybro.database.Especialidad> listaFinal = lista;
             runOnUiThread(() -> {
-                com.dam.studybro.adapters.AdaptadorEspecialidades adp = new com.dam.studybro.adapters.AdaptadorEspecialidades(lista, especialidad -> {
+                com.dam.studybro.adapters.AdaptadorEspecialidades adp = new com.dam.studybro.adapters.AdaptadorEspecialidades(listaFinal, especialidad -> {
                     // Navegar a las Asignaturas de esta Especialidad
                     android.content.Intent intent = new android.content.Intent(ActividadPerfilCentro.this, ActividadAsignaturas.class);
                     intent.putExtra("especialidad_id", especialidad.id);
-                    intent.putExtra("centro_id", centroId); // Pasar el centro
+                    intent.putExtra("centro_id", centroId); 
                     startActivity(intent);
                 });
                 rvEspecialidades.setAdapter(adp);

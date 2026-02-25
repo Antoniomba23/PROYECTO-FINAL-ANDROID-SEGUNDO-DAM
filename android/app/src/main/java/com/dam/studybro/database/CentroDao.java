@@ -29,6 +29,9 @@ public interface CentroDao {
     @Query("SELECT codigo_api FROM centros")
     List<String> obtenerTodosLosCodigosApi();
 
+    @Query("SELECT * FROM centros WHERE codigo_api IN (:codigos)")
+    List<Centro> obtenerTodosPorCodigosApi(List<String> codigos);
+
     @Update
     void actualizar(Centro centro);
 }

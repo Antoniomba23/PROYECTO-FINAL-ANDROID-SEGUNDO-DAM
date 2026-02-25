@@ -79,6 +79,15 @@ public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.View
         }
         holder.ubicacion.setText(ubicacionTexto.isEmpty() ? "Ubicación desconocida" : ubicacionTexto);
         
+        // Cargar Imagen Temática con Glide
+        if (centro.imagenUrl != null && !centro.imagenUrl.isEmpty()) {
+            com.bumptech.glide.Glide.with(holder.itemView.getContext())
+                    .load(centro.imagenUrl)
+                    .centerCrop()
+                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .into(holder.imagen);
+        }
+
         // El TextView de contador (tvPostCount) lo usamos para mostrar "Ver Detalles" por ahora
         holder.contador.setText("Ver detalles");
         
@@ -92,12 +101,14 @@ public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.View
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView nombre, ubicacion, contador;
+        public android.widget.ImageView imagen;
 
         public ViewHolder(View itemView) {
             super(itemView);
             nombre = itemView.findViewById(R.id.tvCenterName);
             ubicacion = itemView.findViewById(R.id.tvLocation);
             contador = itemView.findViewById(R.id.tvPostCount);
+            imagen = itemView.findViewById(R.id.ivCenterThumbnail);
         }
     }
 }
