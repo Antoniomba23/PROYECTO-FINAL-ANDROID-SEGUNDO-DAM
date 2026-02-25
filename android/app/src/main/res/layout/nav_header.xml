@@ -14,10 +14,10 @@
 
     <!-- Logo de la app -->
     <ImageView
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         android:src="@drawable/logo"
-        android:scaleType="centerInside"
+        android:scaleType="fitCenter"
         android:contentDescription="Logo StudyBro"/>
 
     <!-- Nombre app -->
