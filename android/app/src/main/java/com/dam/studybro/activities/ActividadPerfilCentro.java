@@ -11,7 +11,7 @@ import com.dam.studybro.R;
 public class ActividadPerfilCentro extends AppCompatActivity {
 
     // Variables UI
-    private TextView tvNombre, tvUbicacion, tvRating;
+    private TextView tvNombre, tvUbicacion, tvRating, tvDescripcion, tvHorario, tvAccesibilidad;
     private android.widget.ImageView ivImagen;
     private com.google.android.material.button.MaterialButton btnValorar, btnWeb;
     private androidx.recyclerview.widget.RecyclerView rvEspecialidades, rvResenas;
@@ -43,6 +43,9 @@ public class ActividadPerfilCentro extends AppCompatActivity {
         tvNombre = findViewById(R.id.tvCenterName);
         tvUbicacion = findViewById(R.id.tvLocation);
         tvRating = findViewById(R.id.tvRating);
+        tvDescripcion = findViewById(R.id.tvDescription);
+        tvHorario = findViewById(R.id.tvSchedule);
+        tvAccesibilidad = findViewById(R.id.tvAccessibility);
         ivImagen = findViewById(R.id.ivCenterImage);
         btnValorar = findViewById(R.id.btnValorar);
         btnWeb = findViewById(R.id.btnWeb);
@@ -69,8 +72,33 @@ public class ActividadPerfilCentro extends AppCompatActivity {
             runOnUiThread(() -> {
                 if (centroActual != null) {
                     tvNombre.setText(centroActual.nombre);
-                    tvUbicacion.setText(centroActual.ciudad != null ? centroActual.ciudad : "Ubicación desconocida");
+                    
+                    // Combinar dirección y ciudad para la ubicación
+                    String ubicacion = (centroActual.direccion != null ? centroActual.direccion : "") + 
+                                     (centroActual.ciudad != null ? ", " + centroActual.ciudad : "");
+                    tvUbicacion.setText(ubicacion.isEmpty() ? "Ubicación no disponible" : ubicacion);
+                    
                     actualizarTextoRating(centroActual.valoracionMedia);
+
+                    // Descripción
+                    if (centroActual.descripcion != null && !centroActual.descripcion.isEmpty()) {
+                        tvDescripcion.setText(centroActual.descripcion.trim());
+                    } else {
+                        tvDescripcion.setText("No hay una descripción detallada para este centro.");
+                    }
+
+                    // Horario
+                    if (centroActual.horario != null && !centroActual.horario.isEmpty()) {
+                        tvHorario.setText(centroActual.horario);
+                    } else {
+                        tvHorario.setText("Horario no disponible");
+                    }
+
+                    // Accesibilidad
+                    String acc = "Sin datos de accesibilidad";
+                    if ("1".equals(centroActual.accesibilidad)) acc = "Accesibilidad: Instalaciones accesibles";
+                    else if ("0".equals(centroActual.accesibilidad)) acc = "Accesibilidad: No accesible o sin datos";
+                    tvAccesibilidad.setText(acc);
 
                     // Cargar Imagen con Glide
                     if (centroActual.imagenUrl != null && !centroActual.imagenUrl.isEmpty()) {
