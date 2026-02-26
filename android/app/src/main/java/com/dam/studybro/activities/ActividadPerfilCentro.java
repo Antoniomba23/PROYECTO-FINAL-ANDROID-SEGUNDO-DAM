@@ -12,7 +12,6 @@ public class ActividadPerfilCentro extends AppCompatActivity {
 
     // Variables UI
     private TextView tvNombre, tvUbicacion, tvRating, tvDescripcion, tvHorario, tvAccesibilidad;
-    private android.widget.ImageView ivImagen;
     private com.google.android.material.button.MaterialButton btnValorar, btnWeb;
     private androidx.recyclerview.widget.RecyclerView rvEspecialidades, rvResenas;
     
@@ -46,7 +45,6 @@ public class ActividadPerfilCentro extends AppCompatActivity {
         tvDescripcion = findViewById(R.id.tvDescription);
         tvHorario = findViewById(R.id.tvSchedule);
         tvAccesibilidad = findViewById(R.id.tvAccessibility);
-        ivImagen = findViewById(R.id.ivCenterImage);
         btnValorar = findViewById(R.id.btnValorar);
         btnWeb = findViewById(R.id.btnWeb);
         rvEspecialidades = findViewById(R.id.recyclerViewSpecialties);
@@ -99,14 +97,6 @@ public class ActividadPerfilCentro extends AppCompatActivity {
                     if ("1".equals(centroActual.accesibilidad)) acc = "Accesibilidad: Instalaciones accesibles";
                     else if ("0".equals(centroActual.accesibilidad)) acc = "Accesibilidad: No accesible o sin datos";
                     tvAccesibilidad.setText(acc);
-
-                    // Cargar Imagen con Glide
-                    if (centroActual.imagenUrl != null && !centroActual.imagenUrl.isEmpty()) {
-                        com.bumptech.glide.Glide.with(this)
-                                .load(centroActual.imagenUrl)
-                                .placeholder(R.drawable.ic_launcher_foreground) // Fallback
-                                .into(ivImagen);
-                    }
                 }
             });
         });
@@ -225,10 +215,10 @@ public class ActividadPerfilCentro extends AppCompatActivity {
         String email = prefs.getString("email_usuario", "anonimo");
 
         executorService.execute(() -> {
+            // Prefijamos el email en el comentario para identificar al autor fácilmente
+            String comentarioAnotado = email + "|||" + comentario;
             com.dam.studybro.database.ValoracionCentro nuevaVal = new com.dam.studybro.database.ValoracionCentro(
-                    puntuacion, comentario, System.currentTimeMillis(), 0, centroId);
-            // Guardamos email en el campo comentario prefijado para identificar al autor
-            // (campo usuario_id es int por esquema; usamos 0 como placeholder hasta migración)
+                    puntuacion, comentarioAnotado, System.currentTimeMillis(), 0, centroId);
             db.valoracionCentroDao().insertar(nuevaVal);
 
             float nuevaMedia = db.valoracionCentroDao().obtenerMedia(centroId);

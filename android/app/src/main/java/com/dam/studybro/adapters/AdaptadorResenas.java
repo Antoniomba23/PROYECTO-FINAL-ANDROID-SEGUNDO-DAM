@@ -33,10 +33,21 @@ public class AdaptadorResenas extends RecyclerView.Adapter<AdaptadorResenas.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ValoracionCentro item = lista.get(position);
         
-        // Simular nombre usuario (en app real haríamos un JOIN o query extra)
-        holder.tvAuthor.setText("Usuario " + item.usuarioId); 
-        
-        holder.tvContent.setText(item.puntuacion + " ★ - " + item.comentario);
+        String autor = "Anónimo";
+        String contenido = item.comentario;
+
+        if (item.comentario != null && item.comentario.contains("|||")) {
+            String[] partes = item.comentario.split("\\|\\|\\|");
+            if (partes.length >= 2) {
+                String email = partes[0];
+                autor = email.contains("@") ? email.substring(0, email.indexOf("@")) : email;
+                autor = autor.substring(0, 1).toUpperCase() + autor.substring(1).toLowerCase();
+                contenido = partes[1];
+            }
+        }
+
+        holder.tvAuthor.setText(autor); 
+        holder.tvContent.setText(item.puntuacion + " ★ - " + contenido);
         
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         holder.tvDate.setText(sdf.format(new java.util.Date(item.fecha)));
