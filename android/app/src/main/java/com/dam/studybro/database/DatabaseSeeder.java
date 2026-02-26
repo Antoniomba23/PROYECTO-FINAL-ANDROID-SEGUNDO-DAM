@@ -116,6 +116,21 @@ public class DatabaseSeeder {
             db.asignaturaDao().insertar(new Asignatura("Inglés C1-C2", 3, (int) idEoi));
             db.asignaturaDao().insertar(new Asignatura("Francés A1-A2", 1, (int) idEoi));
             db.asignaturaDao().insertar(new Asignatura("Alemán A1-A2", 1, (int) idEoi));
+
+            // ─── 3. CENTROS VIP (EPSUM) ───
+            Centro epsum = new Centro();
+            epsum.nombre = "Escuela Profesional Superior de Madrid (EPSUM)";
+            epsum.codigoApi = "EPSUM-001";
+            epsum.ciudad = "Madrid";
+            epsum.direccion = "Madrid Centro";
+            epsum.descripcion = "Centro de Formación Profesional Oficial. FP Superior en Sanidad, Informática, Marketing, Finanzas, Educación y Animación. Combina una formación profesional garantizada con una preparación académica de alto nivel.";
+            epsum.valoracionMedia = 5.0f;
+            long epsumId = db.centroDao().insertar(epsum);
+
+            // Vincular EPSUM con las especialidades informáticas (DAM, DAW, ASIR)
+            db.centroEspecialidadDao().insertar(new CentroEspecialidad((int) epsumId, (int) idDam));
+            db.centroEspecialidadDao().insertar(new CentroEspecialidad((int) epsumId, (int) idDaw));
+            db.centroEspecialidadDao().insertar(new CentroEspecialidad((int) epsumId, (int) idAsir));
         }
     }
 }
