@@ -59,7 +59,7 @@ public class ActividadSeleccionarCentro extends AppCompatActivity {
         etBuscar.addTextChangedListener(new android.text.TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int i, int i1, int i2) {}
             @Override public void onTextChanged(CharSequence s, int i, int i1, int i2) {
-                adaptador.filtrar(s.toString());
+                adaptador.getFilter().filter(s.toString());
             }
             @Override public void afterTextChanged(android.text.Editable s) {}
         });

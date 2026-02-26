@@ -10,7 +10,10 @@ import com.dam.studybro.R;
 import com.dam.studybro.database.Centro;
 import java.util.List;
 
-public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.ViewHolder> {
+import android.widget.Filter;
+import android.widget.Filterable;
+
+public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.ViewHolder> implements Filterable {
 
     private List<Centro> listaCentros;
     private List<Centro> listaCentrosOriginal; // Copia para filtrar
@@ -32,27 +35,44 @@ public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.View
         notifyDataSetChanged();
     }
 
-    // Método para filtrar (Buscador) - Optimizado para +2000 elementos
-    public void filtrar(String texto) {
-        if (texto == null || texto.isEmpty()) {
-            this.listaCentros = new java.util.ArrayList<>(listaCentrosOriginal);
-        } else {
-            String query = texto.toLowerCase().trim();
-            List<Centro> filtrados = new java.util.ArrayList<>();
-            
-            for (Centro c : listaCentrosOriginal) {
-                // Comprobaciones rápidas
-                if (c.nombre != null && c.nombre.toLowerCase().contains(query)) {
-                    filtrados.add(c);
-                    continue;
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                FilterResults results = new FilterResults();
+                
+                if (listaCentrosOriginal == null) {
+                    listaCentrosOriginal = new java.util.ArrayList<>();
                 }
-                if (c.ciudad != null && c.ciudad.toLowerCase().contains(query)) {
-                    filtrados.add(c);
+
+                if (constraint == null || constraint.length() == 0) {
+                    results.values = new java.util.ArrayList<>(listaCentrosOriginal);
+                } else {
+                    String query = constraint.toString().toLowerCase().trim();
+                    List<Centro> filtrados = new java.util.ArrayList<>();
+                    
+                    for (Centro c : listaCentrosOriginal) {
+                        if (c.nombre != null && c.nombre.toLowerCase().contains(query)) {
+                            filtrados.add(c);
+                            continue;
+                        }
+                        if (c.ciudad != null && c.ciudad.toLowerCase().contains(query)) {
+                            filtrados.add(c);
+                        }
+                    }
+                    results.values = filtrados;
                 }
+                return results;
             }
-            this.listaCentros = filtrados;
-        }
-        notifyDataSetChanged();
+
+            @Override
+            @SuppressWarnings("unchecked")
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                listaCentros = (List<Centro>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     @NonNull

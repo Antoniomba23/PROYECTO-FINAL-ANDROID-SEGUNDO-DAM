@@ -108,7 +108,7 @@ public class ActividadPrincipal extends AppCompatActivity
         android.os.Handler searchHandler = new android.os.Handler(android.os.Looper.getMainLooper());
         Runnable searchRunnable = () -> {
             String text = etSearch.getText().toString();
-            adaptador.filtrar(text);
+            adaptador.getFilter().filter(text);
         };
 
         etSearch.addTextChangedListener(new android.text.TextWatcher() {
@@ -289,23 +289,23 @@ public class ActividadPrincipal extends AppCompatActivity
                          
                          // Helper para buscar ID por abreviatura
                          for (Especialidad e : especialidadesBD) {
-                             if (e.abreviatura.equals("INF") && descLower.contains("infantil")) idsVinculados.add(e.id);
-                             if (e.abreviatura.equals("PRI") && descLower.contains("primaria")) idsVinculados.add(e.id);
-                             if (e.abreviatura.equals("ESO") && (descLower.contains("secundaria") || descLower.contains("eso"))) idsVinculados.add(e.id);
+                             if (e.codigoApi.equals("INF") && descLower.contains("infantil")) idsVinculados.add(e.id);
+                             if (e.codigoApi.equals("PRI") && descLower.contains("primaria")) idsVinculados.add(e.id);
+                             if (e.codigoApi.equals("ESO") && (descLower.contains("secundaria") || descLower.contains("eso"))) idsVinculados.add(e.id);
                              if (descLower.contains("bachillerato")) {
-                                 if (e.abreviatura.equals("BACC") && (descLower.contains("ciencias") || descLower.contains("tecnolog"))) idsVinculados.add(e.id);
-                                 if (e.abreviatura.equals("BACH") && (descLower.contains("humanidades") || descLower.contains("sociales") || descLower.contains("letras"))) idsVinculados.add(e.id);
-                                 if (e.abreviatura.equals("BACA") && descLower.contains("artes")) idsVinculados.add(e.id);
+                                 if (e.codigoApi.equals("BACC") && (descLower.contains("ciencias") || descLower.contains("tecnolog"))) idsVinculados.add(e.id);
+                                 if (e.codigoApi.equals("BACH") && (descLower.contains("humanidades") || descLower.contains("sociales") || descLower.contains("letras"))) idsVinculados.add(e.id);
+                                 if (e.codigoApi.equals("BACA") && descLower.contains("artes")) idsVinculados.add(e.id);
                                  // Fallback si solo dice Bachillerato sin especificar
                                  if (!descLower.contains("ciencias") && !descLower.contains("humanidades") && !descLower.contains("artes")) {
-                                     if (e.abreviatura.equals("BACC") || e.abreviatura.equals("BACH")) idsVinculados.add(e.id);
+                                     if (e.codigoApi.equals("BACC") || e.codigoApi.equals("BACH")) idsVinculados.add(e.id);
                                  }
                              }
-                             if (e.abreviatura.equals("SMR") && (descLower.contains("microinform") || descLower.contains("smr"))) idsVinculados.add(e.id);
-                             if (e.abreviatura.equals("DAM") && (descLower.contains("multiplataforma") || descLower.contains("dam"))) idsVinculados.add(e.id);
-                             if (e.abreviatura.equals("DAW") && ((descLower.contains("web") && descLower.contains("aplicaciones")) || descLower.contains("daw"))) idsVinculados.add(e.id);
-                             if (e.abreviatura.equals("ASIR") && (descLower.contains("asir") || (descLower.contains("sistemas") && descLower.contains("red")))) idsVinculados.add(e.id);
-                             if (e.abreviatura.equals("EOI") && (descLower.contains("idioma") || descLower.contains("eoi") || descLower.contains("ingles") || descLower.contains("francés"))) idsVinculados.add(e.id);
+                             if (e.codigoApi.equals("SMR") && (descLower.contains("microinform") || descLower.contains("smr"))) idsVinculados.add(e.id);
+                             if (e.codigoApi.equals("DAM") && (descLower.contains("multiplataforma") || descLower.contains("dam"))) idsVinculados.add(e.id);
+                             if (e.codigoApi.equals("DAW") && ((descLower.contains("web") && descLower.contains("aplicaciones")) || descLower.contains("daw"))) idsVinculados.add(e.id);
+                             if (e.codigoApi.equals("ASIR") && (descLower.contains("asir") || (descLower.contains("sistemas") && descLower.contains("red")))) idsVinculados.add(e.id);
+                             if (e.codigoApi.equals("EOI") && (descLower.contains("idioma") || descLower.contains("eoi") || descLower.contains("ingles") || descLower.contains("francés"))) idsVinculados.add(e.id);
                          }
 
                          for (Integer idEsp : idsVinculados) {
