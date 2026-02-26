@@ -53,13 +53,21 @@ public class ActividadSeleccionarCentro extends AppCompatActivity {
         });
         rv.setAdapter(adaptador);
 
-        // Buscador
+        // Buscador con Debouncing para evitar ANR
         com.google.android.material.textfield.TextInputEditText etBuscar =
                 findViewById(R.id.etBuscarCentro);
+
+        android.os.Handler searchHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+        Runnable searchRunnable = () -> {
+            String text = etBuscar.getText().toString();
+            adaptador.getFilter().filter(text);
+        };
+
         etBuscar.addTextChangedListener(new android.text.TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int i, int i1, int i2) {}
-            @Override public void onTextChanged(CharSequence s, int i, int i1, int i2) {
-                adaptador.getFilter().filter(s.toString());
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                searchHandler.removeCallbacks(searchRunnable);
+                searchHandler.postDelayed(searchRunnable, 300); // 300ms de retraso
             }
             @Override public void afterTextChanged(android.text.Editable s) {}
         });

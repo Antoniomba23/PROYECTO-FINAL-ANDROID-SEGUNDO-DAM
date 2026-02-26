@@ -89,9 +89,9 @@ public class ActividadLogin extends AppCompatActivity {
 
                     Toast.makeText(ActividadLogin.this, "¡Bienvenido!", Toast.LENGTH_SHORT).show();
 
-                    // ¿Ya tiene centro asignado? Si no, pedir que seleccione uno
+                    // ¿Ya tiene centro asignado o es ADMIN? Si no, pedir que seleccione uno
                     boolean tieneCentro = prefs.getInt("centro_id", -1) != -1;
-                    if (tieneCentro) {
+                    if (tieneCentro || "ADMIN".equals(rolAuth)) {
                         irAHome();
                     } else {
                         Intent intent = new Intent(ActividadLogin.this, ActividadSeleccionarCentro.class);
