@@ -243,16 +243,6 @@ public class ActividadPrincipal extends AppCompatActivity
                 nuevo.codigoApi       = cApi.id;
                 nuevo.valoracionMedia = 0.0f;
                 
-                // Asignar Imagen Temática según el nombre/tipo
-                String nombreLower = nuevo.nombre.toLowerCase();
-                String seed = "school";
-                if (nombreLower.contains("universidad")) seed = "university";
-                else if (nombreLower.contains("instituto") || nombreLower.contains("ies")) seed = "highschool";
-                else if (nombreLower.contains("colegio") || nombreLower.contains("ceip")) seed = "elementary";
-                else if (nombreLower.contains("infantil")) seed = "kindergarten";
-                
-                nuevo.imagenUrl = "https://picsum.photos/seed/" + seed + "_" + cApi.id + "/400/200";
-                
                 if (cApi.address != null) {
                     nuevo.direccion = cApi.address.streetAddress;
                     nuevo.ciudad    = cApi.address.locality;
