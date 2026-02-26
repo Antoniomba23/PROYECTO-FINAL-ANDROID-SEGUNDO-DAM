@@ -284,12 +284,33 @@ public class ActividadPrincipal extends AppCompatActivity
 
                 for (Centro centroBD : centrosRecienInsertados) {
                     if (centroBD.descripcion != null) {
-                        String descLower = centroBD.descripcion.toLowerCase();
-                        for (java.util.Map.Entry<String, Integer> entry : mapaEspecialidades.entrySet()) {
-                            if (descLower.contains(entry.getKey())) {
-                                relacionesNuevas.add(new CentroEspecialidad(centroBD.id, entry.getValue()));
-                            }
-                        }
+                         String descLower = centroBD.descripcion.toLowerCase();
+                         java.util.Set<Integer> idsVinculados = new java.util.HashSet<>();
+                         
+                         // Helper para buscar ID por abreviatura
+                         for (Especialidad e : especialidadesBD) {
+                             if (e.abreviatura.equals("INF") && descLower.contains("infantil")) idsVinculados.add(e.id);
+                             if (e.abreviatura.equals("PRI") && descLower.contains("primaria")) idsVinculados.add(e.id);
+                             if (e.abreviatura.equals("ESO") && (descLower.contains("secundaria") || descLower.contains("eso"))) idsVinculados.add(e.id);
+                             if (descLower.contains("bachillerato")) {
+                                 if (e.abreviatura.equals("BACC") && (descLower.contains("ciencias") || descLower.contains("tecnolog"))) idsVinculados.add(e.id);
+                                 if (e.abreviatura.equals("BACH") && (descLower.contains("humanidades") || descLower.contains("sociales") || descLower.contains("letras"))) idsVinculados.add(e.id);
+                                 if (e.abreviatura.equals("BACA") && descLower.contains("artes")) idsVinculados.add(e.id);
+                                 // Fallback si solo dice Bachillerato sin especificar
+                                 if (!descLower.contains("ciencias") && !descLower.contains("humanidades") && !descLower.contains("artes")) {
+                                     if (e.abreviatura.equals("BACC") || e.abreviatura.equals("BACH")) idsVinculados.add(e.id);
+                                 }
+                             }
+                             if (e.abreviatura.equals("SMR") && (descLower.contains("microinform") || descLower.contains("smr"))) idsVinculados.add(e.id);
+                             if (e.abreviatura.equals("DAM") && (descLower.contains("multiplataforma") || descLower.contains("dam"))) idsVinculados.add(e.id);
+                             if (e.abreviatura.equals("DAW") && ((descLower.contains("web") && descLower.contains("aplicaciones")) || descLower.contains("daw"))) idsVinculados.add(e.id);
+                             if (e.abreviatura.equals("ASIR") && (descLower.contains("asir") || (descLower.contains("sistemas") && descLower.contains("red")))) idsVinculados.add(e.id);
+                             if (e.abreviatura.equals("EOI") && (descLower.contains("idioma") || descLower.contains("eoi") || descLower.contains("ingles") || descLower.contains("francés"))) idsVinculados.add(e.id);
+                         }
+
+                         for (Integer idEsp : idsVinculados) {
+                             relacionesNuevas.add(new CentroEspecialidad(centroBD.id, idEsp));
+                         }
                     }
                 }
 
