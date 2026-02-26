@@ -150,10 +150,18 @@ public class ActividadPrincipal extends AppCompatActivity
             tvCentro.setText("");
         }
 
+        String rol = getSharedPreferences("MisPreferencias", MODE_PRIVATE).getString("rol_usuario", "ESTUDIANTE");
+
         navigationView.getMenu().findItem(R.id.nav_login).setVisible(!sesionIniciada);
         navigationView.getMenu().findItem(R.id.nav_logout).setVisible(sesionIniciada);
         navigationView.getMenu().findItem(R.id.nav_perfil).setVisible(sesionIniciada);
         navigationView.getMenu().findItem(R.id.nav_cambiar_centro).setVisible(sesionIniciada);
+
+        // Menú de administrador solo visible si el rol es ADMIN
+        MenuItem navAdmin = navigationView.getMenu().findItem(R.id.nav_panel_admin);
+        if (navAdmin != null) {
+            navAdmin.setVisible(sesionIniciada && "ADMIN".equals(rol));
+        }
     }
 
     @Override
@@ -166,6 +174,8 @@ public class ActividadPrincipal extends AppCompatActivity
             startActivity(new Intent(this, ActividadPerfil.class));
         } else if (id == R.id.nav_cambiar_centro) {
             startActivity(new Intent(this, ActividadSeleccionarCentro.class));
+        } else if (id == R.id.nav_panel_admin) {
+            startActivity(new Intent(this, ActividadPanelAdmin.class));
         } else if (id == R.id.nav_login) {
             startActivity(new Intent(this, ActividadLogin.class));
         } else if (id == R.id.nav_logout) {

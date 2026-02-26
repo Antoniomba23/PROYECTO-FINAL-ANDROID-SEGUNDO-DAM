@@ -75,12 +75,16 @@ public class ActividadLogin extends AppCompatActivity {
                     ServicioAuth.RespuestaAuth cuerpo = response.body();
                     String token = cuerpo.accessToken;
 
+                    // Asignar rol de Administrador
+                    String rolAuth = correo.equalsIgnoreCase("admin@studybro.com") ? "ADMIN" : "ESTUDIANTE";
+
                     // Guardar sesión en SharedPreferences
                     SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putBoolean("sesion_iniciada", true);
                     editor.putString("email_usuario", correo);
                     editor.putString("supabase_token", token);
+                    editor.putString("rol_usuario", rolAuth);
                     editor.apply();
 
                     Toast.makeText(ActividadLogin.this, "¡Bienvenido!", Toast.LENGTH_SHORT).show();

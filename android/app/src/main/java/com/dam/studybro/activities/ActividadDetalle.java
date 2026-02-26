@@ -49,6 +49,7 @@ public class ActividadDetalle extends AppCompatActivity {
 
     private Publicacion publicacion;
     private String emailUsuario;
+    private String rolUsuario;
     private boolean sesionIniciada;
 
     // Vistas
@@ -66,6 +67,7 @@ public class ActividadDetalle extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
         sesionIniciada = prefs.getBoolean("sesion_iniciada", false);
         emailUsuario   = prefs.getString("email_usuario", "");
+        rolUsuario     = prefs.getString("rol_usuario", "ESTUDIANTE");
 
         int publicacionId = getIntent().getIntExtra(EXTRA_PUBLICACION_ID, -1);
         if (publicacionId == -1) { finish(); return; }
@@ -230,9 +232,20 @@ public class ActividadDetalle extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (publicacion != null && sesionIniciada
-                && emailUsuario.equals(publicacion.usuarioId)) {
-            getMenuInflater().inflate(R.menu.menu_detalle, menu);
+        if (publicacion != null && sesionIniciada) {
+            boolean esPropia = emailUsuario.equals(publicacion.usuarioId);
+            boolean esAdmin  = "ADMIN".equals(rolUsuario);
+
+            // Mostrar el menú si es suya o si es administrador superior
+            if (esPropia || esAdmin) {
+                getMenuInflater().inflate(R.menu.menu_detalle, menu);
+                
+                // Un admin que NO es dueño solo debería poder Borrar (moderación), no falsificar Ediciones.
+                if (esAdmin && !esPropia) {
+                    MenuItem itemEditar = menu.findItem(R.id.action_editar);
+                    if (itemEditar != null) itemEditar.setVisible(false);
+                }
+            }
         }
         return true;
     }

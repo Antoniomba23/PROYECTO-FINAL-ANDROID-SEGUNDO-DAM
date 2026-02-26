@@ -56,8 +56,10 @@ public class ActividadPublicaciones extends AppCompatActivity {
         db       = BaseDatosApp.getInstance(getApplicationContext());
         executor = Executors.newSingleThreadExecutor();
 
-        asignaturaId = getIntent().getIntExtra(EXTRA_ASIGNATURA_ID, -1);
-        String nombreAsignatura = getIntent().getStringExtra(EXTRA_ASIGNATURA_NOMBRE);
+        boolean modoAdminGlobal = getIntent().getBooleanExtra("modo_admin_global", false);
+        // En modo admin, forzamos Id -1 (carga general)
+        asignaturaId = modoAdminGlobal ? -1 : getIntent().getIntExtra(EXTRA_ASIGNATURA_ID, -1);
+        String nombreAsignatura = modoAdminGlobal ? "Panel Admin: Todas las Pub." : getIntent().getStringExtra(EXTRA_ASIGNATURA_NOMBRE);
 
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -102,15 +104,17 @@ public class ActividadPublicaciones extends AppCompatActivity {
             @Override public void onNothingSelected(AdapterView<?> p) {}
         });
 
-        // FAB: solo para usuarios logueados
+        // FAB: solo para usuarios logueados y NO en modo Admin global
         SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
         boolean sesion = prefs.getBoolean("sesion_iniciada", false);
         FloatingActionButton fab = findViewById(R.id.fabNuevaPublicacion);
-        if (sesion) {
+        if (sesion && !modoAdminGlobal) {
             fab.setVisibility(View.VISIBLE);
             fab.setOnClickListener(v -> startActivity(
                     new Intent(this, ActividadNuevaPublicacion.class)
                             .putExtra("asignatura_id", asignaturaId)));
+        } else {
+            fab.setVisibility(View.GONE);
         }
 
         // Cargar publicaciones
