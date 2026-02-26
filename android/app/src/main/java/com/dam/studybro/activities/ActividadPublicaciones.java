@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.text.Normalizer;
 
 /**
  * Lista de publicaciones de una asignatura con búsqueda y ordenación.
@@ -138,10 +139,11 @@ public class ActividadPublicaciones extends AppCompatActivity {
 
     private void filtrarYOrdenar(String query) {
         List<Publicacion> resultado = new ArrayList<>();
-        String q = query.toLowerCase().trim();
+        String q = quitarTildes(query.toLowerCase().trim());
         for (Publicacion p : listaCompleta) {
-            if (q.isEmpty() || (p.titulo != null && p.titulo.toLowerCase().contains(q))
-                    || (p.descripcion != null && p.descripcion.toLowerCase().contains(q))) {
+            String tituloNorm = p.titulo != null ? quitarTildes(p.titulo.toLowerCase()) : "";
+            String descNorm = p.descripcion != null ? quitarTildes(p.descripcion.toLowerCase()) : "";
+            if (q.isEmpty() || tituloNorm.contains(q) || descNorm.contains(q)) {
                 resultado.add(p);
             }
         }
@@ -161,5 +163,11 @@ public class ActividadPublicaciones extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) { onBackPressed(); return true; }
         return super.onOptionsItemSelected(item);
+    }
+
+    private String quitarTildes(String texto) {
+        if (texto == null) return null;
+        String normalizado = Normalizer.normalize(texto, Normalizer.Form.NFD);
+        return normalizado.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
     }
 }

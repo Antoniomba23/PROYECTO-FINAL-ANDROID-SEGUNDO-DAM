@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.dam.studybro.R;
 import com.dam.studybro.database.Centro;
 import java.util.List;
+import java.text.Normalizer;
 
 import android.widget.Filter;
 import android.widget.Filterable;
@@ -49,21 +50,30 @@ public class AdaptadorCentros extends RecyclerView.Adapter<AdaptadorCentros.View
                 if (constraint == null || constraint.length() == 0) {
                     results.values = new java.util.ArrayList<>(listaCentrosOriginal);
                 } else {
-                    String query = constraint.toString().toLowerCase().trim();
+                    String query = quitarTildes(constraint.toString().toLowerCase().trim());
                     List<Centro> filtrados = new java.util.ArrayList<>();
                     
                     for (Centro c : listaCentrosOriginal) {
-                        if (c.nombre != null && c.nombre.toLowerCase().contains(query)) {
+                        String nombreNorm = c.nombre != null ? quitarTildes(c.nombre.toLowerCase()) : "";
+                        String ciudadNorm = c.ciudad != null ? quitarTildes(c.ciudad.toLowerCase()) : "";
+                        
+                        if (nombreNorm.contains(query)) {
                             filtrados.add(c);
                             continue;
                         }
-                        if (c.ciudad != null && c.ciudad.toLowerCase().contains(query)) {
+                        if (ciudadNorm.contains(query)) {
                             filtrados.add(c);
                         }
                     }
                     results.values = filtrados;
                 }
                 return results;
+            }
+
+            private String quitarTildes(String texto) {
+                if (texto == null) return null;
+                String normalizado = Normalizer.normalize(texto, Normalizer.Form.NFD);
+                return normalizado.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
             }
 
             @Override
