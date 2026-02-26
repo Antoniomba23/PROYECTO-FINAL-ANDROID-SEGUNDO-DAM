@@ -11,7 +11,7 @@ import java.util.List;
 public interface CentroDao {
 
     @Insert
-    void insertar(Centro centro);
+    long insertar(Centro centro);
 
     /**
      * Inserción masiva — Room agrupa todos los inserts en una sola transacción
