@@ -34,6 +34,20 @@
             android:theme="@style/Theme.StudyBro.NoActionBar">
         </activity>
 
+        <!-- PANEL ADMINISTRADOR -->
+        <activity
+            android:name=".activities.ActividadPanelAdmin"
+            android:exported="true"
+            android:theme="@style/Theme.StudyBro.NoActionBar" />
+        <activity
+            android:name=".activities.ActividadNuevoCentro"
+            android:exported="true"
+            android:theme="@style/Theme.StudyBro.NoActionBar" />
+        <activity
+            android:name=".activities.ActividadGestionUsuarios"
+            android:exported="true"
+            android:theme="@style/Theme.StudyBro.NoActionBar" />
+
         <activity android:name=".activities.ActividadRegistro"
             android:theme="@style/Theme.StudyBro.NoActionBar"/>
         <activity android:name=".activities.ActividadLogin"

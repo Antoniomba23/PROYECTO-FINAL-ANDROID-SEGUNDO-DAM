@@ -87,18 +87,35 @@ public class ActividadLogin extends AppCompatActivity {
                     editor.putString("rol_usuario", rolAuth);
                     editor.apply();
 
-                    Toast.makeText(ActividadLogin.this, "¡Bienvenido!", Toast.LENGTH_SHORT).show();
+                    // Instanciar BD en hilo de fondo para guardar al usuario localmente
+                    new Thread(() -> {
+                        com.dam.studybro.database.BaseDatosApp db = com.dam.studybro.database.BaseDatosApp.getInstance(getApplicationContext());
+                        com.dam.studybro.database.Usuario u = db.usuarioDao().buscarPorCorreo(correo);
+                        if (u == null) {
+                            u = new com.dam.studybro.database.Usuario(
+                                    correo.split("@")[0], correo, "", rolAuth
+                            );
+                            db.usuarioDao().insertarUsuario(u);
+                        } else {
+                            u.rol = rolAuth; // Actualizamos rol por si acaso
+                            db.usuarioDao().actualizarUsuario(u);
+                        }
+                        
+                        runOnUiThread(() -> {
+                            Toast.makeText(ActividadLogin.this, "¡Bienvenido!", Toast.LENGTH_SHORT).show();
 
-                    // ¿Ya tiene centro asignado o es ADMIN? Si no, pedir que seleccione uno
-                    boolean tieneCentro = prefs.getInt("centro_id", -1) != -1;
-                    if (tieneCentro || "ADMIN".equals(rolAuth)) {
-                        irAHome();
-                    } else {
-                        Intent intent = new Intent(ActividadLogin.this, ActividadSeleccionarCentro.class);
-                        intent.putExtra("primer_setup", true);
-                        startActivity(intent);
-                        finish();
-                    }
+                            // ¿Ya tiene centro asignado o es ADMIN? Si no, pedir que seleccione uno
+                            boolean tieneCentro = prefs.getInt("centro_id", -1) != -1;
+                            if (tieneCentro || "ADMIN".equals(rolAuth)) {
+                                irAHome();
+                            } else {
+                                Intent intent = new Intent(ActividadLogin.this, ActividadSeleccionarCentro.class);
+                                intent.putExtra("primer_setup", true);
+                                startActivity(intent);
+                                finish();
+                            }
+                        });
+                    }).start();
                 } else {
                     // Credenciales incorrectas u otro error
                     Toast.makeText(ActividadLogin.this,

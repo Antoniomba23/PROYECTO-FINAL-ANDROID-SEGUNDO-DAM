@@ -83,6 +83,7 @@ public class ActividadPerfil extends AppCompatActivity {
         String centro         = prefs.getString("nombre_centro", "Sin centro asignado");
         boolean haySession    = prefs.getBoolean("sesion_iniciada", false);
         String avatarUrl      = prefs.getString(KEY_AVATAR_URL, null);
+        String rolUsuario     = prefs.getString("rol_usuario", "ESTUDIANTE");
 
         if (!haySession) {
             Toast.makeText(this, "Inicia sesión para ver tu perfil", Toast.LENGTH_SHORT).show();
@@ -100,8 +101,13 @@ public class ActividadPerfil extends AppCompatActivity {
         // ── Vistas de texto ────────────────────────────────────────────────────
         ((TextView) findViewById(R.id.tvUsername)).setText(nombre);
         ((TextView) findViewById(R.id.tvEmail)).setText(emailUsuario);
-        ((TextView) findViewById(R.id.tvCenter)).setText(
-                centro.isEmpty() ? "Sin centro asignado" : centro);
+        
+        TextView tvCenter = findViewById(R.id.tvCenter);
+        if ("ADMIN".equals(rolUsuario)) {
+            tvCenter.setText("👑 Administrador Global");
+        } else {
+            tvCenter.setText(centro.isEmpty() ? "Sin centro asignado" : centro);
+        }
 
         // ── Avatar: cargar foto si existe, hacer cliclable para cambiar ────────
         ivAvatar = findViewById(R.id.ivAvatar);

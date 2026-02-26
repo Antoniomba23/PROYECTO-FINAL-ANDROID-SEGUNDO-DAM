@@ -18,4 +18,7 @@ public interface UsuarioDao {
 
     @Insert
     void insertarUsuario(Usuario usuario);
+
+    @androidx.room.Update
+    void actualizarUsuario(Usuario usuario);
 }

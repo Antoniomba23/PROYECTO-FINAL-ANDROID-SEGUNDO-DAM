@@ -155,12 +155,15 @@ public class ActividadPrincipal extends AppCompatActivity
         navigationView.getMenu().findItem(R.id.nav_login).setVisible(!sesionIniciada);
         navigationView.getMenu().findItem(R.id.nav_logout).setVisible(sesionIniciada);
         navigationView.getMenu().findItem(R.id.nav_perfil).setVisible(sesionIniciada);
-        navigationView.getMenu().findItem(R.id.nav_cambiar_centro).setVisible(sesionIniciada);
+        
+        // Administrador no cambia de centro, los estudiantes sí
+        boolean esAdmin = "ADMIN".equals(rol);
+        navigationView.getMenu().findItem(R.id.nav_cambiar_centro).setVisible(sesionIniciada && !esAdmin);
 
         // Menú de administrador solo visible si el rol es ADMIN
         MenuItem navAdmin = navigationView.getMenu().findItem(R.id.nav_panel_admin);
         if (navAdmin != null) {
-            navAdmin.setVisible(sesionIniciada && "ADMIN".equals(rol));
+            navAdmin.setVisible(sesionIniciada && esAdmin);
         }
     }
 

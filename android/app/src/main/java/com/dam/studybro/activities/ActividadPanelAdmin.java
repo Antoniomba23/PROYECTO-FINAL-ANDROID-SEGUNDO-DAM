@@ -22,11 +22,23 @@ public class ActividadPanelAdmin extends AppCompatActivity {
         Button btnGestionarPublicaciones = findViewById(R.id.btnGestionarPublicaciones);
 
         // Envía al administrador a la vista completa de publicaciones saltándose los IDs
-        btnGestionarPublicaciones.setOnClickListener(v -> {
+        Button btnGestionarPubs = findViewById(R.id.btnGestionarPublicaciones);
+        Button btnNuevoCentro   = findViewById(R.id.btnNuevoCentro);
+        Button btnGestionarUsrs = findViewById(R.id.btnGestionarUsuarios);
+
+        btnGestionarPubs.setOnClickListener(v -> {
             Intent intent = new Intent(this, ActividadPublicaciones.class);
-            // Flags especiales para indicar a la lista que es un modo Dios / Todas
+            // Flag especial para que la actividad de publicaciones muestre TODO y permita borrar TODO
             intent.putExtra("modo_admin_global", true);
             startActivity(intent);
+        });
+
+        btnNuevoCentro.setOnClickListener(v -> {
+            startActivity(new Intent(this, ActividadNuevoCentro.class));
+        });
+
+        btnGestionarUsrs.setOnClickListener(v -> {
+            startActivity(new Intent(this, ActividadGestionUsuarios.class));
         });
     }
 }

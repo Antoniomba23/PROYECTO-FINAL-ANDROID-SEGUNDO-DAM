@@ -9,7 +9,7 @@
     <ImageView
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:src="@drawable/ic_baseline_admin_panel_settings_24"
+        android:src="@drawable/ic_person"
         android:contentDescription="Icono de administrador"
         android:layout_marginBottom="16dp"/>
 
@@ -38,11 +38,18 @@
         android:text="Gestionar Todas las Publicaciones"
         android:layout_marginBottom="16dp"/>
 
-    <!-- Se pueden añadir más botones futuros (ej. banear usuarios, estadísticas) -->
     <Button
-        android:enabled="false"
+        android:id="@+id/btnNuevoCentro"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Próximamente..."/>
+        android:text="+ Añadir Nuevo Centro"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnGestionarUsuarios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Gestionar Usuarios Registrados"
+        android:layout_marginBottom="16dp"/>
 
 </LinearLayout>
