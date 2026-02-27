@@ -103,6 +103,25 @@
             <CheckBox android:id="@+id/cbDAW" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="FP - Desarrollo Web (DAW)"/>
             <CheckBox android:id="@+id/cbASIR" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="FP - Adm. Sistemas Red (ASIR)"/>
             
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEspecialidadExtra"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Otra especialidad (Opcional)"
+                    android:inputType="textCapWords" />
+            </com.google.android.material.textfield.TextInputLayout>
+            
         </LinearLayout>
     </ScrollView>
 

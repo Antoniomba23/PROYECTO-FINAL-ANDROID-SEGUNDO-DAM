@@ -24,7 +24,7 @@ import android.widget.CheckBox;
  */
 public class ActividadNuevoCentro extends AppCompatActivity {
 
-    private TextInputEditText etNombre, etDireccion, etCiudad, etDescripcion, etWeb;
+    private TextInputEditText etNombre, etDireccion, etCiudad, etDescripcion, etWeb, etEspecialidadExtra;
     private CheckBox cbInfantil, cbPrimaria, cbESO, cbBach, cbSMR, cbDAM, cbDAW, cbASIR;
     private Button btnGuardar;
 
@@ -43,6 +43,7 @@ public class ActividadNuevoCentro extends AppCompatActivity {
         etCiudad      = findViewById(R.id.etCiudadCentro);
         etWeb         = findViewById(R.id.etWebCentro);
         etDescripcion = findViewById(R.id.etDescripcionCentro);
+        etEspecialidadExtra = findViewById(R.id.etEspecialidadExtra);
         
         cbInfantil   = findViewById(R.id.cbInfantil);
         cbPrimaria   = findViewById(R.id.cbPrimaria);
@@ -64,6 +65,7 @@ public class ActividadNuevoCentro extends AppCompatActivity {
         String ciudad = etCiudad.getText() != null ? etCiudad.getText().toString().trim() : "";
         String web    = etWeb.getText() != null ? etWeb.getText().toString().trim() : "";
         String desc   = etDescripcion.getText() != null ? etDescripcion.getText().toString().trim() : "";
+        String espExt = etEspecialidadExtra.getText() != null ? etEspecialidadExtra.getText().toString().trim() : "";
 
         if (nombre.isEmpty()) {
             Toast.makeText(this, "El nombre es obligatorio", Toast.LENGTH_SHORT).show();
@@ -99,6 +101,25 @@ public class ActividadNuevoCentro extends AppCompatActivity {
                 if (e.codigoApi.equals("DAM") && cbDAM.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
                 if (e.codigoApi.equals("DAW") && cbDAW.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
                 if (e.codigoApi.equals("ASIR") && cbASIR.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
+            }
+            
+            // Lógica Especialidad Personalizada / Extra
+            if (!espExt.isEmpty()) {
+                boolean encontrada = false;
+                for (Especialidad e : todasLasEspecialidades) {
+                    if (e.nombre.trim().equalsIgnoreCase(espExt)) {
+                        vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
+                        encontrada = true;
+                        break;
+                    }
+                }
+                
+                if (!encontrada) {
+                    // Hay que insertarla nueva en la tabla 'especialidades' localmente
+                    Especialidad nuevaEspecialidad = new Especialidad("MANUAL", espExt);
+                    long nuevaId = db.especialidadDao().insertar(nuevaEspecialidad);
+                    vinculos.add(new CentroEspecialidad((int)idCentroInsertado, (int)nuevaId));
+                }
             }
             
             if (!vinculos.isEmpty()) {
