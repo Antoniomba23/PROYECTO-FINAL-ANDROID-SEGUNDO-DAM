@@ -101,26 +101,24 @@ public class ActividadLogin extends AppCompatActivity {
                                 u.rol = rolAuth; // Actualizamos rol por si acaso
                                 db.usuarioDao().actualizarUsuario(u);
                             }
-                            android.util.Log.d("LOGIN_LOCAL", "Usuario guardado en Room: " + correo);
                         } catch (Exception e) {
                             android.util.Log.e("LOGIN_LOCAL", "Error guardando usuario: " + e.getMessage());
                         }
-
-                        runOnUiThread(() -> {
-                            Toast.makeText(ActividadLogin.this, "¡Bienvenido!", Toast.LENGTH_SHORT).show();
-
-                            // ¿Ya tiene centro asignado o es ADMIN? Si no, pedir que seleccione uno
-                            boolean tieneCentro = prefs.getInt("centro_id", -1) != -1;
-                            if (tieneCentro || "ADMIN".equals(rolAuth)) {
-                                irAHome();
-                            } else {
-                                Intent intent = new Intent(ActividadLogin.this, ActividadSeleccionarCentro.class);
-                                intent.putExtra("primer_setup", true);
-                                startActivity(intent);
-                                finish();
-                            }
-                        });
                     });
+
+                    // Continuar de inmediato en el hilo principal
+                    Toast.makeText(ActividadLogin.this, "¡Bienvenido!", Toast.LENGTH_SHORT).show();
+
+                    // ¿Ya tiene centro asignado o es ADMIN? Si no, pedir que seleccione uno
+                    boolean tieneCentro = prefs.getInt("centro_id", -1) != -1;
+                    if (tieneCentro || "ADMIN".equals(rolAuth)) {
+                        irAHome();
+                    } else {
+                        Intent intent = new Intent(ActividadLogin.this, ActividadSeleccionarCentro.class);
+                        intent.putExtra("primer_setup", true);
+                        startActivity(intent);
+                        finish();
+                    }
                 } else {
                     // Credenciales incorrectas u otro error
                     Toast.makeText(ActividadLogin.this,
