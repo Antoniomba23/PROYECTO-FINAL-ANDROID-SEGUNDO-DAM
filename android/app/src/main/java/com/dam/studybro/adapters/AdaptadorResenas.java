@@ -3,6 +3,7 @@ package com.dam.studybro.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,9 +24,8 @@ public class AdaptadorResenas extends RecyclerView.Adapter<AdaptadorResenas.View
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Reutilizamos item_comentario porque es idéntico visualmente
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_comentario, parent, false);
+                .inflate(R.layout.item_resena, parent, false);
         return new ViewHolder(view);
     }
 
@@ -33,7 +33,7 @@ public class AdaptadorResenas extends RecyclerView.Adapter<AdaptadorResenas.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ValoracionCentro item = lista.get(position);
         
-        String autor = "Anónimo";
+        String autor = "Estudiante";
         String contenido = item.comentario;
 
         if (item.comentario != null && item.comentario.contains("|||")) {
@@ -47,7 +47,12 @@ public class AdaptadorResenas extends RecyclerView.Adapter<AdaptadorResenas.View
         }
 
         holder.tvAuthor.setText(autor); 
-        holder.tvContent.setText(item.puntuacion + " ★ - " + contenido);
+        holder.tvContent.setText(contenido);
+        
+        // Evita el bug de Infinite Layout Request Loop del RatingBar en RecyclerView
+        if (holder.ratingIndicator.getRating() != item.puntuacion) {
+            holder.ratingIndicator.setRating(item.puntuacion);
+        }
         
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         holder.tvDate.setText(sdf.format(new java.util.Date(item.fecha)));
@@ -65,12 +70,14 @@ public class AdaptadorResenas extends RecyclerView.Adapter<AdaptadorResenas.View
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvAuthor, tvContent, tvDate;
+        RatingBar ratingIndicator;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvAuthor = itemView.findViewById(R.id.tvAuthor);
             tvContent = itemView.findViewById(R.id.tvContent);
             tvDate = itemView.findViewById(R.id.tvDate);
+            ratingIndicator = itemView.findViewById(R.id.ratingIndicator);
         }
     }
 }

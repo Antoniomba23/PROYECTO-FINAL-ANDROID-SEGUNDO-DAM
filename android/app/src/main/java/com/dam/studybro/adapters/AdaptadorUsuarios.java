@@ -16,10 +16,17 @@ import java.util.List;
 
 public class AdaptadorUsuarios extends RecyclerView.Adapter<AdaptadorUsuarios.UsuarioViewHolder> {
 
-    private List<Usuario> listaUsuarios;
+    public interface OnUsuarioActionListener {
+        void onCambiarRol(Usuario usuario);
+        void onEliminar(Usuario usuario);
+    }
 
-    public AdaptadorUsuarios(List<Usuario> listaUsuarios) {
+    private List<Usuario> listaUsuarios;
+    private OnUsuarioActionListener listener;
+
+    public AdaptadorUsuarios(List<Usuario> listaUsuarios, OnUsuarioActionListener listener) {
         this.listaUsuarios = listaUsuarios;
+        this.listener = listener;
     }
 
     public void actualizarDatos(List<Usuario> nuevos) {
@@ -47,6 +54,14 @@ public class AdaptadorUsuarios extends RecyclerView.Adapter<AdaptadorUsuarios.Us
         } else {
             holder.tvRol.setBackgroundColor(Color.parseColor("#9E9E9E")); // Gris
         }
+
+        holder.tvRol.setOnClickListener(v -> {
+            if (listener != null) listener.onCambiarRol(u);
+        });
+
+        holder.btnEliminar.setOnClickListener(v -> {
+            if (listener != null) listener.onEliminar(u);
+        });
     }
 
     @Override
@@ -56,12 +71,14 @@ public class AdaptadorUsuarios extends RecyclerView.Adapter<AdaptadorUsuarios.Us
 
     static class UsuarioViewHolder extends RecyclerView.ViewHolder {
         TextView tvNombre, tvEmail, tvRol;
+        android.widget.ImageButton btnEliminar;
 
         public UsuarioViewHolder(@NonNull View itemView) {
             super(itemView);
             tvNombre = itemView.findViewById(R.id.tvNombreUsuario);
             tvEmail  = itemView.findViewById(R.id.tvEmailUsuario);
             tvRol    = itemView.findViewById(R.id.tvRolUsuario);
+            btnEliminar = itemView.findViewById(R.id.btnEliminarUsuario);
         }
     }
 }

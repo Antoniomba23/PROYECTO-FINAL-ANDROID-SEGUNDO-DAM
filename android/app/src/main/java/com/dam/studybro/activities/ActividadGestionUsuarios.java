@@ -37,9 +37,7 @@ public class ActividadGestionUsuarios extends AppCompatActivity {
         recyclerUsuarios = findViewById(R.id.recyclerUsuarios);
         recyclerUsuarios.setLayoutManager(new LinearLayoutManager(this));
 
-        adaptador = new AdaptadorUsuarios(new ArrayList<>());
-        recyclerUsuarios.setAdapter(adaptador);
-
+        configurarAdaptador();
     }
 
     @Override
@@ -49,18 +47,94 @@ public class ActividadGestionUsuarios extends AppCompatActivity {
     }
 
     private void cargarUsuariosDesdeBD() {
+        com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+        api.getUsuarios().enqueue(new retrofit2.Callback<List<Usuario>>() {
+            @Override
+            public void onResponse(retrofit2.Call<List<Usuario>> call, retrofit2.Response<List<Usuario>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Usuario> lista = response.body();
+                    adaptador.actualizarDatos(lista);
+                    
+                    // Sincronizar localmente (opcional pero recomendado)
+                    Executors.newSingleThreadExecutor().execute(() -> {
+                        BaseDatosApp.getInstance(getApplicationContext()).usuarioDao().insertarLista(lista);
+                    });
+                } else {
+                    // Si falla la nube, cargar local
+                    cargarDesdeLocal();
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<List<Usuario>> call, Throwable t) {
+                cargarDesdeLocal();
+            }
+        });
+    }
+
+    private void cargarDesdeLocal() {
         Executors.newSingleThreadExecutor().execute(() -> {
             BaseDatosApp db = BaseDatosApp.getInstance(getApplicationContext());
             List<Usuario> lista = db.usuarioDao().obtenerTodos();
-
             runOnUiThread(() -> {
                 if (lista != null && !lista.isEmpty()) {
                     adaptador.actualizarDatos(lista);
                 } else {
-                    android.widget.Toast.makeText(ActividadGestionUsuarios.this, "No hay usuarios registrados aún", android.widget.Toast.LENGTH_SHORT).show();
+                    android.widget.Toast.makeText(ActividadGestionUsuarios.this, "Error al conectar con la nube", android.widget.Toast.LENGTH_SHORT).show();
                 }
             });
         });
+    }
+
+    private void configurarAdaptador() {
+        adaptador = new AdaptadorUsuarios(new ArrayList<>(), new AdaptadorUsuarios.OnUsuarioActionListener() {
+            @Override
+            public void onCambiarRol(Usuario usuario) {
+                String nuevoRol = "ADMIN".equals(usuario.rol) ? "ESTUDIANTE" : "ADMIN";
+                usuario.rol = nuevoRol;
+                
+                com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+                api.actualizarUsuario("eq." + usuario.id, usuario).enqueue(new retrofit2.Callback<Void>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            android.widget.Toast.makeText(ActividadGestionUsuarios.this, "Rol actualizado para " + usuario.nombre, android.widget.Toast.LENGTH_SHORT).show();
+                            cargarUsuariosDesdeBD();
+                        }
+                    }
+                    @Override
+                    public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                        android.widget.Toast.makeText(ActividadGestionUsuarios.this, "Error de red", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onEliminar(Usuario usuario) {
+                new androidx.appcompat.app.AlertDialog.Builder(ActividadGestionUsuarios.this)
+                    .setTitle("Eliminar Usuario")
+                    .setMessage("¿Estás seguro de que deseas eliminar a " + usuario.nombre + "?")
+                    .setPositiveButton("Eliminar", (dialog, which) -> {
+                        com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+                        api.eliminarUsuario("eq." + usuario.id).enqueue(new retrofit2.Callback<Void>() {
+                            @Override
+                            public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                                if (response.isSuccessful()) {
+                                    android.widget.Toast.makeText(ActividadGestionUsuarios.this, "Usuario eliminado", android.widget.Toast.LENGTH_SHORT).show();
+                                    cargarUsuariosDesdeBD();
+                                }
+                            }
+                            @Override
+                            public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                                android.widget.Toast.makeText(ActividadGestionUsuarios.this, "Error al eliminar", android.widget.Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    })
+                    .setNegativeButton("Cancelar", null)
+                    .show();
+            }
+        });
+        recyclerUsuarios.setAdapter(adaptador);
     }
 
     @Override

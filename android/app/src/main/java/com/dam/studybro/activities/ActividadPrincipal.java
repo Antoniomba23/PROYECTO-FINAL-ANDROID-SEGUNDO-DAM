@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -52,6 +53,7 @@ public class ActividadPrincipal extends AppCompatActivity
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private com.google.android.material.bottomnavigation.BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,17 +81,24 @@ public class ActividadPrincipal extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
-        boolean sesionIniciada  = prefs.getBoolean("sesion_iniciada", false);
-        String  supabaseToken   = prefs.getString("supabase_token", "");
+        boolean sesionIniciadaRaw = prefs.getBoolean("sesion_iniciada", false);
+        String  supabaseToken     = prefs.getString("supabase_token", "");
 
         // Limpiar sesión falsa heredada de Room (sin token Supabase)
-        if (sesionIniciada && supabaseToken.isEmpty()) {
+        if (sesionIniciadaRaw && supabaseToken.isEmpty()) {
             prefs.edit().clear().apply();
-            sesionIniciada = false;
+            sesionIniciadaRaw = false;
         }
-
-        String email = prefs.getString("email_usuario", "");
+        
+        // Variable final para la lambda
+        final boolean sesionIniciada = sesionIniciadaRaw;
+        final String email = prefs.getString("email_usuario", "");
+        
         actualizarDrawer(sesionIniciada, email);
+
+        //  Bottom Navigation
+        bottomNav = findViewById(R.id.bottomNavigation);
+        com.dam.studybro.utils.NavigationHelper.setupBottomNavigation(this, bottomNav);
 
 
         recyclerView = findViewById(R.id.recyclerViewCenters);
@@ -120,18 +129,65 @@ public class ActividadPrincipal extends AppCompatActivity
             @Override public void afterTextChanged(android.text.Editable s) {}
         });
 
+        // ── Botón Asistente IA ──────────────────────────────────────────────────
+        com.google.android.material.floatingactionbutton.FloatingActionButton fabGemini = findViewById(R.id.fabGemini);
+        if (fabGemini != null) {
+            fabGemini.setOnClickListener(v -> {
+                findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+                fabGemini.setEnabled(false);
+
+                String contexto = "El usuario está en la pantalla principal de StudyBro. Ve una lista de centros educativos de Madrid.";
+                com.dam.studybro.utils.GeminiHelper.pedirAyudaGeneral(contexto, "¿Para qué sirve esta app? ¿Cómo puedo encontrar apuntes?", 
+                    new com.dam.studybro.utils.GeminiHelper.GeminiCallback() {
+                        @Override
+                        public void onSuccess(String result) {
+                            findViewById(R.id.progressBar).setVisibility(View.GONE);
+                            fabGemini.setEnabled(true);
+                            mostrarDialogoAI(result);
+                        }
+                        @Override
+                        public void onError(String error) {
+                            findViewById(R.id.progressBar).setVisibility(View.GONE);
+                            fabGemini.setEnabled(true);
+                            Toast.makeText(ActividadPrincipal.this, error, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+            });
+        }
+
+        // ProgressBar reference
+        android.widget.ProgressBar progressBar = findViewById(R.id.progressBar);
 
         // 1. La BD se inicializa en background (el primer acceso crea/migra el archivo .db)
+        progressBar.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+        findViewById(R.id.tvNoCenters).setVisibility(View.GONE);
+
         executorService.execute(() -> {
             db = BaseDatosApp.getInstance(getApplicationContext());
             com.dam.studybro.database.DatabaseSeeder.sembrarDatos(db);
+            
+            // --- SINCRONIZACIÓN CON SUPABASE (NUBE) ---
+            com.dam.studybro.utils.SyncHelper.sincronizarDesdeNube(getApplicationContext());
+
             List<Centro> centros = db.centroDao().obtenerTodos();
             runOnUiThread(() -> {
+                progressBar.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
                 adaptador.actualizarDatos(centros);
                 // 2. Petición a la API solo cuando la UI ya tiene datos
                 obtenerDatosDeApi();
             });
         });
+    }
+
+    private void mostrarDialogoAI(String result) {
+        String textoLimpio = result.replace("**", "").replace("*", "•");
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("✨ Asistente IA")
+                .setMessage(textoLimpio)
+                .setPositiveButton("Entendido", null)
+                .show();
     }
 
     /** Actualiza la cabecera del drawer y muestra/oculta Login o Logout */

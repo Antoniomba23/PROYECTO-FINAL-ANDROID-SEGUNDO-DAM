@@ -3,7 +3,8 @@ package com.dam.studybro.database;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
-import androidx.room.PrimaryKey;
+import androidx.room.PrimaryKey;import androidx.room.Index;
+import androidx.room.Ignore;
 
 /**
  * Interacción de un usuario con una publicación.
@@ -11,12 +12,7 @@ import androidx.room.PrimaryKey;
  * usuarioId: email de Supabase (String), no FK local.
  */
 @Entity(tableName = "interacciones",
-        foreignKeys = {
-            @ForeignKey(entity = Publicacion.class,
-                        parentColumns = "id",
-                        childColumns = "publicacion_id",
-                        onDelete = ForeignKey.CASCADE)
-        })
+        indices = {@Index("publicacion_id")})
 public class Interaccion {
     @PrimaryKey(autoGenerate = true)
     public int id;
@@ -33,6 +29,7 @@ public class Interaccion {
 
     public Interaccion() {}
 
+    @Ignore
     public Interaccion(String tipo, String usuarioId, int publicacionId) {
         this.tipo          = tipo;
         this.usuarioId     = usuarioId;

@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.StudyBro" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.StudyBro" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
@@ -18,5 +18,8 @@
     <style name="Theme.StudyBro.NoActionBar" parent="Theme.StudyBro">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <!-- Evitar doble icono en Android 12+ -->
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/logo</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/white</item>
     </style>
 </resources>

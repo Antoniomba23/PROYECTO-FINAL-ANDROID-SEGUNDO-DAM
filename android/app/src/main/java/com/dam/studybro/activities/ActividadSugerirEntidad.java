@@ -33,6 +33,7 @@ public class ActividadSugerirEntidad extends AppCompatActivity {
     private Button btnEnviar;
 
     private int centroIdActual = -1;
+    private int especialidadId = -1;
     private String emailUsuario = "";
 
     @Override
@@ -40,8 +41,14 @@ public class ActividadSugerirEntidad extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.actividad_sugerir);
 
+        // Recibir IDs por intent si vienen de ActividadAsignaturas
+        centroIdActual = getIntent().getIntExtra("centro_id", -1);
+        especialidadId = getIntent().getIntExtra("especialidad_id", -1);
+
+        // Configurar Toolbar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Buzón de Sugerencias");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -106,7 +113,7 @@ public class ActividadSugerirEntidad extends AppCompatActivity {
                 try { curso = Integer.parseInt(strCurso); } catch (NumberFormatException ignored) {}
             }
             
-            SugerenciaMateria sugerencia = new SugerenciaMateria(nombre, curso, centroIdActual, emailUsuario);
+            SugerenciaMateria sugerencia = new SugerenciaMateria(nombre, curso, centroIdActual, emailUsuario, especialidadId);
             Executors.newSingleThreadExecutor().execute(() -> {
                 BaseDatosApp.getInstance(getApplicationContext()).sugerenciaMateriaDao().insertar(sugerencia);
                 runOnUiThread(() -> {

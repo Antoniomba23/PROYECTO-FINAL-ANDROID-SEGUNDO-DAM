@@ -8,8 +8,9 @@ import java.util.List;
 
 @Dao
 public interface SugerenciaEspecialidadDao {
-    @Query("SELECT * FROM sugerencias_especialidad")
-    List<SugerenciaEspecialidad> obtenerTodas();
+    @Query("SELECT s.*, c.nombre as nombre_centro FROM sugerencias_especialidad s " +
+           "INNER JOIN centros c ON s.centro_id = c.id")
+    List<SugerenciaEspecialidadConCentro> obtenerTodasConCentro();
 
     @Insert
     long insertar(SugerenciaEspecialidad sugerencia);

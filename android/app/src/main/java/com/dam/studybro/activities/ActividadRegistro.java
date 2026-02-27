@@ -75,6 +75,7 @@ public class ActividadRegistro extends AppCompatActivity {
                             com.dam.studybro.database.BaseDatosApp db = com.dam.studybro.database.BaseDatosApp.getInstance(getApplicationContext());
                             String rolAsignado = correo.equalsIgnoreCase("admin@studybro.com") ? "ADMIN" : "ESTUDIANTE";
                             com.dam.studybro.database.Usuario nuevo = new com.dam.studybro.database.Usuario(nombre, correo, "", rolAsignado);
+                            nuevo.id = response.body().usuario.id; // Asignar UUID de Supabase
                             
                             if (db.usuarioDao().buscarPorCorreo(correo) == null) {
                                 db.usuarioDao().insertarUsuario(nuevo);

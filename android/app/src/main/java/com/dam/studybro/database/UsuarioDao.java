@@ -2,6 +2,7 @@ package com.dam.studybro.database;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import java.util.List;
 
@@ -18,6 +19,9 @@ public interface UsuarioDao {
 
     @Insert
     void insertarUsuario(Usuario usuario);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertarLista(List<Usuario> usuarios);
 
     @androidx.room.Update
     void actualizarUsuario(Usuario usuario);

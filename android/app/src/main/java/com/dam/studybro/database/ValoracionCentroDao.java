@@ -18,4 +18,13 @@ public interface ValoracionCentroDao {
     // Calcular media (útil para verificar)
     @Query("SELECT AVG(puntuacion) FROM valoraciones_centro WHERE centro_id = :centroId")
     float obtenerMedia(int centroId);
+
+    @Query("SELECT * FROM valoraciones_centro WHERE centro_id = :centroId AND usuario_id = :usuarioId LIMIT 1")
+    ValoracionCentro obtenerPorUsuarioYCentro(String usuarioId, int centroId);
+
+    @androidx.room.Update
+    void actualizar(ValoracionCentro valoracion);
+
+    @androidx.room.Delete
+    void borrar(ValoracionCentro valoracion);
 }

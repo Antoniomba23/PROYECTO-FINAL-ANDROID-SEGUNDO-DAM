@@ -96,6 +96,7 @@ public class ActividadLogin extends AppCompatActivity {
                                 u = new com.dam.studybro.database.Usuario(
                                         correo.split("@")[0], correo, "", rolAuth
                                 );
+                                u.id = cuerpo.usuario.id; // Asignar el UUID de Supabase
                                 db.usuarioDao().insertarUsuario(u);
                             } else {
                                 u.rol = rolAuth; // Actualizamos rol por si acaso

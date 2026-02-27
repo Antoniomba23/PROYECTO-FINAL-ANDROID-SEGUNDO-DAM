@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ProgressBar;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -35,6 +36,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.dam.studybro.network.SupabaseApi;
+import com.dam.studybro.network.SupabaseClient;
+
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -55,6 +59,7 @@ public class ActividadPerfil extends AppCompatActivity {
 
     private ImageView ivAvatar;
     private String emailUsuario;
+    private String filtroActual = "MIS_PUBS"; // MIS_PUBS, UTILES, FAVS
 
     // Lanzador para abrir la galería del sistema
     private final ActivityResultLauncher<String> pickImage =
@@ -96,7 +101,9 @@ public class ActividadPerfil extends AppCompatActivity {
         String nombre = emailUsuario.contains("@")
                 ? emailUsuario.substring(0, emailUsuario.indexOf("@"))
                 : emailUsuario;
-        nombre = nombre.substring(0, 1).toUpperCase() + nombre.substring(1);
+        if (nombre != null && !nombre.isEmpty()) {
+            nombre = nombre.substring(0, 1).toUpperCase() + nombre.substring(1);
+        }
 
         // ── Vistas de texto ────────────────────────────────────────────────────
         ((TextView) findViewById(R.id.tvUsername)).setText(nombre);
@@ -142,31 +149,12 @@ public class ActividadPerfil extends AppCompatActivity {
 
         // ── Cargar estadísticas y publicaciones en hilo de fondo (sólo para estudiantes) ───────────────
         if (!"ADMIN".equals(rolUsuario)) {
-            final String emailFinal = emailUsuario;
-            executor.execute(() -> {
-                List<Publicacion> misPublicaciones = db.publicacionDao().obtenerPorUsuario(emailFinal);
-                int totalLikes = 0, totalFavs = 0;
-                for (Publicacion pub : misPublicaciones) {
-                    totalLikes += db.interaccionDao().contarInteracciones(pub.id, "ME_GUSTA");
-                    totalFavs  += db.interaccionDao().contarInteracciones(pub.id, "GUARDADO");
-                }
-                final int likesFinales = totalLikes;
-                final int favsFinales  = totalFavs;
+            cargarDatosCloud();
 
-                runOnUiThread(() -> {
-                    TextView tvPubs  = findViewById(R.id.tvStatPubs);
-                    TextView tvLikes = findViewById(R.id.tvStatLikes);
-                    TextView tvFavs  = findViewById(R.id.tvStatFavs);
-                    if (tvPubs  != null) tvPubs.setText(String.valueOf(misPublicaciones.size()));
-                    if (tvLikes != null) tvLikes.setText(String.valueOf(likesFinales));
-                    if (tvFavs  != null) tvFavs.setText(String.valueOf(favsFinales));
-
-                    adaptador.actualizarDatos(misPublicaciones);
-                    TextView tvNoPosts = findViewById(R.id.tvNoPosts);
-                    if (tvNoPosts != null)
-                        tvNoPosts.setVisibility(misPublicaciones.isEmpty() ? View.VISIBLE : View.GONE);
-                });
-            });
+            // Configurar Listeners de Filtros
+            findViewById(R.id.llStatPubs).setOnClickListener(v -> cambiarFiltro("MIS_PUBS"));
+            findViewById(R.id.llStatLikes).setOnClickListener(v -> cambiarFiltro("UTILES"));
+            findViewById(R.id.llStatFavs).setOnClickListener(v -> cambiarFiltro("FAVS"));
         }
 
         // ── Botón Cerrar Sesión ────────────────────────────────────────────────
@@ -187,12 +175,58 @@ public class ActividadPerfil extends AppCompatActivity {
                         .show()
         );
 
+        // ── Navegación ──
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
+        com.dam.studybro.utils.NavigationHelper.setupBottomNavigation(this, bottomNav);
+
         // ── Botón Nueva Publicación ────────────────────────────────────────────
         MaterialButton btnNuevaPublicacion = findViewById(R.id.btnNuevaPublicacion);
         if (btnNuevaPublicacion != null) {
             btnNuevaPublicacion.setOnClickListener(v ->
                     startActivity(new Intent(this, ActividadNuevaPublicacion.class)));
         }
+
+        // ── Botón Asistente IA ──────────────────────────────────────────────────
+        com.google.android.material.floatingactionbutton.FloatingActionButton fabGemini = findViewById(R.id.fabGemini);
+        if (fabGemini != null) {
+            fabGemini.setOnClickListener(v -> {
+                ProgressBar progressBar = findViewById(R.id.progressBar);
+                if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+                fabGemini.setEnabled(false);
+
+                String contexto = "El usuario está en su perfil personal. Tiene " + (adaptador != null ? adaptador.getItemCount() : 0) + " publicaciones visibles.";
+                com.dam.studybro.utils.GeminiHelper.pedirAyudaGeneral(contexto, "Consejos para mejorar mi perfil de estudiante o dudas sobre el app", 
+                    new com.dam.studybro.utils.GeminiHelper.GeminiCallback() {
+                        @Override
+                        public void onSuccess(String result) {
+                            if (progressBar != null) progressBar.setVisibility(View.GONE);
+                            fabGemini.setEnabled(true);
+                            mostrarDialogoAI(result);
+                        }
+                        @Override
+                        public void onError(String error) {
+                            if (progressBar != null) progressBar.setVisibility(View.GONE);
+                            fabGemini.setEnabled(true);
+                            Toast.makeText(ActividadPerfil.this, error, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+            });
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        cargarDatosCloud();
+    }
+
+    private void mostrarDialogoAI(String result) {
+        String textoLimpio = result.replace("**", "").replace("*", "•");
+        new AlertDialog.Builder(this)
+                .setTitle("✨ Asistente IA")
+                .setMessage(textoLimpio)
+                .setPositiveButton("Entendido", null)
+                .show();
     }
 
     /** Carga el avatar desde URL con Glide (forma circular) o muestra el icono por defecto. */
@@ -226,9 +260,9 @@ public class ActividadPerfil extends AppCompatActivity {
                         "file", nombreArchivo,
                         RequestBody.create(okhttp3.MediaType.parse("image/jpeg"), bytes));
 
-                // Recuperar access_token de prefs para la cabecera Bearer
+                // Recuperar token de prefs (se guardó como 'supabase_token' en login)
                 SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-                String token = prefs.getString("access_token", "");
+                String token = prefs.getString("supabase_token", "");
                 String bearer = "Bearer " + token;
 
                 Call<ServicioStorage.RespuestaStorage> call =
@@ -254,6 +288,104 @@ public class ActividadPerfil extends AppCompatActivity {
                         Toast.makeText(this, "No se pudo subir la foto", Toast.LENGTH_SHORT).show());
             }
         });
+    }
+
+    private void cambiarFiltro(String nuevoFiltro) {
+        this.filtroActual = nuevoFiltro;
+        // Cambiar títulos visuales
+        TextView tvLabel = findViewById(R.id.tvLabelMisPubs);
+        switch (nuevoFiltro) {
+            case "MIS_PUBS": tvLabel.setText("Mis publicaciones"); break;
+            case "UTILES":   tvLabel.setText("Archivos Útiles"); break;
+            case "FAVS":     tvLabel.setText("Mis Favoritos"); break;
+        }
+        actualizarListaSegunFiltro();
+    }
+
+    private void cargarDatosCloud() {
+        com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+        
+        // 1. Mis publicaciones
+        String queryId = "eq." + emailUsuario.toLowerCase();
+        api.getPublicacionesPorUsuario(queryId).enqueue(new retrofit2.Callback<List<Publicacion>>() {
+            @Override
+            public void onResponse(Call<List<Publicacion>> call, Response<List<Publicacion>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Publicacion> posts = response.body();
+                    TextView tvPubs = findViewById(R.id.tvStatPubs);
+                    if (tvPubs != null) tvPubs.setText(String.valueOf(posts.size()));
+                    if (filtroActual.equals("MIS_PUBS")) {
+                        adaptador.actualizarDatos(posts);
+                        toggleEmptyView(posts.isEmpty());
+                    }
+                }
+            }
+            @Override
+            public void onFailure(Call<List<Publicacion>> call, Throwable t) {}
+        });
+
+        // 2. Útiles (Interacciones locales + Supabase IDs)
+        executor.execute(() -> {
+            List<Integer> idsUtiles = db.interaccionDao().obtenerIdsInteracciones(emailUsuario, "ME_GUSTA");
+            runOnUiThread(() -> {
+                TextView tvLikes = findViewById(R.id.tvStatLikes);
+                if (tvLikes != null) tvLikes.setText(String.valueOf(idsUtiles.size()));
+                if (filtroActual.equals("UTILES")) cargarPorIds(idsUtiles);
+            });
+        });
+
+        // 3. Favoritos (Interacciones locales + Supabase IDs)
+        executor.execute(() -> {
+            List<Integer> idsFavs = db.interaccionDao().obtenerIdsInteracciones(emailUsuario, "GUARDADO");
+            runOnUiThread(() -> {
+                TextView tvFavs = findViewById(R.id.tvStatFavs);
+                if (tvFavs != null) tvFavs.setText(String.valueOf(idsFavs.size()));
+                if (filtroActual.equals("FAVS")) cargarPorIds(idsFavs);
+            });
+        });
+    }
+
+    private void cargarPorIds(List<Integer> ids) {
+        if (ids.isEmpty()) {
+            adaptador.actualizarDatos(new ArrayList<>());
+            toggleEmptyView(true);
+            return;
+        }
+        StringBuilder sb = new StringBuilder("in.(");
+        for (int i = 0; i < ids.size(); i++) {
+            sb.append(ids.get(i));
+            if (i < ids.size() - 1) sb.append(",");
+        }
+        sb.append(")");
+
+        com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+        api.getPublicacionesPorIds(sb.toString()).enqueue(new retrofit2.Callback<List<Publicacion>>() {
+            @Override
+            public void onResponse(Call<List<Publicacion>> call, Response<List<Publicacion>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    adaptador.actualizarDatos(response.body());
+                    toggleEmptyView(response.body().isEmpty());
+                }
+            }
+            @Override
+            public void onFailure(Call<List<Publicacion>> call, Throwable t) {}
+        });
+    }
+
+    private void toggleEmptyView(boolean empty) {
+        TextView tvNoPosts = findViewById(R.id.tvNoPosts);
+        if (tvNoPosts != null) {
+            tvNoPosts.setVisibility(empty ? View.VISIBLE : View.GONE);
+            if (empty) {
+                if (filtroActual.equals("UTILES")) tvNoPosts.setText("No tienes archivos marcados como útiles 💡");
+                else if (filtroActual.equals("FAVS")) tvNoPosts.setText("No tienes archivos favoritos ⭐️");
+                else tvNoPosts.setText("Aún no has publicado nada 📭");
+            }
+        }
+    }
+
+    private void actualizarListaSegunFiltro() {
+        cargarDatosCloud();
     }
 
     @Override

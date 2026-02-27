@@ -11,6 +11,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -118,8 +120,46 @@ public class ActividadPublicaciones extends AppCompatActivity {
             fab.setVisibility(View.GONE);
         }
 
-        // Cargar publicaciones
+        // Cargar publicaciones y configurar navegación
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
+        com.dam.studybro.utils.NavigationHelper.setupBottomNavigation(this, bottomNav);
+        
         cargarPublicaciones();
+
+        // ── Botón Asistente IA ──────────────────────────────────────────────────
+        com.google.android.material.floatingactionbutton.FloatingActionButton fabGemini = findViewById(R.id.fabGemini);
+        if (fabGemini != null) {
+            fabGemini.setOnClickListener(v -> {
+                findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+                fabGemini.setEnabled(false);
+
+                String contexto = "Asignatura: " + (nombreAsignatura != null ? nombreAsignatura : "Todas") + ". Hay " + adaptador.getItemCount() + " publicaciones visibles.";
+                com.dam.studybro.utils.GeminiHelper.pedirAyudaGeneral(contexto, "¿De qué tratan estas publicaciones? ¿Me puedes resumir qué hay disponible?", 
+                    new com.dam.studybro.utils.GeminiHelper.GeminiCallback() {
+                        @Override
+                        public void onSuccess(String result) {
+                            findViewById(R.id.progressBar).setVisibility(View.GONE);
+                            fabGemini.setEnabled(true);
+                            mostrarDialogoAI(result);
+                        }
+                        @Override
+                        public void onError(String error) {
+                            findViewById(R.id.progressBar).setVisibility(View.GONE);
+                            fabGemini.setEnabled(true);
+                            Toast.makeText(ActividadPublicaciones.this, error, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+            });
+        }
+    }
+
+    private void mostrarDialogoAI(String result) {
+        String textoLimpio = result.replace("**", "").replace("*", "•");
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("✨ Asistente IA")
+                .setMessage(textoLimpio)
+                .setPositiveButton("Entendido", null)
+                .show();
     }
 
     @Override
@@ -129,16 +169,33 @@ public class ActividadPublicaciones extends AppCompatActivity {
     }
 
     private void cargarPublicaciones() {
-        executor.execute(() -> {
-            List<Publicacion> lista;
-            if (asignaturaId == -1) {
-                lista = db.publicacionDao().obtenerTodas();
-            } else {
-                lista = db.publicacionDao().obtenerPorAsignatura(asignaturaId);
+        com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+        retrofit2.Call<List<com.dam.studybro.database.Publicacion>> call;
+
+        if (asignaturaId == -1) {
+            // Panel de Admin: Ver todas
+            call = api.getPublicaciones();
+        } else {
+            // Estudiante: Filtrar por asignatura actual
+            call = api.getPublicacionesPorAsignatura("eq." + asignaturaId);
+        }
+
+        call.enqueue(new retrofit2.Callback<List<com.dam.studybro.database.Publicacion>>() {
+            @Override
+            public void onResponse(retrofit2.Call<List<com.dam.studybro.database.Publicacion>> call, retrofit2.Response<List<com.dam.studybro.database.Publicacion>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    listaCompleta.clear();
+                    listaCompleta.addAll(response.body());
+                    filtrarYOrdenar("");
+                } else {
+                    android.widget.Toast.makeText(ActividadPublicaciones.this, "Error al cargar la nube: " + response.code(), android.widget.Toast.LENGTH_SHORT).show();
+                }
             }
-            listaCompleta.clear();
-            listaCompleta.addAll(lista);
-            runOnUiThread(() -> filtrarYOrdenar(""));
+
+            @Override
+            public void onFailure(retrofit2.Call<List<com.dam.studybro.database.Publicacion>> call, Throwable t) {
+                android.widget.Toast.makeText(ActividadPublicaciones.this, "Error de red: " + t.getMessage(), android.widget.Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

@@ -68,6 +68,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:padding="8dp"
+            android:paddingBottom="88dp"
             android:clipToPadding="false"/>
 
         <!-- Mensaje vacío -->
@@ -88,7 +89,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="72dp"
         android:src="@drawable/ic_add"
         android:contentDescription="Nueva publicación"
         android:visibility="gone"/>
@@ -99,5 +101,26 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone"/>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/surface"
+        app:menu="@menu/menu_bottom_nav" />
+
+    <!-- Botón flotante para Gemini AI -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabGemini"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="40dp"
+        android:src="@drawable/ic_star"
+        app:tint="@color/white"
+        app:backgroundTint="@color/primary"
+        android:theme="@style/Theme.MaterialComponents.DayNight"
+        app:layout_anchor="@id/bottomNavigation"
+        app:layout_anchorGravity="top|start"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

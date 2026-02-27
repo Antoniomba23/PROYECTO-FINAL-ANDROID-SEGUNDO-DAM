@@ -44,6 +44,17 @@
                 android:gravity="top"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Botón Asistente IA para creación -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAyudaIA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="Asistente IA"
+            app:icon="@drawable/ic_star"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_marginBottom="16dp"/>
+
         <!-- Selector de Asignatura -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -76,7 +87,21 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Curso académico"
+            android:hint="Año académico (ej. 2023-2024)"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_marginBottom="16dp">
+            <AutoCompleteTextView
+                android:id="@+id/spinnerAnio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Selector de Curso (1º o 2º) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Curso"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_marginBottom="16dp">
             <AutoCompleteTextView

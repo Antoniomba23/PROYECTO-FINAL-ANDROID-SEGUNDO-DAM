@@ -18,6 +18,10 @@ public interface InteraccionDao {
     @Query("SELECT COUNT(*) FROM interacciones WHERE publicacion_id = :publicacionId AND tipo = :tipo")
     int contarInteracciones(int publicacionId, String tipo);
 
+    /** Obtiene los IDs de las publicaciones con las que un usuario ha interactuado */
+    @Query("SELECT publicacion_id FROM interacciones WHERE usuario_id = :usuarioId AND tipo = :tipo")
+    java.util.List<Integer> obtenerIdsInteracciones(String usuarioId, String tipo);
+
     /** Busca si el usuario ya interactuó con una publicación de cierto tipo */
     @Query("SELECT * FROM interacciones WHERE publicacion_id = :publicacionId AND usuario_id = :usuarioId AND tipo = :tipo LIMIT 1")
     Interaccion obtenerInteraccion(int publicacionId, String usuarioId, String tipo);

@@ -3,6 +3,7 @@ package com.dam.studybro.database;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.ColumnInfo;
+import androidx.room.Ignore;
 
 @Entity(tableName = "especialidades")
 public class Especialidad {
@@ -17,6 +18,7 @@ public class Especialidad {
 
     public Especialidad() {}
 
+    @Ignore
     public Especialidad(String nombre, String codigoApi) {
         this.nombre = nombre;
         this.codigoApi = codigoApi;

@@ -28,9 +28,10 @@ public class ActividadAsignaturas extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.actividad_asignaturas);
 
-        // Usar el ActionBar del tema
+        // Configurar Toolbar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Asignaturas");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -54,7 +55,14 @@ public class ActividadAsignaturas extends AppCompatActivity {
 
         // Configurar FAB
         fabSugerir = findViewById(R.id.fabSugerir);
-        fabSugerir.setOnClickListener(v -> mostrarSugerencias());
+        
+        android.content.SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        boolean sesionIniciada = prefs.getBoolean("sesion_iniciada", false);
+        if (!sesionIniciada || "ADMIN".equals(prefs.getString("rol_usuario", ""))) {
+            fabSugerir.setVisibility(android.view.View.GONE);
+        } else {
+            fabSugerir.setOnClickListener(v -> mostrarSugerencias());
+        }
 
         cargarAsignaturas();
     }
@@ -69,6 +77,7 @@ public class ActividadAsignaturas extends AppCompatActivity {
 
         Intent intent = new Intent(this, ActividadSugerirEntidad.class);
         intent.putExtra("centro_id", centroId);
+        intent.putExtra("especialidad_id", especialidadId);
         startActivity(intent);
     }
 

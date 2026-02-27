@@ -20,11 +20,20 @@ public class ActividadPerfilCentro extends AppCompatActivity {
     private int centroId;
     private com.dam.studybro.database.Centro centroActual;
     private java.util.concurrent.ExecutorService executorService;
+    private String opinionesParaIA = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.actividad_perfil_centro);
+
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Perfil del Centro");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         // 1. Inicializar DB
         db = com.dam.studybro.database.BaseDatosApp.getInstance(getApplicationContext());
@@ -59,11 +68,55 @@ public class ActividadPerfilCentro extends AppCompatActivity {
         cargarDatosCentro();
         cargarEspecialidades();
         cargarResenas();
+        
+        // 4b. Ocultar sugerencias y valoración si es admin o invitado
+        android.content.SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        boolean sesionIniciada = prefs.getBoolean("sesion_iniciada", false);
+        String rol = prefs.getString("rol_usuario", "");
+
+        if (!sesionIniciada || "ADMIN".equals(rol)) {
+            btnSugerirEntidad.setVisibility(android.view.View.GONE);
+            btnValorar.setVisibility(android.view.View.GONE);
+        }
 
         // 5. Eventos
         btnValorar.setOnClickListener(v -> mostrarDialogoValoracion());
         btnWeb.setOnClickListener(v -> abrirWeb());
         btnSugerirEntidad.setOnClickListener(v -> mostrarSugerencias());
+
+        // 6. Bot Gemini y Navegación
+        com.google.android.material.floatingactionbutton.FloatingActionButton fabGemini = findViewById(R.id.fabGemini);
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
+        com.dam.studybro.utils.NavigationHelper.setupBottomNavigation(this, bottomNav);
+
+        if (fabGemini != null) {
+            fabGemini.setOnClickListener(v -> {
+                if (opinionesParaIA == null || opinionesParaIA.isEmpty()) {
+                    Toast.makeText(this, "No hay opiniones suficientes para analizar", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                
+                fabGemini.setEnabled(false);
+                
+                com.dam.studybro.utils.GeminiHelper.analizarOpiniones(
+                    centroActual != null ? centroActual.nombre : "este centro",
+                    opinionesParaIA,
+                    new com.dam.studybro.utils.GeminiHelper.GeminiCallback() {
+                        @Override
+                        public void onSuccess(String result) {
+                            fabGemini.setEnabled(true);
+                            mostrarDialogoResumen(result);
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            fabGemini.setEnabled(true);
+                            Toast.makeText(ActividadPerfilCentro.this, error, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                );
+            });
+        }
     }
 
     private void cargarDatosCentro() {
@@ -167,12 +220,41 @@ public class ActividadPerfilCentro extends AppCompatActivity {
     }
 
     private void cargarResenas() {
-        executorService.execute(() -> {
-            java.util.List<com.dam.studybro.database.ValoracionCentro> lista = db.valoracionCentroDao().obtenerPorCentro(centroId);
-            runOnUiThread(() -> {
-                com.dam.studybro.adapters.AdaptadorResenas adp = new com.dam.studybro.adapters.AdaptadorResenas(lista);
-                rvResenas.setAdapter(adp);
-            });
+        com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+        api.getValoracionesCentro("eq." + centroId).enqueue(new retrofit2.Callback<java.util.List<com.dam.studybro.database.ValoracionCentro>>() {
+            @Override
+            public void onResponse(retrofit2.Call<java.util.List<com.dam.studybro.database.ValoracionCentro>> call, retrofit2.Response<java.util.List<com.dam.studybro.database.ValoracionCentro>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    java.util.List<com.dam.studybro.database.ValoracionCentro> lista = response.body();
+                    
+                    // Calcular nueva media
+                    if (!lista.isEmpty()) {
+                        float suma = 0;
+                        for (com.dam.studybro.database.ValoracionCentro v : lista) {
+                            suma += v.puntuacion;
+                        }
+                        actualizarTextoRating(suma / lista.size());
+                    } else {
+                        actualizarTextoRating(0);
+                    }
+
+                    com.dam.studybro.adapters.AdaptadorResenas adp = new com.dam.studybro.adapters.AdaptadorResenas(lista);
+                    rvResenas.setAdapter(adp);
+
+                    // Preparar texto para Gemini
+                    StringBuilder sb = new StringBuilder();
+                    for (com.dam.studybro.database.ValoracionCentro v : lista) {
+                        String comentarioLimpio = v.comentario.contains("|||") ? v.comentario.split("\\|\\|\\|")[1] : v.comentario;
+                        sb.append("- (").append(v.puntuacion).append(" estrellas) ").append(comentarioLimpio).append("\n");
+                    }
+                    opinionesParaIA = sb.toString();
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<java.util.List<com.dam.studybro.database.ValoracionCentro>> call, Throwable t) {
+                Toast.makeText(ActividadPerfilCentro.this, "Error al cargar reseñas de la nube", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -182,70 +264,169 @@ public class ActividadPerfilCentro extends AppCompatActivity {
     }
 
     private void mostrarDialogoValoracion() {
-        // Diálogo Custom con Valoración + Texto
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        builder.setTitle("Valora este centro");
+        android.content.SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        String email = prefs.getString("email_usuario", "");
+        
+        if (email.isEmpty()) {
+            Toast.makeText(this, "Error de sesión", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
-        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
-        layout.setPadding(50, 40, 50, 10);
+        // Buscar si ya existe una valoración de este usuario en la nube
+        com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+        
+        api.getValoracionPropia("eq." + centroId, "eq." + email).enqueue(new retrofit2.Callback<java.util.List<com.dam.studybro.database.ValoracionCentro>>() {
+            @Override
+            public void onResponse(retrofit2.Call<java.util.List<com.dam.studybro.database.ValoracionCentro>> call, retrofit2.Response<java.util.List<com.dam.studybro.database.ValoracionCentro>> response) {
+                com.dam.studybro.database.ValoracionCentro valPrevia = null;
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    valPrevia = response.body().get(0);
+                }
+                
+                final com.dam.studybro.database.ValoracionCentro fValPrevia = valPrevia;
+                mostrarDialogoRating(fValPrevia, email);
+            }
 
-        // Barra de Estrellas (RatingBar)
-        // Usamos un Slider o simple TextFields para simplificar si no tenemos RatingBar en layout,
-        // pero mejor usar Input simple de texto para puntuación (1-5) y comentario.
-        final android.widget.EditText inputPuntos = new android.widget.EditText(this);
-        inputPuntos.setHint("Puntuación (1-5)");
-        inputPuntos.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-        layout.addView(inputPuntos);
-
-        final android.widget.EditText inputComentario = new android.widget.EditText(this);
-        inputComentario.setHint("Escribe tu opinión...");
-        layout.addView(inputComentario);
-
-        builder.setView(layout);
-
-        builder.setPositiveButton("Enviar", (dialog, which) -> {
-            String puntosStr = inputPuntos.getText().toString();
-            String comentario = inputComentario.getText().toString();
-
-            if (!puntosStr.isEmpty()) {
-                int puntos = Integer.parseInt(puntosStr);
-                if (puntos < 1) puntos = 1;
-                if (puntos > 5) puntos = 5;
-                guardarValoracion(puntos, comentario);
+            @Override
+            public void onFailure(retrofit2.Call<java.util.List<com.dam.studybro.database.ValoracionCentro>> call, Throwable t) {
+                mostrarDialogoRating(null, email);
             }
         });
-        builder.setNegativeButton("Cancelar", null);
+    }
+
+    private void mostrarDialogoRating(com.dam.studybro.database.ValoracionCentro fValPrevia, String email) {
+        android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialogo_valoracion, null);
+        android.widget.RatingBar ratingBar = dialogView.findViewById(R.id.ratingBar);
+        com.google.android.material.textfield.TextInputEditText etComentario = dialogView.findViewById(R.id.etComentario);
+
+        if (fValPrevia != null) {
+            ratingBar.setRating(fValPrevia.puntuacion);
+            String[] partes = fValPrevia.comentario.split("\\|\\|\\|");
+            if (partes.length >= 2) {
+                etComentario.setText(partes[1]);
+            } else {
+                etComentario.setText(fValPrevia.comentario);
+            }
+        }
+
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(ActividadPerfilCentro.this)
+                .setTitle(fValPrevia != null ? "Editar tu valoración" : "Valora este centro")
+                .setView(dialogView)
+                .setPositiveButton("Guardar", (dialog, which) -> {
+                    int puntuacion = (int) ratingBar.getRating();
+                    String comentario = etComentario.getText() != null ? etComentario.getText().toString().trim() : "";
+                    
+                    if (puntuacion > 0) {
+                        guardarValoracion(puntuacion, comentario, fValPrevia, email);
+                    } else {
+                        Toast.makeText(ActividadPerfilCentro.this, "Por favor, selecciona al menos una estrella", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancelar", null);
+        
+        if (fValPrevia != null) {
+            builder.setNeutralButton("Borrar", (dialog, which) -> borrarValoracion(fValPrevia));
+        }
+        
         builder.show();
     }
 
-    private void guardarValoracion(int puntuacion, String comentario) {
-        // Obtener email del usuario (se usa como identificador)
-        android.content.SharedPreferences prefs =
-                getSharedPreferences("MisPreferencias", MODE_PRIVATE);
-        boolean sesionIniciada = prefs.getBoolean("sesion_iniciada", false);
-        if (!sesionIniciada) {
-            android.widget.Toast.makeText(this, "Inicia sesión para valorar", android.widget.Toast.LENGTH_SHORT).show();
-            return;
-        }
-        String email = prefs.getString("email_usuario", "anonimo");
-
-        executorService.execute(() -> {
-            // Prefijamos el email en el comentario para identificar al autor fácilmente
-            String comentarioAnotado = email + "|||" + comentario;
-            com.dam.studybro.database.ValoracionCentro nuevaVal = new com.dam.studybro.database.ValoracionCentro(
-                    puntuacion, comentarioAnotado, System.currentTimeMillis(), 0, centroId);
-            db.valoracionCentroDao().insertar(nuevaVal);
-
-            float nuevaMedia = db.valoracionCentroDao().obtenerMedia(centroId);
-            centroActual.valoracionMedia = nuevaMedia;
-            db.centroDao().actualizar(centroActual);
-
-            runOnUiThread(() -> {
-                actualizarTextoRating(nuevaMedia);
-                cargarResenas();
-                android.widget.Toast.makeText(this, "Opinión guardada", android.widget.Toast.LENGTH_SHORT).show();
+    private void guardarValoracion(int puntuacion, String comentario, com.dam.studybro.database.ValoracionCentro valPrevia, String email) {
+        com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+        String comentarioAnotado = email + "|||" + comentario;
+        
+        if (valPrevia != null) {
+            // Actualizar existente
+            com.dam.studybro.network.CrearValoracionRequest req = new com.dam.studybro.network.CrearValoracionRequest();
+            req.puntuacion = puntuacion;
+            req.comentario = comentarioAnotado;
+            req.fecha = System.currentTimeMillis();
+            req.usuarioEmail = email;
+            req.centroId = centroId;
+            
+            api.actualizarValoracionCentro("eq." + valPrevia.id, req).enqueue(new retrofit2.Callback<Void>() {
+                @Override
+                public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        cargarResenas(); // Esto actualizará la media y la lista
+                        Toast.makeText(ActividadPerfilCentro.this, "Opinión actualizada", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(ActividadPerfilCentro.this, "Error al actualizar: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(retrofit2.Call<java.lang.Void> call, java.lang.Throwable t) {
+                    Toast.makeText(ActividadPerfilCentro.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             });
+        } else {
+            // Crear nueva
+            com.dam.studybro.network.CrearValoracionRequest nuevaVal = new com.dam.studybro.network.CrearValoracionRequest();
+            nuevaVal.puntuacion = puntuacion;
+            nuevaVal.comentario = comentarioAnotado;
+            nuevaVal.fecha = System.currentTimeMillis();
+            nuevaVal.usuarioEmail = email;
+            nuevaVal.centroId = centroId;
+            
+            api.crearValoracionCentro(nuevaVal).enqueue(new retrofit2.Callback<Void>() {
+                @Override
+                public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        cargarResenas();
+                        Toast.makeText(ActividadPerfilCentro.this, "Opinión guardada", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                    Toast.makeText(ActividadPerfilCentro.this, "Error al guardar", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+
+    private void borrarValoracion(com.dam.studybro.database.ValoracionCentro valPrevia) {
+        com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+        api.eliminarValoracionCentro("eq." + valPrevia.id).enqueue(new retrofit2.Callback<Void>() {
+            @Override
+            public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                if (response.isSuccessful()) {
+                    cargarResenas();
+                    Toast.makeText(ActividadPerfilCentro.this, "Opinión eliminada", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ActividadPerfilCentro.this, "Error al eliminar: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                Toast.makeText(ActividadPerfilCentro.this, "Error al eliminar: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
+    }
+
+    private void mostrarDialogoResumen(String textoMarkdown) {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle("💡 Análisis de la IA (Gemini)");
+
+        // Limpiar un poco el Markdown básico de Gemini
+        String textoLimpio = textoMarkdown.replace("**", "").replace("*", "•");
+
+        android.widget.ScrollView scrollView = new android.widget.ScrollView(this);
+        scrollView.setPadding(40, 40, 40, 40);
+        TextView tvResumen = new TextView(this);
+        tvResumen.setText(textoLimpio);
+        tvResumen.setTextSize(15f);
+        tvResumen.setTextColor(getResources().getColor(R.color.text_primary, getTheme()));
+        scrollView.addView(tvResumen);
+
+        builder.setView(scrollView);
+        builder.setPositiveButton("Cerrar", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }

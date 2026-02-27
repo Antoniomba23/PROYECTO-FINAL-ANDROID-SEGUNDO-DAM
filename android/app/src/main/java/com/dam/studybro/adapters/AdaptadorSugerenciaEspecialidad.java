@@ -9,11 +9,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.dam.studybro.R;
 import com.dam.studybro.database.SugerenciaEspecialidad;
+import com.dam.studybro.database.SugerenciaEspecialidadConCentro;
 import java.util.List;
 
 public class AdaptadorSugerenciaEspecialidad extends RecyclerView.Adapter<AdaptadorSugerenciaEspecialidad.ViewHolder> {
 
-    private List<SugerenciaEspecialidad> sugerencias;
+    private List<SugerenciaEspecialidadConCentro> sugerencias;
     private final OnSugerenciaClickListener listener;
 
     public interface OnSugerenciaClickListener {
@@ -21,12 +22,12 @@ public class AdaptadorSugerenciaEspecialidad extends RecyclerView.Adapter<Adapta
         void onRechazar(SugerenciaEspecialidad sugerencia);
     }
 
-    public AdaptadorSugerenciaEspecialidad(List<SugerenciaEspecialidad> sugerencias, OnSugerenciaClickListener listener) {
+    public AdaptadorSugerenciaEspecialidad(List<SugerenciaEspecialidadConCentro> sugerencias, OnSugerenciaClickListener listener) {
         this.sugerencias = sugerencias;
         this.listener = listener;
     }
 
-    public void actualizarLista(List<SugerenciaEspecialidad> nuevaLista) {
+    public void actualizarLista(List<SugerenciaEspecialidadConCentro> nuevaLista) {
         this.sugerencias = nuevaLista;
         notifyDataSetChanged();
     }
@@ -40,9 +41,10 @@ public class AdaptadorSugerenciaEspecialidad extends RecyclerView.Adapter<Adapta
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        SugerenciaEspecialidad sub = sugerencias.get(position);
+        SugerenciaEspecialidadConCentro item = sugerencias.get(position);
+        SugerenciaEspecialidad sub = item.sugerencia;
         holder.tvNombre.setText(sub.nombreSugerido);
-        holder.tvDetalles.setText("Centro: " + sub.centroId + " | Por: " + sub.emailSolicitante);
+        holder.tvDetalles.setText("Centro: " + item.nombreCentro + " | Por: " + sub.emailSolicitante);
         
         holder.btnAprobar.setOnClickListener(v -> {
             if (listener != null) listener.onAprobar(sub);

@@ -23,6 +23,8 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingBottom="88dp"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -139,11 +141,15 @@
 
                         <!-- Publicaciones -->
                         <LinearLayout
+                            android:id="@+id/llStatPubs"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical"
-                            android:gravity="center">
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackground">
 
                             <TextView
                                 android:id="@+id/tvStatPubs"
@@ -170,11 +176,15 @@
 
                         <!-- Likes recibidos -->
                         <LinearLayout
+                            android:id="@+id/llStatLikes"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical"
-                            android:gravity="center">
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackground">
 
                             <TextView
                                 android:id="@+id/tvStatLikes"
@@ -201,11 +211,15 @@
 
                         <!-- Favoritos recibidos -->
                         <LinearLayout
+                            android:id="@+id/llStatFavs"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical"
-                            android:gravity="center">
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackground">
 
                             <TextView
                                 android:id="@+id/tvStatFavs"
@@ -286,5 +300,26 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone"/>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/surface"
+        app:menu="@menu/menu_bottom_nav" />
+
+    <!-- Botón flotante para Gemini AI -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabGemini"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="40dp"
+        android:src="@drawable/ic_star"
+        app:tint="@color/white"
+        app:backgroundTint="@color/primary"
+        android:theme="@style/Theme.MaterialComponents.DayNight"
+        app:layout_anchor="@id/bottomNavigation"
+        app:layout_anchorGravity="top|start"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

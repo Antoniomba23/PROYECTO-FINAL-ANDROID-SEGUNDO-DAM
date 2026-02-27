@@ -25,7 +25,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:paddingBottom="72dp">
+        android:paddingBottom="120dp"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -145,6 +146,40 @@
                         </LinearLayout>
                     </LinearLayout>
 
+                    <!-- Sección de Archivo Adjunto (Oculta por defecto) -->
+                    <LinearLayout
+                        android:id="@+id/layoutAttachment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layout_marginBottom="16dp">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/divider"
+                            android:layout_marginBottom="12dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Archivo adjunto"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="8dp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnViewAttachment"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Abrir PDF / Recurso"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            app:icon="@drawable/ic_attach_file"
+                            app:iconGravity="textStart"/>
+                    </LinearLayout>
+
                     <!-- Botones de interacción con contadores -->
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -246,6 +281,7 @@
 
     <!-- Campo para añadir comentario (fijo abajo) -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardComment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -255,9 +291,44 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            android:gravity="center_vertical">
+            android:orientation="vertical">
+
+            <!-- Indicador de respuesta (oculto por defecto) -->
+            <LinearLayout
+                android:id="@+id/layoutReplyingTo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@color/primary_light"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="4dp"
+                android:gravity="center_vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvReplyingTo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Respondiendo a Usuario"
+                    android:textSize="12sp"
+                    android:textColor="@color/primary"/>
+
+                <ImageButton
+                    android:id="@+id/btnCancelReply"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_close"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/primary"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:gravity="center_vertical">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etComment"
@@ -276,8 +347,22 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/send"
                 app:tint="@color/primary"/>
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <!-- Botón flotante para Gemini AI -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabGemini"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="40dp"
+        android:src="@drawable/ic_star"
+        app:tint="@color/white"
+        app:backgroundTint="@color/primary"
+        android:theme="@style/Theme.MaterialComponents.DayNight"
+        app:layout_anchor="@id/cardComment"
+        app:layout_anchorGravity="top|start"/>
 
     <!-- ProgressBar -->
     <ProgressBar

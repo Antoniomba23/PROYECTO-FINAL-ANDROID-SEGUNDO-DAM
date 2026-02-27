@@ -15,7 +15,15 @@ import com.dam.studybro.database.BaseDatosApp;
 import com.dam.studybro.database.CentroEspecialidad;
 import com.dam.studybro.database.Especialidad;
 import com.dam.studybro.database.SugerenciaEspecialidad;
+import com.dam.studybro.database.SugerenciaEspecialidadConCentro;
 import com.dam.studybro.database.SugerenciaMateria;
+import com.dam.studybro.database.SugerenciaMateriaConCentro;
+
+import com.dam.studybro.network.SupabaseApi;
+import com.dam.studybro.network.SupabaseClient;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -80,8 +88,8 @@ public class ActividadModerarSugerencias extends AppCompatActivity {
 
     private void cargarDatos() {
         executor.execute(() -> {
-            List<SugerenciaEspecialidad> listaEsp = db.sugerenciaEspecialidadDao().obtenerTodas();
-            List<SugerenciaMateria> listaMat = db.sugerenciaMateriaDao().obtenerTodas();
+            List<SugerenciaEspecialidadConCentro> listaEsp = db.sugerenciaEspecialidadDao().obtenerTodasConCentro();
+            List<SugerenciaMateriaConCentro> listaMat = db.sugerenciaMateriaDao().obtenerTodasConCentro();
 
             runOnUiThread(() -> {
                 adpEspecialidades.actualizarLista(listaEsp);
@@ -101,6 +109,9 @@ public class ActividadModerarSugerencias extends AppCompatActivity {
 
             // 3. Borrar de sugerencias pendientes
             db.sugerenciaEspecialidadDao().eliminarPorId(sugerencia.id);
+
+            // 4. Sincronizar con Supabase
+            sincronizarEspecialidadAprobada(nuevaReal, sugerencia.centroId);
 
             runOnUiThread(() -> {
                 Toast.makeText(this, "Especialidad aprobada e integrada", Toast.LENGTH_SHORT).show();
@@ -124,18 +135,25 @@ public class ActividadModerarSugerencias extends AppCompatActivity {
             // Nota: Como los alumnos solicitan una materia desde dentro de un "Centro", 
             // no sabemos exactamente a qué Especialidad dentro de ese centro la quieren añadir 
             // a menos que modificásemos todo el formulario estudiante.
-            // Para simplificar, la asignaremos a una Especialidad genérica "Materias Extra" 
+            // Para simplificar, la asignaremos a una Especialidad genérica "Estudios Generales" 
             // o a la primera especialidad del centro.
             
             // Buscar la primera especialidad de este centro para asignarle la materia
-            List<Especialidad> especialidadesDelCentro = db.centroEspecialidadDao().obtenerPorCentro(sugerencia.centroId);
-            
-            if (especialidadesDelCentro.isEmpty()) {
-                runOnUiThread(() -> Toast.makeText(this, "El centro no tiene especialidades. Imposible asignar materia.", Toast.LENGTH_LONG).show());
-                return;
+            int especialidadDestinoId;
+
+            if (sugerencia.especialidadId != -1) {
+                especialidadDestinoId = sugerencia.especialidadId;
+            } else {
+                List<Especialidad> especialidadesDelCentro = db.centroEspecialidadDao().obtenerPorCentro(sugerencia.centroId);
+                if (especialidadesDelCentro.isEmpty()) {
+                    // Crear una especialidad genérica de emergencia
+                    Especialidad espDefecto = new Especialidad("GRAL", "Estudios Generales");
+                    especialidadDestinoId = (int) db.especialidadDao().insertar(espDefecto);
+                    db.centroEspecialidadDao().insertar(new CentroEspecialidad(sugerencia.centroId, especialidadDestinoId));
+                } else {
+                    especialidadDestinoId = especialidadesDelCentro.get(0).id;
+                }
             }
-            
-            int especialidadDestinoId = especialidadesDelCentro.get(0).id;
 
             // 1. Insertar en tabla real de Asignaturas
             Asignatura nuevaReal = new Asignatura(sugerencia.nombreSugerido, sugerencia.cursoSugerido, especialidadDestinoId);
@@ -143,6 +161,9 @@ public class ActividadModerarSugerencias extends AppCompatActivity {
 
             // 2. Borrar sugerencia
             db.sugerenciaMateriaDao().eliminarPorId(sugerencia.id);
+
+            // 3. Sincronizar con Supabase
+            sincronizarMateriaAprobada(nuevaReal);
 
             runOnUiThread(() -> {
                 Toast.makeText(this, "Materia aprobada e integrada a la primera especialidad", Toast.LENGTH_LONG).show();
@@ -158,6 +179,35 @@ public class ActividadModerarSugerencias extends AppCompatActivity {
                 Toast.makeText(this, "Materia descartada", Toast.LENGTH_SHORT).show();
                 cargarDatos();
             });
+        });
+    }
+
+    private void sincronizarEspecialidadAprobada(Especialidad esp, int centroId) {
+        SupabaseApi api = SupabaseClient.getClient().create(SupabaseApi.class);
+        api.crearEspecialidad(esp).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    api.crearCentroEspecialidad(new CentroEspecialidad(centroId, esp.id)).enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, Response<Void> response) {}
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {}
+                    });
+                }
+            }
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {}
+        });
+    }
+
+    private void sincronizarMateriaAprobada(Asignatura asig) {
+        SupabaseApi api = SupabaseClient.getClient().create(SupabaseApi.class);
+        api.crearAsignatura(asig).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {}
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {}
         });
     }
 

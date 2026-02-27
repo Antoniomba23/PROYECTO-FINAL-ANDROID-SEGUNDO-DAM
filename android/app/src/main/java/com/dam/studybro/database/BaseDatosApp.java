@@ -18,7 +18,7 @@ import androidx.room.RoomDatabase;
         CentroEspecialidad.class,
         SugerenciaEspecialidad.class,
         SugerenciaMateria.class
-}, version = 10)
+}, version = 17, exportSchema = false)
 public abstract class BaseDatosApp extends RoomDatabase {
     public abstract UsuarioDao usuarioDao();
     public abstract CentroDao centroDao();

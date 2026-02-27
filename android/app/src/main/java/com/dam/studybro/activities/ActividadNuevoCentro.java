@@ -18,6 +18,12 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import android.widget.CheckBox;
 
+import com.dam.studybro.network.SupabaseApi;
+import com.dam.studybro.network.SupabaseClient;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 /**
  * Formulario para uso exclusivo del Administrador que permite
  * agregar centros adicionales manualmente a la base de datos local (Room).
@@ -122,14 +128,44 @@ public class ActividadNuevoCentro extends AppCompatActivity {
                 }
             }
             
-            if (!vinculos.isEmpty()) {
-                db.centroEspecialidadDao().insertarLista(vinculos);
-            }
+            db.centroEspecialidadDao().insertarLista(vinculos);
+
+            // --- SINCRONIZACIÓN CON SUPABASE (NUBE) ---
+            sincronizarConSupabase(c, vinculos);
 
             runOnUiThread(() -> {
-                Toast.makeText(ActividadNuevoCentro.this, "Centro añadido correctamente", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ActividadNuevoCentro.this, "Centro añadido localmente. Sincronizando...", Toast.LENGTH_SHORT).show();
                 finish();
             });
+        });
+    }
+
+    private void sincronizarConSupabase(Centro centro, List<CentroEspecialidad> vinculos) {
+        SupabaseApi api = SupabaseClient.getClient().create(SupabaseApi.class);
+
+        // 1. Subir el Centro
+        api.crearCentro(centro).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    // 2. Subir los vínculos Centro-Especialidad
+                    // Nota: Room usa IDs locales. En Supabase dependemos de que los IDs coincidan o usar codigoApi.
+                    // Para este MVP, asumimos códigos API únicos para la relación.
+                    for (CentroEspecialidad ce : vinculos) {
+                        api.crearCentroEspecialidad(ce).enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {}
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {}
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                // Fallo silencioso o log, el usuario ya tiene el dato en local.
+            }
         });
     }
 

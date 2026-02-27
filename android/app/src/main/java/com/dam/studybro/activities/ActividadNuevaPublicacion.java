@@ -26,7 +26,7 @@ import java.util.concurrent.Executors;
 public class ActividadNuevaPublicacion extends AppCompatActivity {
 
     private TextInputEditText etTitulo, etDescripcion;
-    private AutoCompleteTextView spinnerTipo, spinnerAsignatura, spinnerCurso;
+    private AutoCompleteTextView spinnerTipo, spinnerAsignatura, spinnerAnio, spinnerCurso;
     private TextView tvNombreArchivo;
     private Uri archivoSeleccionado = null;
 
@@ -62,13 +62,17 @@ public class ActividadNuevaPublicacion extends AppCompatActivity {
         executorService = Executors.newSingleThreadExecutor();
 
         // Recibir asignatura preseleccionada del Intent (si viene desde una materia)
-        asignaturaPreseleccionada = getIntent().getIntExtra("asignatura_id_preselected", -1);
+        asignaturaPreseleccionada = getIntent().getIntExtra("asignatura_id", -1);
+        if (asignaturaPreseleccionada == -1) {
+            asignaturaPreseleccionada = getIntent().getIntExtra("asignatura_id_preselected", -1);
+        }
 
         // Vincular campos
         etTitulo = findViewById(R.id.etTitle);
         etDescripcion = findViewById(R.id.etDescription);
         spinnerTipo = findViewById(R.id.spinnerType);
         spinnerAsignatura = findViewById(R.id.spinnerSubject);
+        spinnerAnio = findViewById(R.id.spinnerAnio);
         spinnerCurso = findViewById(R.id.spinnerCurso);
         tvNombreArchivo = findViewById(R.id.tvNombreArchivo);
 
@@ -79,18 +83,25 @@ public class ActividadNuevaPublicacion extends AppCompatActivity {
         spinnerTipo.setAdapter(adapterTipo);
         spinnerTipo.setText(tipos[0], false);
 
-        // Configurar cursos académicos (últimos 3 años)
-        String cursoActual = calcularAnioEscolar();
-        int anioActual = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
-        String[] cursos = {
-            cursoActual,
-            (anioActual - 2) + "-" + (anioActual - 1),
-            (anioActual - 3) + "-" + (anioActual - 2)
+        // Configurar años académicos (ej: 2024-2025)
+        String anioActualStr = calcularAnioEscolar();
+        int anioBase = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+        String[] anios = {
+            anioActualStr,
+            (anioBase - 1) + "-" + anioBase,
+            (anioBase - 2) + "-" + (anioBase - 1)
         };
-        ArrayAdapter<String> adapterCurso = new ArrayAdapter<>(
-                this, android.R.layout.simple_dropdown_item_1line, cursos);
-        spinnerCurso.setAdapter(adapterCurso);
-        spinnerCurso.setText(cursoActual, false); // Curso actual por defecto
+        ArrayAdapter<String> adapterAnio = new ArrayAdapter<>(
+                this, android.R.layout.simple_dropdown_item_1line, anios);
+        spinnerAnio.setAdapter(adapterAnio);
+        spinnerAnio.setText(anioActualStr, false);
+
+        // Configurar selector de Curso (1º o 2º)
+        String[] cursosNivel = {"1º", "2º"};
+        ArrayAdapter<String> adapterCursoNivel = new ArrayAdapter<>(
+                this, android.R.layout.simple_dropdown_item_1line, cursosNivel);
+        spinnerCurso.setAdapter(adapterCursoNivel);
+        spinnerCurso.setText(cursosNivel[0], false); // 1º por defecto
 
         // Botón adjuntar archivo
         findViewById(R.id.btnAdjuntarArchivo).setOnClickListener(v -> {
@@ -105,6 +116,63 @@ public class ActividadNuevaPublicacion extends AppCompatActivity {
 
         // Botón publicar
         findViewById(R.id.btnPublish).setOnClickListener(v -> publicar());
+
+        // Botón Ayuda IA
+        findViewById(R.id.btnAyudaIA).setOnClickListener(v -> {
+            String titulo = etTitulo.getText() != null ? etTitulo.getText().toString().trim() : "";
+            String desc = etDescripcion.getText() != null ? etDescripcion.getText().toString().trim() : "";
+            String asig = spinnerAsignatura.getText().toString();
+
+            if (desc.length() < 10) {
+                Toast.makeText(this, "Escribe un poco más en la descripción para que la IA te ayude", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            v.setEnabled(false);
+            Toast.makeText(this, "Consultando a la IA...", Toast.LENGTH_SHORT).show();
+
+            com.dam.studybro.utils.GeminiHelper.mejorarPublicacion(titulo, desc, asig, new com.dam.studybro.utils.GeminiHelper.GeminiCallback() {
+                @Override
+                public void onSuccess(String result) {
+                    v.setEnabled(true);
+                    try {
+                        org.json.JSONObject json = new org.json.JSONObject(result);
+                        String tSugerido = json.getString("titulo_sugerido");
+                        String dMejorada = json.getString("descripcion_mejorada");
+                        String consejo = json.getString("consejo");
+
+                        mostrarDialogoMejoraIA(tSugerido, dMejorada, consejo);
+                    } catch (org.json.JSONException e) {
+                        Toast.makeText(ActividadNuevaPublicacion.this, "Error procesando sugerencia", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                    v.setEnabled(true);
+                    Toast.makeText(ActividadNuevaPublicacion.this, error, Toast.LENGTH_LONG).show();
+                }
+            });
+        });
+    }
+
+    private void mostrarDialogoMejoraIA(String titulo, String desc, String consejo) {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setTitle("✨ Sugerencia de la IA");
+        
+        String mensaje = "La IA sugiere estos cambios para que tu post sea más útil:\n\n" +
+                "📌 Título: " + titulo + "\n\n" +
+                "📝 Descripción mejorada: " + desc + "\n\n" +
+                "💡 Consejo: " + consejo;
+        
+        builder.setMessage(mensaje);
+        builder.setPositiveButton("Aplicar Cambios", (dialog, which) -> {
+            etTitulo.setText(titulo);
+            etDescripcion.setText(desc);
+            Toast.makeText(this, "¡Cambios aplicados!", Toast.LENGTH_SHORT).show();
+        });
+        builder.setNegativeButton("Mantener original", null);
+        builder.show();
     }
 
     private void cargarAsignaturas() {
@@ -129,6 +197,7 @@ public class ActividadNuevaPublicacion extends AppCompatActivity {
                 // Preseleccionar si viene del flujo de navegación
                 if (nombreFinal != null) {
                     spinnerAsignatura.setText(nombreFinal, false);
+                    spinnerAsignatura.setEnabled(false);
                 }
             });
         });
@@ -219,7 +288,7 @@ public class ActividadNuevaPublicacion extends AppCompatActivity {
         }
     }
 
-    /** Guarda la publicación en la base de datos local (Room) */
+    /** Guarda la publicación en la nube (Supabase) */
     private void guardarPublicacionEnBD(String titulo, String desc, String tipo,
                                          String nombreAsig, String urlArchivo) {
         // Obtener el email/id del usuario logueado desde SharedPreferences
@@ -239,23 +308,47 @@ public class ActividadNuevaPublicacion extends AppCompatActivity {
                 return;
             }
 
-            Publicacion pub = new Publicacion();
-            pub.titulo       = titulo;
-            pub.descripcion  = desc;
-            pub.tipo         = tipo.toUpperCase();
-            pub.asignaturaId = asignaturaId;
-            pub.usuarioId    = usuarioId;  // Email/UUID de Supabase (String)
-            pub.fechaSubida  = System.currentTimeMillis();
-            pub.anioEscolar  = spinnerCurso.getText().toString();
-            pub.archivoUrl   = urlArchivo;  // URL de Supabase Storage (puede ser null)
+            com.dam.studybro.network.CrearPublicacionRequest req = new com.dam.studybro.network.CrearPublicacionRequest();
+            req.titulo       = titulo;
+            req.descripcion  = desc;
+            req.tipo         = tipo.toUpperCase();
+            req.asignaturaId = asignaturaId;
+            req.usuarioId    = usuarioId;  // Email/UUID de Supabase (String)
+            req.fechaSubida  = System.currentTimeMillis();
+            req.anioEscolar  = spinnerAnio.getText().toString();
+            req.curso        = spinnerCurso.getText().toString(); // "1º" o "2º"
+            req.archivoUrl   = urlArchivo;  // URL de Supabase Storage (puede ser null)
 
-            db.publicacionDao().insertar(pub);
+            // LLAMADA CLOUD: Crear publicación en Supabase
+            com.dam.studybro.network.SupabaseApi api = com.dam.studybro.network.SupabaseClient.getClient().create(com.dam.studybro.network.SupabaseApi.class);
+            api.crearPublicacion(req).enqueue(new retrofit2.Callback<Void>() {
+                @Override
+                public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(ActividadNuevaPublicacion.this, urlArchivo != null
+                                ? "¡Publicado en la nube con archivo!"
+                                : "¡Publicado en la nube!", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        String errorMsg = "Error " + response.code();
+                        try {
+                            if (response.errorBody() != null) {
+                                errorMsg += ": " + response.errorBody().string();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        android.util.Log.e("SupabaseError", errorMsg);
+                        Toast.makeText(ActividadNuevaPublicacion.this, "Error del servidor: " + response.code(), Toast.LENGTH_LONG).show();
+                        findViewById(R.id.btnPublish).setEnabled(true);
+                    }
+                }
 
-            runOnUiThread(() -> {
-                Toast.makeText(this, urlArchivo != null
-                        ? "¡Publicado con archivo! "
-                        : "¡Publicado! ", Toast.LENGTH_SHORT).show();
-                finish();
+                @Override
+                public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                    Toast.makeText(ActividadNuevaPublicacion.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    findViewById(R.id.btnPublish).setEnabled(true);
+                }
             });
         });
     }

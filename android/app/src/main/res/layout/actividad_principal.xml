@@ -66,7 +66,9 @@
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:paddingBottom="88dp"
+            android:clipToPadding="false">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -110,6 +112,29 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:visibility="gone"/>
+
+        <!-- Bottom Navigation -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@color/surface"
+            app:menu="@menu/menu_bottom_nav"
+            app:elevation="8dp" />
+
+        <!-- Botón flotante para Gemini AI -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabGemini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="40dp"
+            android:src="@drawable/ic_star"
+            app:tint="@color/white"
+            app:backgroundTint="@color/primary"
+            android:theme="@style/Theme.MaterialComponents.DayNight"
+            app:layout_anchor="@id/bottomNavigation"
+            app:layout_anchorGravity="top|start"/>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

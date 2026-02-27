@@ -3,6 +3,7 @@ package com.dam.studybro.database;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.ColumnInfo;
+import androidx.room.Ignore;
 
 @Entity(tableName = "centros")
 public class Centro {
@@ -52,6 +53,7 @@ public class Centro {
     // Constructor vacío requerido por Room
     public Centro() {}
 
+    @Ignore
     public Centro(String nombre, String ciudad, String direccion, String webUrl, float valoracionMedia, String codigoApi, String imagenUrl) {
         this.nombre = nombre;
         this.ciudad = ciudad;

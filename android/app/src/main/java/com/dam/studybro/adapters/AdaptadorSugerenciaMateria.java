@@ -9,11 +9,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.dam.studybro.R;
 import com.dam.studybro.database.SugerenciaMateria;
+import com.dam.studybro.database.SugerenciaMateriaConCentro;
 import java.util.List;
 
 public class AdaptadorSugerenciaMateria extends RecyclerView.Adapter<AdaptadorSugerenciaMateria.ViewHolder> {
 
-    private List<SugerenciaMateria> sugerencias;
+    private List<SugerenciaMateriaConCentro> sugerencias;
     private final OnSugerenciaClickListener listener;
 
     public interface OnSugerenciaClickListener {
@@ -21,12 +22,12 @@ public class AdaptadorSugerenciaMateria extends RecyclerView.Adapter<AdaptadorSu
         void onRechazar(SugerenciaMateria sugerencia);
     }
 
-    public AdaptadorSugerenciaMateria(List<SugerenciaMateria> sugerencias, OnSugerenciaClickListener listener) {
+    public AdaptadorSugerenciaMateria(List<SugerenciaMateriaConCentro> sugerencias, OnSugerenciaClickListener listener) {
         this.sugerencias = sugerencias;
         this.listener = listener;
     }
 
-    public void actualizarLista(List<SugerenciaMateria> nuevaLista) {
+    public void actualizarLista(List<SugerenciaMateriaConCentro> nuevaLista) {
         this.sugerencias = nuevaLista;
         notifyDataSetChanged();
     }
@@ -40,9 +41,15 @@ public class AdaptadorSugerenciaMateria extends RecyclerView.Adapter<AdaptadorSu
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        SugerenciaMateria sub = sugerencias.get(position);
+        SugerenciaMateriaConCentro item = sugerencias.get(position);
+        SugerenciaMateria sub = item.sugerencia;
         holder.tvNombre.setText(sub.nombreSugerido);
-        holder.tvDetalles.setText("Curso: " + sub.cursoSugerido + " | Centro: " + sub.centroId + " | Por: " + sub.emailSolicitante);
+        String detalles = "Curso: " + sub.cursoSugerido + " | Centro: " + item.nombreCentro;
+        if (item.nombreEspecialidad != null) {
+            detalles += " | Esp: " + item.nombreEspecialidad;
+        }
+        detalles += " | Por: " + sub.emailSolicitante;
+        holder.tvDetalles.setText(detalles);
         
         holder.btnAprobar.setOnClickListener(v -> {
             if (listener != null) listener.onAprobar(sub);
