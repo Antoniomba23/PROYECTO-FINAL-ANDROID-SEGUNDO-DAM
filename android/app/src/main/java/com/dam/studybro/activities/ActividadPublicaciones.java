@@ -47,6 +47,7 @@ public class ActividadPublicaciones extends AppCompatActivity {
 
     private int asignaturaId;
     private int ordenActual = 0; // 0=más reciente, 1=más antigua, 2=más útiles
+    private boolean modoAdminGlobal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +57,7 @@ public class ActividadPublicaciones extends AppCompatActivity {
         db       = BaseDatosApp.getInstance(getApplicationContext());
         executor = Executors.newSingleThreadExecutor();
 
-        boolean modoAdminGlobal = getIntent().getBooleanExtra("modo_admin_global", false);
+        modoAdminGlobal = getIntent().getBooleanExtra("modo_admin_global", false);
         // En modo admin, forzamos Id -1 (carga general)
         asignaturaId = modoAdminGlobal ? -1 : getIntent().getIntExtra(EXTRA_ASIGNATURA_ID, -1);
         String nombreAsignatura = modoAdminGlobal ? "Panel Admin: Todas las Pub." : getIntent().getStringExtra(EXTRA_ASIGNATURA_NOMBRE);
@@ -160,7 +161,12 @@ public class ActividadPublicaciones extends AppCompatActivity {
         }
         adaptador.actualizarDatos(resultado);
         TextView tvVacio = findViewById(R.id.tvNoPublicaciones);
-        if (tvVacio != null) tvVacio.setVisibility(resultado.isEmpty() ? View.VISIBLE : View.GONE);
+        if (tvVacio != null) {
+            tvVacio.setVisibility(resultado.isEmpty() ? View.VISIBLE : View.GONE);
+            if (resultado.isEmpty()) {
+                tvVacio.setText(modoAdminGlobal ? "No hay ninguna publicación registrada en el sistema" : "No hay publicaciones para esta asignatura");
+            }
+        }
     }
 
     @Override
