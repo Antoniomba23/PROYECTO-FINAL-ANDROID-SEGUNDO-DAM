@@ -40,6 +40,11 @@ public class ActividadGestionUsuarios extends AppCompatActivity {
         adaptador = new AdaptadorUsuarios(new ArrayList<>());
         recyclerUsuarios.setAdapter(adaptador);
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         cargarUsuariosDesdeBD();
     }
 

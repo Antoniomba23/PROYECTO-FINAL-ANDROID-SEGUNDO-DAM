@@ -69,6 +69,21 @@ public class ActividadRegistro extends AppCompatActivity {
                 botonRegistrar.setText("Crear cuenta");
 
                 if (response.isSuccessful()) {
+                    // Guardar usuario en Room localmente además de Supabase antes de ir al login
+                    java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+                        try {
+                            com.dam.studybro.database.BaseDatosApp db = com.dam.studybro.database.BaseDatosApp.getInstance(getApplicationContext());
+                            String rolAsignado = correo.equalsIgnoreCase("admin@studybro.com") ? "ADMIN" : "ESTUDIANTE";
+                            com.dam.studybro.database.Usuario nuevo = new com.dam.studybro.database.Usuario(nombre, correo, "", rolAsignado);
+                            
+                            if (db.usuarioDao().buscarPorCorreo(correo) == null) {
+                                db.usuarioDao().insertarUsuario(nuevo);
+                            }
+                        } catch (Exception e) {
+                            android.util.Log.e("REGISTRO_LOCAL", "Error guardando: " + e.getMessage());
+                        }
+                    });
+
                     Toast.makeText(ActividadRegistro.this,
                             "¡Cuenta creada! Ya puedes iniciar sesión.", Toast.LENGTH_LONG).show();
                     // Volver al login
