@@ -52,4 +52,12 @@
         android:text="Gestionar Usuarios Registrados"
         android:layout_marginBottom="16dp"/>
 
+    <Button
+        android:id="@+id/btnModerarSugerencias"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Moderar Sugerencias de Alumnos"
+        android:backgroundTint="@android:color/holo_orange_dark"
+        android:layout_marginBottom="16dp"/>
+
 </LinearLayout>

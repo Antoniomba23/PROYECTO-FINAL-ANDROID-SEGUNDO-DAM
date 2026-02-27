@@ -25,6 +25,7 @@ public class ActividadPanelAdmin extends AppCompatActivity {
         Button btnGestionarPubs = findViewById(R.id.btnGestionarPublicaciones);
         Button btnNuevoCentro   = findViewById(R.id.btnNuevoCentro);
         Button btnGestionarUsrs = findViewById(R.id.btnGestionarUsuarios);
+        Button btnModerarSug    = findViewById(R.id.btnModerarSugerencias);
 
         btnGestionarPubs.setOnClickListener(v -> {
             Intent intent = new Intent(this, ActividadPublicaciones.class);
@@ -39,6 +40,10 @@ public class ActividadPanelAdmin extends AppCompatActivity {
 
         btnGestionarUsrs.setOnClickListener(v -> {
             startActivity(new Intent(this, ActividadGestionUsuarios.class));
+        });
+
+        btnModerarSug.setOnClickListener(v -> {
+            startActivity(new Intent(this, ActividadModerarSugerencias.class));
         });
     }
 }
