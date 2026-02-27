@@ -88,19 +88,24 @@ public class ActividadLogin extends AppCompatActivity {
                     editor.apply();
 
                     // Instanciar BD en hilo de fondo para guardar al usuario localmente
-                    new Thread(() -> {
-                        com.dam.studybro.database.BaseDatosApp db = com.dam.studybro.database.BaseDatosApp.getInstance(getApplicationContext());
-                        com.dam.studybro.database.Usuario u = db.usuarioDao().buscarPorCorreo(correo);
-                        if (u == null) {
-                            u = new com.dam.studybro.database.Usuario(
-                                    correo.split("@")[0], correo, "", rolAuth
-                            );
-                            db.usuarioDao().insertarUsuario(u);
-                        } else {
-                            u.rol = rolAuth; // Actualizamos rol por si acaso
-                            db.usuarioDao().actualizarUsuario(u);
+                    java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+                        try {
+                            com.dam.studybro.database.BaseDatosApp db = com.dam.studybro.database.BaseDatosApp.getInstance(getApplicationContext());
+                            com.dam.studybro.database.Usuario u = db.usuarioDao().buscarPorCorreo(correo);
+                            if (u == null) {
+                                u = new com.dam.studybro.database.Usuario(
+                                        correo.split("@")[0], correo, "", rolAuth
+                                );
+                                db.usuarioDao().insertarUsuario(u);
+                            } else {
+                                u.rol = rolAuth; // Actualizamos rol por si acaso
+                                db.usuarioDao().actualizarUsuario(u);
+                            }
+                            android.util.Log.d("LOGIN_LOCAL", "Usuario guardado en Room: " + correo);
+                        } catch (Exception e) {
+                            android.util.Log.e("LOGIN_LOCAL", "Error guardando usuario: " + e.getMessage());
                         }
-                        
+
                         runOnUiThread(() -> {
                             Toast.makeText(ActividadLogin.this, "¡Bienvenido!", Toast.LENGTH_SHORT).show();
 
@@ -115,7 +120,7 @@ public class ActividadLogin extends AppCompatActivity {
                                 finish();
                             }
                         });
-                    }).start();
+                    });
                 } else {
                     // Credenciales incorrectas u otro error
                     Toast.makeText(ActividadLogin.this,

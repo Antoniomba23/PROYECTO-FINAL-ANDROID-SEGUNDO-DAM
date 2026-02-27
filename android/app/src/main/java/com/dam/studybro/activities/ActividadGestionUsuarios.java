@@ -49,7 +49,11 @@ public class ActividadGestionUsuarios extends AppCompatActivity {
             List<Usuario> lista = db.usuarioDao().obtenerTodos();
 
             runOnUiThread(() -> {
-                adaptador.actualizarDatos(lista);
+                if (lista != null && !lista.isEmpty()) {
+                    adaptador.actualizarDatos(lista);
+                } else {
+                    android.widget.Toast.makeText(ActividadGestionUsuarios.this, "No hay usuarios registrados aún", android.widget.Toast.LENGTH_SHORT).show();
+                }
             });
         });
     }

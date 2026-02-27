@@ -53,16 +53,46 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp">
+        android:layout_marginBottom="16dp">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etDescripcionCentro"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Descripción y datos de interés"
             android:inputType="textMultiLine"
-            android:lines="4"
+            android:lines="3"
             android:gravity="top|start"/>
     </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Especialidades impartidas:"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp">
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            
+            <CheckBox android:id="@+id/cbInfantil" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Educación Infantil"/>
+            <CheckBox android:id="@+id/cbPrimaria" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Educación Primaria"/>
+            <CheckBox android:id="@+id/cbESO" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Educación Secundaria (ESO)"/>
+            <CheckBox android:id="@+id/cbBachillerato" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bachillerato"/>
+            <CheckBox android:id="@+id/cbSMR" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="FP - Sistemas Microinformáticos (SMR)"/>
+            <CheckBox android:id="@+id/cbDAM" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="FP - Desarrollo Multiplataforma (DAM)"/>
+            <CheckBox android:id="@+id/cbDAW" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="FP - Desarrollo Web (DAW)"/>
+            <CheckBox android:id="@+id/cbASIR" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="FP - Adm. Sistemas Red (ASIR)"/>
+            
+        </LinearLayout>
+    </ScrollView>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGuardarCentro"

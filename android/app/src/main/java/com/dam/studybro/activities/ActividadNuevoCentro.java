@@ -9,9 +9,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.dam.studybro.R;
 import com.dam.studybro.database.BaseDatosApp;
 import com.dam.studybro.database.Centro;
+import com.dam.studybro.database.Especialidad;
+import com.dam.studybro.database.CentroEspecialidad;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
+import android.widget.CheckBox;
 
 /**
  * Formulario para uso exclusivo del Administrador que permite
@@ -20,6 +25,7 @@ import java.util.concurrent.Executors;
 public class ActividadNuevoCentro extends AppCompatActivity {
 
     private TextInputEditText etNombre, etDireccion, etCiudad, etDescripcion;
+    private CheckBox cbInfantil, cbPrimaria, cbESO, cbBach, cbSMR, cbDAM, cbDAW, cbASIR;
     private Button btnGuardar;
 
     @Override
@@ -36,6 +42,16 @@ public class ActividadNuevoCentro extends AppCompatActivity {
         etDireccion   = findViewById(R.id.etDireccionCentro);
         etCiudad      = findViewById(R.id.etCiudadCentro);
         etDescripcion = findViewById(R.id.etDescripcionCentro);
+        
+        cbInfantil   = findViewById(R.id.cbInfantil);
+        cbPrimaria   = findViewById(R.id.cbPrimaria);
+        cbESO        = findViewById(R.id.cbESO);
+        cbBach       = findViewById(R.id.cbBachillerato);
+        cbSMR        = findViewById(R.id.cbSMR);
+        cbDAM        = findViewById(R.id.cbDAM);
+        cbDAW        = findViewById(R.id.cbDAW);
+        cbASIR       = findViewById(R.id.cbASIR);
+        
         btnGuardar    = findViewById(R.id.btnGuardarCentro);
 
         btnGuardar.setOnClickListener(v -> guardarNuevoCentro());
@@ -64,7 +80,27 @@ public class ActividadNuevoCentro extends AppCompatActivity {
 
         Executors.newSingleThreadExecutor().execute(() -> {
             BaseDatosApp db = BaseDatosApp.getInstance(getApplicationContext());
-            db.centroDao().insertar(c);
+            // Insertar centro devuelve el ID generado
+            long idCentroInsertado = db.centroDao().insertar(c);
+            
+            // Buscar IDs de especialidades para vincular
+            List<Especialidad> todasLasEspecialidades = db.especialidadDao().obtenerTodas();
+            List<CentroEspecialidad> vinculos = new ArrayList<>();
+            
+            for (Especialidad e : todasLasEspecialidades) {
+                if (e.codigoApi.equals("INF") && cbInfantil.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
+                if (e.codigoApi.equals("PRI") && cbPrimaria.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
+                if (e.codigoApi.equals("ESO") && cbESO.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
+                if (e.codigoApi.equals("BACH") && cbBach.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
+                if (e.codigoApi.equals("SMR") && cbSMR.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
+                if (e.codigoApi.equals("DAM") && cbDAM.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
+                if (e.codigoApi.equals("DAW") && cbDAW.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
+                if (e.codigoApi.equals("ASIR") && cbASIR.isChecked()) vinculos.add(new CentroEspecialidad((int)idCentroInsertado, e.id));
+            }
+            
+            if (!vinculos.isEmpty()) {
+                db.centroEspecialidadDao().insertarLista(vinculos);
+            }
 
             runOnUiThread(() -> {
                 Toast.makeText(ActividadNuevoCentro.this, "Centro añadido correctamente", Toast.LENGTH_SHORT).show();
