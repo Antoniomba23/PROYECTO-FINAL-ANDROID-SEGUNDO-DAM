@@ -21,6 +21,7 @@ Los usuarios pueden registrarse y loguarse, seleccionar su centro educativo, bus
 - Room (base de datos local SQLite)
 - Retrofit (peticiones HTTP a la API de Madrid y a Supabase)
 - Material Design 3 (componentes UI: Cards, NavigationDrawer, Chips, etc.)
+- **Google Gemini AI** (Asistente inteligente mediante IA generativa)
 - Supabase Auth (autenticación de usuarios)
 - Supabase Storage (almacenamiento de archivos subidos)
 - SharedPreferences (sesión del usuario y centro seleccionado)
@@ -66,11 +67,22 @@ Los usuarios pueden registrarse y loguarse, seleccionar su centro educativo, bus
 
 ### Perfil de usuario
 
-- Muestra el nombre (extraído del email), email y centro asignado
+- Muestra el nombre, email y centro asignado
 - Estadísticas: número de publicaciones propias, likes recibidos y favoritos recibidos
 - Lista de las publicaciones del usuario
 - Acceso directo a crear nueva publicación
 - Botón de cerrar sesión con diálogo de confirmación
+
+### Inteligencia Artificial (StudyBot)
+
+- Botón flotante asistido por **Google Gemini AI**
+- Capacidad para resolver dudas académicas y resumir contenido de las publicaciones
+- Interfaz de chat integrada en la aplicación
+
+### Panel de Administración (Cloud)
+
+- **Moderación**: Validación de sugerencias de centros, especialidades y asignaturas enviadas por usuarios
+- **Gestión de Usuarios**: Sincronización completa con la nube, cambio de roles (Admin/Estudiante) y eliminación de cuentas directamente desde la app
 
 ### Base de datos local (Room)
 
@@ -137,7 +149,7 @@ erDiagram
         string tipo
         string anio_escolar
         long fecha_subida
-        string usuario_id "email Supabase"
+        string usuario_id "UUID de Supabase"
         int asignatura_id FK
     }
 
@@ -184,6 +196,9 @@ La tabla `usuarios` de Room existe pero no se usa para el login (ese rol lo cubr
 | Perfil de usuario | `ActividadPerfil` |
 | Perfil de centro | `ActividadPerfilCentro` |
 | Asignaturas | `ActividadAsignaturas` |
+| Gestión de Usuarios (Admin) | `ActividadGestionUsuarios` |
+| Moderación de Sugerencias (Admin) | `ActividadModerarSugerencias` |
+| Sugerir Entidad | `ActividadSugerirEntidad` |
 
 ---
 
