@@ -320,8 +320,30 @@ public class ActividadPrincipal extends AppCompatActivity
                              if (e.codigoApi.equals("ASIR") && (descLower.contains("asir") || (descLower.contains("sistemas") && descLower.contains("red")))) idsVinculados.add(e.id);
                              if (e.codigoApi.equals("EOI") && (descLower.contains("idioma") || descLower.contains("eoi") || descLower.contains("ingles") || descLower.contains("francés"))) idsVinculados.add(e.id);
                          }
+                         
+                         // Si al terminar de analizar el texto no se detectó ninguna especialidad válida,
+                         // aplicamos el mismo fallback de las enseñanzas básicas comunes.
+                         if (idsVinculados.isEmpty()) {
+                             for (Especialidad e : especialidadesBD) {
+                                 if ("PRI".equals(e.codigoApi) || "ESO".equals(e.codigoApi) || "BACH".equals(e.codigoApi)) {
+                                     relacionesNuevas.add(new CentroEspecialidad(centroBD.id, e.id));
+                                 }
+                             }
+                         }
 
                          for (Integer idEsp : idsVinculados) {
+                             relacionesNuevas.add(new CentroEspecialidad(centroBD.id, idEsp));
+                         }
+                    } else {
+                         // Fallback: Si no tiene descripción en la API, asumimos que tiene al menos Primaria, ESO o Bachillerato
+                         // para que no salga "vacío". Vinculamos las básicas.
+                         java.util.Set<Integer> basicas = new java.util.HashSet<>();
+                         for (Especialidad e : especialidadesBD) {
+                             if ("PRI".equals(e.codigoApi) || "ESO".equals(e.codigoApi) || "BACH".equals(e.codigoApi)) {
+                                 basicas.add(e.id);
+                             }
+                         }
+                         for (Integer idEsp : basicas) {
                              relacionesNuevas.add(new CentroEspecialidad(centroBD.id, idEsp));
                          }
                     }

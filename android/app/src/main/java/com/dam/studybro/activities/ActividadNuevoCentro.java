@@ -24,7 +24,7 @@ import android.widget.CheckBox;
  */
 public class ActividadNuevoCentro extends AppCompatActivity {
 
-    private TextInputEditText etNombre, etDireccion, etCiudad, etDescripcion;
+    private TextInputEditText etNombre, etDireccion, etCiudad, etDescripcion, etWeb;
     private CheckBox cbInfantil, cbPrimaria, cbESO, cbBach, cbSMR, cbDAM, cbDAW, cbASIR;
     private Button btnGuardar;
 
@@ -41,6 +41,7 @@ public class ActividadNuevoCentro extends AppCompatActivity {
         etNombre      = findViewById(R.id.etNombreCentro);
         etDireccion   = findViewById(R.id.etDireccionCentro);
         etCiudad      = findViewById(R.id.etCiudadCentro);
+        etWeb         = findViewById(R.id.etWebCentro);
         etDescripcion = findViewById(R.id.etDescripcionCentro);
         
         cbInfantil   = findViewById(R.id.cbInfantil);
@@ -61,6 +62,7 @@ public class ActividadNuevoCentro extends AppCompatActivity {
         String nombre = etNombre.getText() != null ? etNombre.getText().toString().trim() : "";
         String direc  = etDireccion.getText() != null ? etDireccion.getText().toString().trim() : "";
         String ciudad = etCiudad.getText() != null ? etCiudad.getText().toString().trim() : "";
+        String web    = etWeb.getText() != null ? etWeb.getText().toString().trim() : "";
         String desc   = etDescripcion.getText() != null ? etDescripcion.getText().toString().trim() : "";
 
         if (nombre.isEmpty()) {
@@ -73,6 +75,7 @@ public class ActividadNuevoCentro extends AppCompatActivity {
         c.nombre = nombre;
         c.direccion = direc;
         c.ciudad = ciudad;
+        c.webUrl = web.isEmpty() ? null : web;
         c.descripcion = desc;
         // Inventamos un código único para evitar conflictos con los 'originarios' de la API de la CAM.
         c.codigoApi = "MANUAL_" + System.currentTimeMillis(); 
