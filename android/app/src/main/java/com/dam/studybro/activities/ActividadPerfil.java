@@ -105,6 +105,22 @@ public class ActividadPerfil extends AppCompatActivity {
         TextView tvCenter = findViewById(R.id.tvCenter);
         if ("ADMIN".equals(rolUsuario)) {
             tvCenter.setText("👑 Administrador Global");
+            
+            // Ocultar vistas irrelevantes para administradores (estadísticas, botón publicar, lista de posts)
+            View vDividerStats = findViewById(R.id.vDividerStats);
+            View llStats = findViewById(R.id.llStats);
+            View btnNuevaPublicacion = findViewById(R.id.btnNuevaPublicacion);
+            View tvLabelMisPubs = findViewById(R.id.tvLabelMisPubs);
+            RecyclerView rvPosts = findViewById(R.id.recyclerMyPosts);
+            View tvNoPosts = findViewById(R.id.tvNoPosts);
+
+            if (vDividerStats != null) vDividerStats.setVisibility(View.GONE);
+            if (llStats != null) llStats.setVisibility(View.GONE);
+            if (btnNuevaPublicacion != null) btnNuevaPublicacion.setVisibility(View.GONE);
+            if (tvLabelMisPubs != null) tvLabelMisPubs.setVisibility(View.GONE);
+            if (rvPosts != null) rvPosts.setVisibility(View.GONE);
+            if (tvNoPosts != null) tvNoPosts.setVisibility(View.GONE);
+
         } else {
             tvCenter.setText(centro.isEmpty() ? "Sin centro asignado" : centro);
         }
@@ -124,32 +140,34 @@ public class ActividadPerfil extends AppCompatActivity {
         });
         rv.setAdapter(adaptador);
 
-        // ── Cargar estadísticas y publicaciones en hilo de fondo ───────────────
-        final String emailFinal = emailUsuario;
-        executor.execute(() -> {
-            List<Publicacion> misPublicaciones = db.publicacionDao().obtenerPorUsuario(emailFinal);
-            int totalLikes = 0, totalFavs = 0;
-            for (Publicacion pub : misPublicaciones) {
-                totalLikes += db.interaccionDao().contarInteracciones(pub.id, "ME_GUSTA");
-                totalFavs  += db.interaccionDao().contarInteracciones(pub.id, "GUARDADO");
-            }
-            final int likesFinales = totalLikes;
-            final int favsFinales  = totalFavs;
+        // ── Cargar estadísticas y publicaciones en hilo de fondo (sólo para estudiantes) ───────────────
+        if (!"ADMIN".equals(rolUsuario)) {
+            final String emailFinal = emailUsuario;
+            executor.execute(() -> {
+                List<Publicacion> misPublicaciones = db.publicacionDao().obtenerPorUsuario(emailFinal);
+                int totalLikes = 0, totalFavs = 0;
+                for (Publicacion pub : misPublicaciones) {
+                    totalLikes += db.interaccionDao().contarInteracciones(pub.id, "ME_GUSTA");
+                    totalFavs  += db.interaccionDao().contarInteracciones(pub.id, "GUARDADO");
+                }
+                final int likesFinales = totalLikes;
+                final int favsFinales  = totalFavs;
 
-            runOnUiThread(() -> {
-                TextView tvPubs  = findViewById(R.id.tvStatPubs);
-                TextView tvLikes = findViewById(R.id.tvStatLikes);
-                TextView tvFavs  = findViewById(R.id.tvStatFavs);
-                if (tvPubs  != null) tvPubs.setText(String.valueOf(misPublicaciones.size()));
-                if (tvLikes != null) tvLikes.setText(String.valueOf(likesFinales));
-                if (tvFavs  != null) tvFavs.setText(String.valueOf(favsFinales));
+                runOnUiThread(() -> {
+                    TextView tvPubs  = findViewById(R.id.tvStatPubs);
+                    TextView tvLikes = findViewById(R.id.tvStatLikes);
+                    TextView tvFavs  = findViewById(R.id.tvStatFavs);
+                    if (tvPubs  != null) tvPubs.setText(String.valueOf(misPublicaciones.size()));
+                    if (tvLikes != null) tvLikes.setText(String.valueOf(likesFinales));
+                    if (tvFavs  != null) tvFavs.setText(String.valueOf(favsFinales));
 
-                adaptador.actualizarDatos(misPublicaciones);
-                TextView tvNoPosts = findViewById(R.id.tvNoPosts);
-                if (tvNoPosts != null)
-                    tvNoPosts.setVisibility(misPublicaciones.isEmpty() ? View.VISIBLE : View.GONE);
+                    adaptador.actualizarDatos(misPublicaciones);
+                    TextView tvNoPosts = findViewById(R.id.tvNoPosts);
+                    if (tvNoPosts != null)
+                        tvNoPosts.setVisibility(misPublicaciones.isEmpty() ? View.VISIBLE : View.GONE);
+                });
             });
-        });
+        }
 
         // ── Botón Cerrar Sesión ────────────────────────────────────────────────
         MaterialButton btnLogout = findViewById(R.id.btnLogout);

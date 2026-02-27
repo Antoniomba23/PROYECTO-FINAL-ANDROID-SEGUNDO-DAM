@@ -123,6 +123,7 @@
 
                     <!-- Separador -->
                     <View
+                        android:id="@+id/vDividerStats"
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:background="@color/divider"
@@ -130,6 +131,7 @@
 
                     <!-- Estadísticas: 3 columnas -->
                     <LinearLayout
+                        android:id="@+id/llStats"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
@@ -246,6 +248,7 @@
 
             <!-- ── Sección Mis Publicaciones ── -->
             <TextView
+                android:id="@+id/tvLabelMisPubs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Mis publicaciones"
