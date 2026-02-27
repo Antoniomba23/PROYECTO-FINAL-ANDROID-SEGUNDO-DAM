@@ -12,7 +12,7 @@ public class ActividadPerfilCentro extends AppCompatActivity {
 
     // Variables UI
     private TextView tvNombre, tvUbicacion, tvRating, tvDescripcion, tvHorario, tvAccesibilidad;
-    private com.google.android.material.button.MaterialButton btnValorar, btnWeb;
+    private com.google.android.material.button.MaterialButton btnValorar, btnWeb, btnSugerirEntidad;
     private androidx.recyclerview.widget.RecyclerView rvEspecialidades, rvResenas;
     
     // Variables Datos
@@ -47,6 +47,7 @@ public class ActividadPerfilCentro extends AppCompatActivity {
         tvAccesibilidad = findViewById(R.id.tvAccessibility);
         btnValorar = findViewById(R.id.btnValorar);
         btnWeb = findViewById(R.id.btnWeb);
+        btnSugerirEntidad = findViewById(R.id.btnSugerirEntidad);
         rvEspecialidades = findViewById(R.id.recyclerViewSpecialties);
         rvResenas = findViewById(R.id.recyclerViewReviews);
 
@@ -62,6 +63,7 @@ public class ActividadPerfilCentro extends AppCompatActivity {
         // 5. Eventos
         btnValorar.setOnClickListener(v -> mostrarDialogoValoracion());
         btnWeb.setOnClickListener(v -> abrirWeb());
+        btnSugerirEntidad.setOnClickListener(v -> mostrarSugerencias());
     }
 
     private void cargarDatosCentro() {
@@ -109,6 +111,20 @@ public class ActividadPerfilCentro extends AppCompatActivity {
         } else {
             Toast.makeText(this, "No hay web disponible", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void mostrarSugerencias() {
+        android.content.SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        boolean sesionIniciada = prefs.getBoolean("sesion_iniciada", false);
+        if (!sesionIniciada) {
+            Toast.makeText(this, "Inicia sesión para poder sugerir asignaturas o especialidades", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        android.content.Intent intent = new android.content.Intent(this, ActividadSugerirEntidad.class);
+        // Aunque la sugerencia pilla el centroIdActual de sharedprefs, le pasamos por intent por si acaso
+        intent.putExtra("centro_id", centroId);
+        startActivity(intent);
     }
 
     private void cargarEspecialidades() {

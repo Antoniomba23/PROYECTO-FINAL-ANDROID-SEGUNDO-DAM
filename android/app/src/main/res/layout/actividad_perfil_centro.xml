@@ -230,6 +230,18 @@
                 android:nestedScrollingEnabled="false"
                 android:padding="8dp"/>
 
+            <!-- Botón de Sugerencias -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSugerirEntidad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:text="¿Falta alguna? Sugerir al Administrador"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                app:icon="@drawable/ic_add"/>
+
             <!-- Título Reseñas -->
             <TextView
                 android:layout_width="wrap_content"

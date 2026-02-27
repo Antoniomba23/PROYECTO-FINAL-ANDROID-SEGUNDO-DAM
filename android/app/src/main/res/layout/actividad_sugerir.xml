@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:gravity="top">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sugerir Nueva Entidad"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="¿Falta alguna especialidad o asignatura en este centro? Envía tu sugerencia al administrador para que la añada al sistema."
+        android:textSize="14sp"
+        android:textColor="@color/text_secondary"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="¿Qué deseas sugerir?"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <RadioGroup
+        android:id="@+id/rgTipoSugerencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+        <RadioButton
+            android:id="@+id/rbEspecialidad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Especialidad / Grado"
+            android:checked="true"/>
+        <RadioButton
+            android:id="@+id/rbMateria"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Materia / Asignatura"
+            android:layout_marginStart="16dp"/>
+    </RadioGroup>
+
+    <!-- Campo genérico para el nombre -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etNombreSugerido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nombre propuesto"
+            android:inputType="textCapWords" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Campo extra solo visible si es Materia -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilCurso"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:visibility="gone">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCursoSugerido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Curso (ej. 1, 2, 3...)"
+            android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEnviarSugerencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enviar Sugerencia al Administrador"/>
+
+</LinearLayout>

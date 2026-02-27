@@ -66,6 +66,8 @@
             android:theme="@style/Theme.StudyBro.NoActionBar"/>
         <activity android:name=".activities.ActividadSeleccionarCentro"
             android:theme="@style/Theme.StudyBro.NoActionBar"/>
+        <activity android:name=".activities.ActividadSugerirEntidad"
+            android:theme="@style/Theme.StudyBro.NoActionBar"/>
 
     </application>
 

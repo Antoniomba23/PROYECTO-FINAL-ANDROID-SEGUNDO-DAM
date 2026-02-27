@@ -21,6 +21,7 @@ public class ActividadAsignaturas extends AppCompatActivity {
     private ExecutorService executorService;
     private int especialidadId;
     private int centroId; // Recibimos y reenviamos el centro
+    private com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton fabSugerir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,24 @@ public class ActividadAsignaturas extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerViewSubjects);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        // Configurar FAB
+        fabSugerir = findViewById(R.id.fabSugerir);
+        fabSugerir.setOnClickListener(v -> mostrarSugerencias());
+
         cargarAsignaturas();
+    }
+
+    private void mostrarSugerencias() {
+        android.content.SharedPreferences prefs = getSharedPreferences("MisPreferencias", MODE_PRIVATE);
+        boolean sesionIniciada = prefs.getBoolean("sesion_iniciada", false);
+        if (!sesionIniciada) {
+            Toast.makeText(this, "Inicia sesión para proponer nuevas materias", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Intent intent = new Intent(this, ActividadSugerirEntidad.class);
+        intent.putExtra("centro_id", centroId);
+        startActivity(intent);
     }
 
     private void cargarAsignaturas() {
