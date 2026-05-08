@@ -244,7 +244,16 @@ public class ActividadPerfilCentro extends AppCompatActivity {
                     // Preparar texto para Gemini
                     StringBuilder sb = new StringBuilder();
                     for (com.dam.studybro.database.ValoracionCentro v : lista) {
-                        String comentarioLimpio = v.comentario.contains("|||") ? v.comentario.split("\\|\\|\\|")[1] : v.comentario;
+                        // FIX: Comprobación null y de longitud antes de acceder a split[1]
+                        String comentarioLimpio = "";
+                        if (v.comentario != null) {
+                            if (v.comentario.contains("|||")) {
+                                String[] partes = v.comentario.split("\\|\\|\\|");
+                                comentarioLimpio = partes.length >= 2 ? partes[1] : "";
+                            } else {
+                                comentarioLimpio = v.comentario;
+                            }
+                        }
                         sb.append("- (").append(v.puntuacion).append(" estrellas) ").append(comentarioLimpio).append("\n");
                     }
                     opinionesParaIA = sb.toString();
