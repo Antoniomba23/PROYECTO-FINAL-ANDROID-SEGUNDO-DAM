@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primarios -->
+    <!-- Colores existentes -->
     <color name="primary">#1565C0</color>
     <color name="primary_dark">#0D47A1</color>
     <color name="accent">#FF6F00</color>
     <color name="background">#F5F7FA</color>
-
-    <!-- Texto -->
     <color name="text_primary">#1A1A2E</color>
     <color name="text_secondary">#757575</color>
-
-    <!-- Votos -->
     <color name="like_color">#2E7D32</color>
     <color name="dislike_color">#C62828</color>
-
-    <!-- Categorías -->
     <color name="cat_historia">#C62828</color>
     <color name="cat_matematicas">#1565C0</color>
     <color name="cat_lengua">#6A1B9A</color>
@@ -23,4 +17,7 @@
     <color name="cat_ingles">#E65100</color>
     <color name="cat_arte">#AD1457</color>
     <color name="cat_otros">#37474F</color>
+
+    <!-- Requerido por el launcher adaptativo -->
+    <color name="ic_launcher_background">#1565C0</color>
 </resources>
