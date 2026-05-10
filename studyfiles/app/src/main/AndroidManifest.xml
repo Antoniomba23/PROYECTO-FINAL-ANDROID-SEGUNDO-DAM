@@ -46,6 +46,10 @@
             android:name=".activities.ActividadFavoritos"
             android:exported="false" />
 
+        <activity
+            android:name=".activities.ActividadCarpeta"
+            android:exported="false" />
+
         <!-- FileProvider para compartir archivos descargados -->
         <provider
             android:name="androidx.core.content.FileProvider"

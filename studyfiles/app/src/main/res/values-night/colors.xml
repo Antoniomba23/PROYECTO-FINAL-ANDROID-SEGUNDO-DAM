@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paleta modo oscuro -->
+    <color name="primary">#7986CB</color>
+    <color name="primary_dark">#5C6BC0</color>
+    <color name="accent">#FF8A65</color>
+    <color name="background">#121212</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="text_primary">#EFEFEF</color>
+    <color name="text_secondary">#9E9E9E</color>
+    <color name="like_color">#66BB6A</color>
+    <color name="dislike_color">#EF5350</color>
+    <color name="ic_launcher_background">#1A237E</color>
+
+    <!-- Categorías (ligeramente más oscuras en modo noche) -->
+    <color name="cat_historia">#B71C1C</color>
+    <color name="cat_matematicas">#1565C0</color>
+    <color name="cat_lengua">#6A1B9A</color>
+    <color name="cat_ciencias">#1B5E20</color>
+    <color name="cat_informatica">#01579B</color>
+    <color name="cat_ingles">#BF360C</color>
+    <color name="cat_arte">#880E4F</color>
+    <color name="cat_otros">#37474F</color>
+</resources>

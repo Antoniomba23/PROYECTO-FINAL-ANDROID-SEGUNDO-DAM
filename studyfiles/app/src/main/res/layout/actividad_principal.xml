@@ -6,10 +6,12 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
+    <!-- TOOLBAR -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+        android:elevation="4dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -18,78 +20,191 @@
             android:background="@color/primary"
             app:titleTextColor="@android:color/white" />
 
+        <!-- Buscador (solo visible en Inicio) -->
+        <EditText
+            android:id="@+id/etBuscar"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/surface"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="8dp"
+            android:hint="Buscar archivos..."
+            android:inputType="text"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp" />
+
+        <ProgressBar
+            android:id="@+id/pbBusqueda"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:visibility="gone"
+            android:indeterminate="true"
+            android:progressTint="@color/accent" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
+    <!-- CONTENIDO PRINCIPAL -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:paddingBottom="56dp">
 
-        <!-- Buscador -->
-        <com.google.android.material.textfield.TextInputLayout
+        <!-- ─── SECCIÓN INICIO ─────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/seccionInicio"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:boxBackgroundColor="@android:color/white"
-            app:boxCornerRadiusTopStart="24dp"
-            app:boxCornerRadiusTopEnd="24dp"
-            app:boxCornerRadiusBottomStart="24dp"
-            app:boxCornerRadiusBottomEnd="24dp"
-            app:boxStrokeColor="@color/primary"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="8dp">
 
-            <EditText
-                android:id="@+id/etBuscar"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Buscar archivos..."
-                android:drawableStart="@android:drawable/ic_menu_search"
-                android:drawablePadding="8dp"
-                android:inputType="text"
-                android:imeOptions="actionSearch"
-                android:padding="12dp" />
+                android:text="Categorías"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:paddingStart="8dp"
+                android:paddingBottom="8dp" />
 
-        </com.google.android.material.textfield.TextInputLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCategorias"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false" />
 
-        <!-- Título categorías -->
-        <TextView
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvBusqueda"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- ─── SECCIÓN MI NUBE ────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/seccionMiNube"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Categorías"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:layout_marginBottom="12dp" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:visibility="gone">
 
-        <!-- Grid de categorías -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvCategorias"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mis Carpetas"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:paddingStart="8dp"
+                android:paddingBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCarpetas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Archivos sueltos"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:paddingStart="8dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvArchivosSueltos"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false" />
+
+            <TextView
+                android:id="@+id/tvVacioNube"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tu nube está vacía.\nPulsa ✚ para crear una carpeta o subir un archivo."
+                android:gravity="center"
+                android:textSize="15sp"
+                android:textColor="@color/text_secondary"
+                android:padding="32dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- ─── SECCIÓN FAVORITOS ──────────────────────── -->
+        <LinearLayout
+            android:id="@+id/seccionFavoritos"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:clipToPadding="false" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="8dp"
+            android:visibility="gone">
 
-        <!-- Resultados búsqueda -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvBusqueda"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:visibility="gone" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mis Favoritos (sin internet)"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:paddingStart="8dp"
+                android:paddingBottom="8dp" />
 
-    </LinearLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvFavoritos"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
-    <!-- FAB Subir -->
+            <TextView
+                android:id="@+id/tvVacioFav"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No tienes favoritos guardados."
+                android:gravity="center"
+                android:textSize="15sp"
+                android:textColor="@color/text_secondary"
+                android:padding="32dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabSubir"
+        android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
-        android:src="@android:drawable/ic_input_add"
+        android:layout_margin="72dp"
+        android:src="@drawable/ic_add"
         app:backgroundTint="@color/accent"
-        android:contentDescription="Subir archivo" />
+        android:contentDescription="Acción" />
+
+    <!-- BOTTOM NAVIGATION -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/surface"
+        app:menu="@menu/nav_bottom"
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@color/text_secondary"
+        app:itemTextColor="@color/text_secondary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

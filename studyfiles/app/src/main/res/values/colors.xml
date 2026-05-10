@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Colores existentes -->
-    <color name="primary">#1565C0</color>
-    <color name="primary_dark">#0D47A1</color>
-    <color name="accent">#FF6F00</color>
-    <color name="background">#F5F7FA</color>
+    <!-- Colores modo claro -->
+    <color name="primary">#3949AB</color>
+    <color name="primary_dark">#283593</color>
+    <color name="accent">#FF7043</color>
+    <color name="background">#F0F2F8</color>
+    <color name="surface">#FFFFFF</color>
     <color name="text_primary">#1A1A2E</color>
     <color name="text_secondary">#757575</color>
     <color name="like_color">#2E7D32</color>
     <color name="dislike_color">#C62828</color>
+    <color name="ic_launcher_background">#3949AB</color>
+
+    <!-- Categorías -->
     <color name="cat_historia">#C62828</color>
     <color name="cat_matematicas">#1565C0</color>
     <color name="cat_lengua">#6A1B9A</color>
@@ -18,6 +22,11 @@
     <color name="cat_arte">#AD1457</color>
     <color name="cat_otros">#37474F</color>
 
-    <!-- Requerido por el launcher adaptativo -->
-    <color name="ic_launcher_background">#1565C0</color>
+    <!-- Mi Nube — colores de carpeta -->
+    <color name="folder_blue">#1565C0</color>
+    <color name="folder_green">#2E7D32</color>
+    <color name="folder_orange">#E65100</color>
+    <color name="folder_purple">#6A1B9A</color>
+    <color name="folder_red">#C62828</color>
+    <color name="folder_teal">#00695C</color>
 </resources>
