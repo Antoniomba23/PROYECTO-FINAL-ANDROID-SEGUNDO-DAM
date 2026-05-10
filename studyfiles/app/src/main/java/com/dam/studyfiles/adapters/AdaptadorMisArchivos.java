@@ -13,17 +13,19 @@ import java.util.List;
 
 public class AdaptadorMisArchivos extends RecyclerView.Adapter<AdaptadorMisArchivos.ViewHolder> {
 
-    public interface Listener {
-        void onClick(MiArchivo archivo);
-        void onLongClick(MiArchivo archivo, View anchor);
-    }
+    public interface OnArchivoClick     { void onClick(MiArchivo a); }
+    public interface OnArchivoLongClick { void onLongClick(MiArchivo a, View anchor); }
 
-    private List<MiArchivo> lista;
-    private final Listener  listener;
+    private List<MiArchivo>         lista;
+    private final OnArchivoClick     onClick;
+    private final OnArchivoLongClick onLongClick;
 
-    public AdaptadorMisArchivos(List<MiArchivo> lista, Listener listener) {
-        this.lista    = lista;
-        this.listener = listener;
+    public AdaptadorMisArchivos(List<MiArchivo> lista,
+                                 OnArchivoClick onClick,
+                                 OnArchivoLongClick onLongClick) {
+        this.lista       = lista;
+        this.onClick     = onClick;
+        this.onLongClick = onLongClick;
     }
 
     public void actualizar(List<MiArchivo> nueva) {
@@ -45,9 +47,9 @@ public class AdaptadorMisArchivos extends RecyclerView.Adapter<AdaptadorMisArchi
         MiArchivo a = lista.get(position);
         h.tvNombre.setText(a.nombre);
         h.tvTipo.setText(a.tipoArchivo != null ? a.tipoArchivo.toUpperCase() : "FILE");
-        h.itemView.setOnClickListener(v -> listener.onClick(a));
+        h.itemView.setOnClickListener(v -> onClick.onClick(a));
         h.itemView.setOnLongClickListener(v -> {
-            listener.onLongClick(a, v);
+            onLongClick.onLongClick(a, v);
             return true;
         });
     }

@@ -14,17 +14,19 @@ import java.util.List;
 
 public class AdaptadorCarpetas extends RecyclerView.Adapter<AdaptadorCarpetas.ViewHolder> {
 
-    public interface Listener {
-        void onClick(MiCarpeta carpeta);
-        void onLongClick(MiCarpeta carpeta, View anchor);
-    }
+    public interface OnCarpetaClick     { void onClick(MiCarpeta c); }
+    public interface OnCarpetaLongClick { void onLongClick(MiCarpeta c, View anchor); }
 
-    private List<MiCarpeta> lista;
-    private final Listener  listener;
+    private List<MiCarpeta>       lista;
+    private final OnCarpetaClick      onClick;
+    private final OnCarpetaLongClick  onLongClick;
 
-    public AdaptadorCarpetas(List<MiCarpeta> lista, Listener listener) {
-        this.lista    = lista;
-        this.listener = listener;
+    public AdaptadorCarpetas(List<MiCarpeta> lista,
+                              OnCarpetaClick onClick,
+                              OnCarpetaLongClick onLongClick) {
+        this.lista       = lista;
+        this.onClick     = onClick;
+        this.onLongClick = onLongClick;
     }
 
     public void actualizar(List<MiCarpeta> nueva) {
@@ -43,18 +45,15 @@ public class AdaptadorCarpetas extends RecyclerView.Adapter<AdaptadorCarpetas.Vi
     public void onBindViewHolder(@NonNull ViewHolder h, int position) {
         MiCarpeta c = lista.get(position);
         h.tvNombre.setText(c.nombre);
-
-        // Color de fondo del icono
         try {
             String col = c.color != null ? c.color : "#1565C0";
             h.ivIcono.setColorFilter(Color.parseColor(col));
         } catch (Exception ignored) {
             h.ivIcono.setColorFilter(Color.parseColor("#1565C0"));
         }
-
-        h.itemView.setOnClickListener(v -> listener.onClick(c));
+        h.itemView.setOnClickListener(v -> onClick.onClick(c));
         h.itemView.setOnLongClickListener(v -> {
-            listener.onLongClick(c, v);
+            onLongClick.onLongClick(c, v);
             return true;
         });
     }
