@@ -71,7 +71,7 @@ public class ActividadChat extends AppCompatActivity {
         if (DispositivoUtils.isLogged(this)) {
             return "user_" + DispositivoUtils.getUsuarioId(this);
         }
-        return DispositivoUtils.getDeviceUUID(this);
+        return DispositivoUtils.getUUID(this);
     }
 
     private void cargarHistorial() {
