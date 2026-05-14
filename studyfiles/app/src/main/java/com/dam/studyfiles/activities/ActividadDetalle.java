@@ -3,23 +3,28 @@ package com.dam.studyfiles.activities;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 
 import com.dam.studyfiles.R;
 import com.dam.studyfiles.database.BaseDatos;
 import com.dam.studyfiles.database.Favorito;
 import com.dam.studyfiles.database.VotoLocal;
 import com.dam.studyfiles.network.SupabaseClient;
-import com.google.android.material.chip.Chip;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -30,21 +35,21 @@ import retrofit2.Response;
 
 public class ActividadDetalle extends AppCompatActivity {
 
-    private int    archivoId;
-    private int    likes, dislikes, reportes;
-    private String nombre, descripcion, categoria, uploader, urlArchivo, tipoArchivo;
+    private int     archivoId;
+    private int     likes, dislikes, reportes;
+    private String  nombre, descripcion, categoria, uploader, urlArchivo, tipoArchivo;
     private boolean esFavorito = false;
 
-    private TextView tvNombre, tvDesc, tvAutor, tvCategoria, tvVotos;
-    private Button   btnLike, btnDislike, btnAbrir, btnFavorito, btnReportar;
-    private BaseDatos db;
+    private TextView    tvNombre, tvDesc, tvAutor, tvCategoria, tvVotos;
+    private Button      btnLike, btnDislike, btnAbrir, btnFavorito, btnReportar;
+    private ProgressBar pbDescargando;
+    private BaseDatos   db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.actividad_detalle);
 
-        // Leer datos del Intent
         archivoId   = getIntent().getIntExtra("archivo_id", -1);
         nombre      = getIntent().getStringExtra("nombre");
         descripcion = getIntent().getStringExtra("descripcion");
@@ -65,7 +70,6 @@ public class ActividadDetalle extends AppCompatActivity {
 
         db = BaseDatos.getInstance(getApplicationContext());
 
-        // Vincular vistas
         tvNombre    = findViewById(R.id.tvDetalleNombre);
         tvDesc      = findViewById(R.id.tvDetalleDesc);
         tvAutor     = findViewById(R.id.tvDetalleAutor);
@@ -76,13 +80,14 @@ public class ActividadDetalle extends AppCompatActivity {
         btnAbrir    = findViewById(R.id.btnAbrirArchivo);
         btnFavorito = findViewById(R.id.btnFavorito);
         btnReportar = findViewById(R.id.btnReportar);
+        pbDescargando = findViewById(R.id.pbDescargando);
 
         mostrarDatos();
         comprobarEstadoLocal();
 
         btnLike.setOnClickListener(v -> votar("like"));
         btnDislike.setOnClickListener(v -> votar("dislike"));
-        btnAbrir.setOnClickListener(v -> abrirArchivo());
+        btnAbrir.setOnClickListener(v -> abrirArchivo(false));
         btnFavorito.setOnClickListener(v -> toggleFavorito());
         btnReportar.setOnClickListener(v -> confirmarReporte());
     }
@@ -99,11 +104,12 @@ public class ActividadDetalle extends AppCompatActivity {
         tvVotos.setText("👍 " + likes + "   👎 " + dislikes);
     }
 
-    /** Comprueba en Room si ya votó y si es favorito */
+    // ── Estado local (favorito + voto) ────────────────────────────────────────
+
     private void comprobarEstadoLocal() {
         Executors.newSingleThreadExecutor().execute(() -> {
-            String voto      = db.votoLocalDao().obtenerVoto(archivoId);
-            boolean fav      = db.favoritoDao().esFavorito(archivoId) > 0;
+            String  voto = db.votoLocalDao().obtenerVoto(archivoId);
+            boolean fav  = db.favoritoDao().esFavorito(archivoId) > 0;
             runOnUiThread(() -> {
                 esFavorito = fav;
                 actualizarBotonFavorito();
@@ -117,34 +123,29 @@ public class ActividadDetalle extends AppCompatActivity {
         });
     }
 
+    // ── Votar ─────────────────────────────────────────────────────────────────
+
     private void votar(String tipo) {
-        // Bloquear botones inmediatamente
         btnLike.setEnabled(false);
         btnDislike.setEnabled(false);
 
         if ("like".equals(tipo)) likes++;
         else dislikes++;
-
         actualizarVotos();
 
-        // Guardar voto localmente
         Executors.newSingleThreadExecutor().execute(() ->
                 db.votoLocalDao().insertar(new VotoLocal(archivoId, tipo)));
 
-        // Actualizar en Supabase
         Map<String, Object> campos = new HashMap<>();
         campos.put("likes",    likes);
         campos.put("dislikes", dislikes);
 
         SupabaseClient.getApi().actualizarArchivo("eq." + archivoId, campos)
                 .enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> c, Response<Void> r) {
-                        // Si dislikes >= 10, eliminar automáticamente
+                    @Override public void onResponse(Call<Void> c, Response<Void> r) {
                         if (dislikes >= 10) eliminarPorMalosDislikes();
                     }
-                    @Override
-                    public void onFailure(Call<Void> c, Throwable t) {
+                    @Override public void onFailure(Call<Void> c, Throwable t) {
                         Toast.makeText(ActividadDetalle.this,
                                 "Error al guardar voto", Toast.LENGTH_SHORT).show();
                     }
@@ -154,50 +155,185 @@ public class ActividadDetalle extends AppCompatActivity {
     private void eliminarPorMalosDislikes() {
         SupabaseClient.getApi().eliminarArchivo("eq." + archivoId)
                 .enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> c, Response<Void> r) {
+                    @Override public void onResponse(Call<Void> c, Response<Void> r) {
                         Toast.makeText(ActividadDetalle.this,
                                 "Archivo eliminado por exceso de 'No me gusta'",
                                 Toast.LENGTH_LONG).show();
                         finish();
                     }
-                    @Override
-                    public void onFailure(Call<Void> c, Throwable t) {}
+                    @Override public void onFailure(Call<Void> c, Throwable t) {}
                 });
     }
 
-    private void abrirArchivo() {
-        if (urlArchivo == null || urlArchivo.isEmpty()) {
-            Toast.makeText(this, "URL no disponible", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlArchivo));
-        startActivity(browserIntent);
+    // ── Abrir archivo ─────────────────────────────────────────────────────────
+
+    /**
+     * @param soloLocal true → abre solo el archivo local (modo sin internet),
+     *                  false → intenta local primero, si no hay, abre URL
+     */
+    private void abrirArchivo(boolean soloLocal) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            File local = obtenerArchivoLocal();
+            runOnUiThread(() -> {
+                if (local != null && local.exists() && local.length() > 0) {
+                    abrirArchivoLocal(local);
+                } else if (soloLocal) {
+                    Toast.makeText(this,
+                            "Archivo no descargado aún. Conecta a internet y ábrelo desde el detalle.",
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    if (urlArchivo != null && !urlArchivo.isEmpty()) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlArchivo)));
+                    } else {
+                        Toast.makeText(this, "URL no disponible", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        });
     }
 
+    private void abrirArchivoLocal(File file) {
+        try {
+            Uri uri = FileProvider.getUriForFile(this,
+                    getPackageName() + ".fileprovider", file);
+            String mime = getMimeType(tipoArchivo);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, mime);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(intent, "Abrir con..."));
+        } catch (Exception e) {
+            Toast.makeText(this, "No se puede abrir: " + e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // ── Favoritos + descarga ───────────────────────────────────────────────────
+
     private void toggleFavorito() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            if (esFavorito) {
+        if (esFavorito) {
+            // Quitar de favoritos y borrar archivo local
+            Executors.newSingleThreadExecutor().execute(() -> {
+                File local = obtenerArchivoLocal();
+                if (local != null && local.exists()) local.delete();
                 db.favoritoDao().eliminarPorId(archivoId);
                 esFavorito = false;
-            } else {
-                db.favoritoDao().insertar(new Favorito(
-                        archivoId, nombre, descripcion, categoria,
-                        uploader, urlArchivo, tipoArchivo, likes, dislikes));
-                esFavorito = true;
+                runOnUiThread(() -> {
+                    actualizarBotonFavorito();
+                    Toast.makeText(this, "Eliminado de favoritos", Toast.LENGTH_SHORT).show();
+                });
+            });
+        } else {
+            // Añadir a favoritos y descargar el archivo
+            descargarYGuardarFavorito();
+        }
+    }
+
+    private void descargarYGuardarFavorito() {
+        if (urlArchivo == null || urlArchivo.isEmpty()) {
+            guardarFavoritoSinArchivo();
+            return;
+        }
+
+        pbDescargando.setVisibility(View.VISIBLE);
+        btnFavorito.setEnabled(false);
+        btnFavorito.setText("⬇ Descargando...");
+
+        new Thread(() -> {
+            String rutaLocal = null;
+            try {
+                File dir = new File(getFilesDir(), "favoritos");
+                if (!dir.exists()) dir.mkdirs();
+
+                String ext  = tipoArchivo != null ? "." + tipoArchivo : "";
+                File   dest = new File(dir, "fav_" + archivoId + ext);
+
+                URL url = new URL(urlArchivo);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(15000);
+                conn.setReadTimeout(30000);
+                conn.connect();
+
+                InputStream  is  = conn.getInputStream();
+                FileOutputStream fos = new FileOutputStream(dest);
+                byte[] buf = new byte[8192];
+                int n;
+                while ((n = is.read(buf)) != -1) fos.write(buf, 0, n);
+                fos.close();
+                is.close();
+                conn.disconnect();
+
+                rutaLocal = dest.getAbsolutePath();
+            } catch (Exception e) {
+                // Si falla la descarga, guardamos el favorito sin archivo local
             }
+
+            final String finalRuta = rutaLocal;
+            runOnUiThread(() -> {
+                pbDescargando.setVisibility(View.GONE);
+                btnFavorito.setEnabled(true);
+                Executors.newSingleThreadExecutor().execute(() -> {
+                    Favorito fav = new Favorito(archivoId, nombre, descripcion, categoria,
+                            uploader, urlArchivo, tipoArchivo, likes, dislikes);
+                    fav.rutaLocal = finalRuta;
+                    db.favoritoDao().insertar(fav);
+                    esFavorito = true;
+                    runOnUiThread(() -> {
+                        actualizarBotonFavorito();
+                        String msg = finalRuta != null
+                                ? "✅ Favorito guardado y descargado (disponible sin internet)"
+                                : "☆ Favorito guardado (sin descarga local)";
+                        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                    });
+                });
+            });
+        }).start();
+    }
+
+    private void guardarFavoritoSinArchivo() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            db.favoritoDao().insertar(new Favorito(archivoId, nombre, descripcion, categoria,
+                    uploader, urlArchivo, tipoArchivo, likes, dislikes));
+            esFavorito = true;
             runOnUiThread(() -> {
                 actualizarBotonFavorito();
-                Toast.makeText(this,
-                        esFavorito ? "Añadido a favoritos" : "Eliminado de favoritos",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Añadido a favoritos", Toast.LENGTH_SHORT).show();
             });
         });
     }
 
     private void actualizarBotonFavorito() {
-        btnFavorito.setText(esFavorito ? "★ Quitar favorito" : "☆ Añadir favorito");
+        btnFavorito.setText(esFavorito ? "★ Quitar favorito" : "☆ Añadir a favoritos");
     }
+
+    // ── Utilidades ────────────────────────────────────────────────────────────
+
+    /** Devuelve el archivo local si existe */
+    private File obtenerArchivoLocal() {
+        if (tipoArchivo == null) return null;
+        String ext  = "." + tipoArchivo;
+        File   file = new File(new File(getFilesDir(), "favoritos"), "fav_" + archivoId + ext);
+        return file;
+    }
+
+    private String getMimeType(String ext) {
+        if (ext == null) return "*/*";
+        switch (ext.toLowerCase()) {
+            case "pdf":  return "application/pdf";
+            case "doc":  return "application/msword";
+            case "docx": return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            case "ppt":  return "application/vnd.ms-powerpoint";
+            case "pptx": return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+            case "xls":  return "application/vnd.ms-excel";
+            case "xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            case "png":  return "image/png";
+            case "jpg":  case "jpeg": return "image/jpeg";
+            case "txt":  return "text/plain";
+            case "zip":  return "application/zip";
+            default:     return "*/*";
+        }
+    }
+
+    // ── Reporte ───────────────────────────────────────────────────────────────
 
     private void confirmarReporte() {
         new AlertDialog.Builder(this)
@@ -214,14 +350,12 @@ public class ActividadDetalle extends AppCompatActivity {
         campos.put("reportes", reportes);
         SupabaseClient.getApi().actualizarArchivo("eq." + archivoId, campos)
                 .enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> c, Response<Void> r) {
+                    @Override public void onResponse(Call<Void> c, Response<Void> r) {
                         Toast.makeText(ActividadDetalle.this,
                                 "Archivo reportado. Gracias.", Toast.LENGTH_SHORT).show();
                         btnReportar.setEnabled(false);
                     }
-                    @Override
-                    public void onFailure(Call<Void> c, Throwable t) {
+                    @Override public void onFailure(Call<Void> c, Throwable t) {
                         Toast.makeText(ActividadDetalle.this,
                                 "Error al reportar", Toast.LENGTH_SHORT).show();
                     }

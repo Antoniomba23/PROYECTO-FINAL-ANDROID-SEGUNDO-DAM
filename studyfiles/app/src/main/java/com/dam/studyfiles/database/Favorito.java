@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey;
 
 /**
  * Entidad Room para favoritos guardados localmente.
- * Permite ver favoritos sin conexión a internet.
+ * Incluye rutaLocal para abrir el archivo SIN INTERNET.
  */
 @Entity(tableName = "favoritos")
 public class Favorito {
@@ -19,6 +19,7 @@ public class Favorito {
     public String uploader;
     public String urlArchivo;
     public String tipoArchivo;
+    public String rutaLocal;  // ruta al archivo descargado en el dispositivo
     public int    likes;
     public int    dislikes;
     public long   fechaGuardado;

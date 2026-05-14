@@ -52,6 +52,14 @@
                 android:textSize="12sp"
                 android:textColor="@color/text_secondary" />
 
+            <TextView
+                android:id="@+id/tvOfflineFav"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="@color/like_color"
+                android:textStyle="bold" />
+
         </LinearLayout>
 
         <TextView

@@ -50,6 +50,11 @@
             android:name=".activities.ActividadCarpeta"
             android:exported="false" />
 
+        <activity
+            android:name=".activities.ActividadLogin"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- FileProvider para compartir archivos descargados -->
         <provider
             android:name="androidx.core.content.FileProvider"

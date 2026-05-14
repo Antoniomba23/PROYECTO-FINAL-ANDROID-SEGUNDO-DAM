@@ -125,9 +125,29 @@
                 android:id="@+id/btnFavorito"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="4dp"
                 android:text="☆ Añadir a favoritos"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+            <!-- ProgressBar descarga -->
+            <ProgressBar
+                android:id="@+id/pbDescargando"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginBottom="8dp"
+                android:indeterminate="true"
+                android:progressTint="@color/accent"
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Al añadir a favoritos el archivo se descarga en tu dispositivo para verlo sin internet."
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="8dp"
+                android:gravity="center" />
 
             <!-- Botón Reportar -->
             <Button

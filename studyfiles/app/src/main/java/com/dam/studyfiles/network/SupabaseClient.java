@@ -45,4 +45,8 @@ public class SupabaseClient {
     public static MiNubeApi getMiNube() {
         return getRetrofit().create(MiNubeApi.class);
     }
+
+    public static UsuariosApi getUsuarios() {
+        return getRetrofit().create(UsuariosApi.class);
+    }
 }

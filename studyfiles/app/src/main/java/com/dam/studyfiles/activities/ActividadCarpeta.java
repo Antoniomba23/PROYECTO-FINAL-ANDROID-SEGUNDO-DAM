@@ -83,7 +83,9 @@ public class ActividadCarpeta extends AppCompatActivity {
         pb      = findViewById(R.id.pbCargandoCarpeta);
         tvVacio = findViewById(R.id.tvVacioCarpeta);
 
-        adaptador = new AdaptadorMisArchivos(lista, this::onArchivoClick, this::onArchivoLongClick);
+        adaptador = new AdaptadorMisArchivos(lista,
+                this::onArchivoClick,
+                this::onArchivoLongClick);
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setAdapter(adaptador);
 

@@ -78,7 +78,10 @@ public class ActividadPrincipal extends AppCompatActivity {
     private List<MiCarpeta>  listaCarpetas       = new ArrayList<>();
     private List<MiArchivo>  listaArchivosSueltos = new ArrayList<>();
     private List<Favorito>   listaFavoritos       = new ArrayList<>();
-    private String           uuid;
+    private String getIdentificador() {
+        String userId = DispositivoUtils.getUsuarioId(this);
+        return userId != null ? "user_" + userId : DispositivoUtils.getUUID(this);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,8 +93,6 @@ public class ActividadPrincipal extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.actividad_principal);
-
-        uuid = DispositivoUtils.getUUID(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -219,7 +220,8 @@ public class ActividadPrincipal extends AppCompatActivity {
     }
 
     private void cargarMiNube() {
-        SupabaseClient.getMiNube().getMisCarpetas("eq." + uuid)
+        String iden = getIdentificador();
+        SupabaseClient.getMiNube().getMisCarpetas("eq." + iden)
                 .enqueue(new Callback<List<MiCarpeta>>() {
                     @Override public void onResponse(Call<List<MiCarpeta>> c, Response<List<MiCarpeta>> r) {
                         if (r.isSuccessful() && r.body() != null) {
@@ -233,7 +235,7 @@ public class ActividadPrincipal extends AppCompatActivity {
                     }
                 });
 
-        SupabaseClient.getMiNube().getMisArchivosSinCarpeta("eq." + uuid, "is.null")
+        SupabaseClient.getMiNube().getMisArchivosSinCarpeta("eq." + iden, "is.null")
                 .enqueue(new Callback<List<MiArchivo>>() {
                     @Override public void onResponse(Call<List<MiArchivo>> c, Response<List<MiArchivo>> r) {
                         if (r.isSuccessful() && r.body() != null) {
@@ -311,7 +313,7 @@ public class ActividadPrincipal extends AppCompatActivity {
                     int idx = (int)(Math.random() * colores.length);
                     Map<String, Object> body = new HashMap<>();
                     body.put("nombre",         nombre);
-                    body.put("usuario_id",     uuid);
+                    body.put("usuario_id",     getIdentificador());
                     body.put("color",          colores[idx]);
                     body.put("fecha_creacion", System.currentTimeMillis());
                     SupabaseClient.getMiNube().crearCarpeta(body)
@@ -408,6 +410,14 @@ public class ActividadPrincipal extends AppCompatActivity {
         menu.add(0, 1, 0, "Modo oscuro")
                 .setIcon(R.drawable.ic_moon)
                 .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        
+        if (DispositivoUtils.isLogged(this)) {
+            menu.add(0, 2, 0, "Cerrar sesión (" + DispositivoUtils.getUsuarioNombre(this) + ")")
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+        } else {
+            menu.add(0, 2, 0, "Iniciar sesión")
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        }
         return true;
     }
 
@@ -421,6 +431,15 @@ public class ActividadPrincipal extends AppCompatActivity {
                          : AppCompatDelegate.MODE_NIGHT_NO);
             recreate();
             return true;
+        } else if (item.getItemId() == 2) {
+            if (DispositivoUtils.isLogged(this)) {
+                DispositivoUtils.logout(this);
+                Toast.makeText(this, "Sesión cerrada", Toast.LENGTH_SHORT).show();
+                recreate();
+            } else {
+                startActivity(new Intent(this, ActividadLogin.class));
+            }
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -430,5 +449,6 @@ public class ActividadPrincipal extends AppCompatActivity {
         super.onResume();
         // Refrescar favoritos al volver
         if (seccionFavoritos.getVisibility() == View.VISIBLE) cargarFavoritos();
+        if (seccionMiNube.getVisibility() == View.VISIBLE) cargarMiNube();
     }
 }

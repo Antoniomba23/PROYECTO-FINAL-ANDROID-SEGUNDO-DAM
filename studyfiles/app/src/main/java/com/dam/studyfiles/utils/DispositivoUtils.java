@@ -23,6 +23,36 @@ public class DispositivoUtils {
         return uuid;
     }
 
+    public static void setUsuario(Context context, String id, String nombre) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .edit()
+                .putString("usuario_id", id)
+                .putString("usuario_nombre", nombre)
+                .apply();
+    }
+
+    public static String getUsuarioId(Context context) {
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .getString("usuario_id", null);
+    }
+
+    public static String getUsuarioNombre(Context context) {
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .getString("usuario_nombre", "Anónimo");
+    }
+
+    public static boolean isLogged(Context context) {
+        return getUsuarioId(context) != null;
+    }
+
+    public static void logout(Context context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .edit()
+                .remove("usuario_id")
+                .remove("usuario_nombre")
+                .apply();
+    }
+
     public static boolean isDarkMode(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         return prefs.getBoolean("dark_mode", false);
