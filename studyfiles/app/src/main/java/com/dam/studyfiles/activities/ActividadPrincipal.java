@@ -53,7 +53,7 @@ public class ActividadPrincipal extends AppCompatActivity {
     // ── Vistas ────────────────────────────────────────────────────────────────
     private EditText          etBuscar;
     private ProgressBar       pbBusqueda;
-    private FloatingActionButton fab;
+    private FloatingActionButton fab, fabChat;
 
     // Sección Inicio
     private View              seccionInicio;
@@ -106,12 +106,14 @@ public class ActividadPrincipal extends AppCompatActivity {
         configurarBottomNav();
 
         fab.setOnClickListener(v -> onFabClick());
+        fabChat.setOnClickListener(v -> startActivity(new Intent(this, ActividadChat.class)));
     }
 
     private void vincularVistas() {
         etBuscar   = findViewById(R.id.etBuscar);
         pbBusqueda = findViewById(R.id.pbBusqueda);
         fab        = findViewById(R.id.fab);
+        fabChat    = findViewById(R.id.fabChat);
 
         seccionInicio  = findViewById(R.id.seccionInicio);
         rvCategorias   = findViewById(R.id.rvCategorias);

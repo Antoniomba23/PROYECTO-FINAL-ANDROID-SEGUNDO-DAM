@@ -36,6 +36,10 @@
         <activity
             android:name=".activities.ActividadDetalle"
             android:exported="false" />
+        <activity
+            android:name=".activities.ActividadChat"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".activities.ActividadSubir"

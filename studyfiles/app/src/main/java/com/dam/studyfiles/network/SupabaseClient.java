@@ -49,4 +49,8 @@ public class SupabaseClient {
     public static UsuariosApi getUsuarios() {
         return getRetrofit().create(UsuariosApi.class);
     }
+
+    public static ChatApi getChat() {
+        return getRetrofit().create(ChatApi.class);
+    }
 }

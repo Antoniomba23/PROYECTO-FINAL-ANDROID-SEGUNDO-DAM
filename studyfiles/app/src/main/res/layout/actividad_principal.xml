@@ -184,7 +184,7 @@
 
     </FrameLayout>
 
-    <!-- FAB -->
+    <!-- FAB Principal -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
@@ -194,6 +194,17 @@
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/accent"
         android:contentDescription="Acción" />
+
+    <!-- FAB Chat IA -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="72dp"
+        android:src="@drawable/ic_chat_ia"
+        app:backgroundTint="#00E676"
+        android:contentDescription="Chat IA" />
 
     <!-- BOTTOM NAVIGATION -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
