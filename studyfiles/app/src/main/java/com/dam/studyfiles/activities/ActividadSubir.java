@@ -38,7 +38,7 @@ public class ActividadSubir extends AppCompatActivity {
     private static final String PREFS    = "studyfiles_prefs";
     private static final String KEY_AUTOR = "nombre_autor";
 
-    private TextInputEditText etNombre, etDescripcion, etAutor;
+    private TextInputEditText etNombre, etDescripcion, etAutor, etInstitucion, etNivelEstudios;
     private Spinner           spCategoria;
     private Button            btnSeleccionar, btnSubir;
     private TextView          tvArchivoSeleccionado;
@@ -77,16 +77,23 @@ public class ActividadSubir extends AppCompatActivity {
         etNombre              = findViewById(R.id.etNombreArchivo);
         etDescripcion         = findViewById(R.id.etDescripcion);
         etAutor               = findViewById(R.id.etAutor);
+        etInstitucion         = findViewById(R.id.etInstitucion);
+        etNivelEstudios       = findViewById(R.id.etNivelEstudios);
         spCategoria           = findViewById(R.id.spCategoria);
         btnSeleccionar        = findViewById(R.id.btnSeleccionarArchivo);
         btnSubir              = findViewById(R.id.btnSubir);
         tvArchivoSeleccionado = findViewById(R.id.tvArchivoSeleccionado);
         pb                    = findViewById(R.id.pbSubiendo);
 
-        // Cargar nombre autor guardado anteriormente
-        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-        String autorGuardado = prefs.getString(KEY_AUTOR, "");
-        if (!autorGuardado.isEmpty()) etAutor.setText(autorGuardado);
+        // Cargar nombre autor o usuario logueado
+        if (com.dam.studyfiles.utils.DispositivoUtils.isLogged(this)) {
+            etAutor.setText(com.dam.studyfiles.utils.DispositivoUtils.getUsuarioNombre(this));
+            etAutor.setEnabled(false);
+        } else {
+            SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+            String autorGuardado = prefs.getString(KEY_AUTOR, "");
+            if (!autorGuardado.isEmpty()) etAutor.setText(autorGuardado);
+        }
 
         // Spinner de categorías
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
@@ -105,6 +112,8 @@ public class ActividadSubir extends AppCompatActivity {
         String descripcion = etDescripcion.getText() != null ? etDescripcion.getText().toString().trim() : "";
         String autor       = etAutor.getText() != null ? etAutor.getText().toString().trim() : "";
         String categoria   = CATEGORIAS[spCategoria.getSelectedItemPosition()];
+        String institucion = etInstitucion.getText() != null ? etInstitucion.getText().toString().trim() : "";
+        String nivelEstudios = etNivelEstudios.getText() != null ? etNivelEstudios.getText().toString().trim() : "";
 
         if (nombre.isEmpty()) {
             etNombre.setError("El nombre es obligatorio");
@@ -119,18 +128,20 @@ public class ActividadSubir extends AppCompatActivity {
             return;
         }
 
-        // Guardar autor para la próxima vez
-        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
-                .putString(KEY_AUTOR, autor).apply();
+        // Guardar autor para la próxima vez (si no está logueado)
+        if (!com.dam.studyfiles.utils.DispositivoUtils.isLogged(this)) {
+            getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                    .putString(KEY_AUTOR, autor).apply();
+        }
 
         pb.setVisibility(View.VISIBLE);
         btnSubir.setEnabled(false);
 
-        subirAStorage(nombre, descripcion, autor, categoria);
+        subirAStorage(nombre, descripcion, autor, categoria, institucion, nivelEstudios);
     }
 
     private void subirAStorage(String nombre, String descripcion,
-                                String autor, String categoria) {
+                                String autor, String categoria, String institucion, String nivelEstudios) {
         new Thread(() -> {
             try {
                 InputStream is = getContentResolver().openInputStream(uriSeleccionado);
@@ -166,7 +177,7 @@ public class ActividadSubir extends AppCompatActivity {
                 if (storageResponse.isSuccessful()) {
                     String urlPublica = SupabaseClient.URL_BASE
                             + "storage/v1/object/public/archivos-estudio/" + rutaStorage;
-                    guardarMetadatos(nombre, descripcion, autor, categoria, urlPublica, extension);
+                    guardarMetadatos(nombre, descripcion, autor, categoria, urlPublica, extension, institucion, nivelEstudios);
                 } else {
                     String errorBody = storageResponse.body() != null
                             ? storageResponse.body().string() : "Error desconocido";
@@ -187,7 +198,7 @@ public class ActividadSubir extends AppCompatActivity {
     }
 
     private void guardarMetadatos(String nombre, String descripcion, String autor,
-                                   String categoria, String url, String tipo) {
+                                   String categoria, String url, String tipo, String institucion, String nivelEstudios) {
         SubirArchivoRequest req = new SubirArchivoRequest();
         req.nombre      = nombre;
         req.descripcion = descripcion;
@@ -195,6 +206,8 @@ public class ActividadSubir extends AppCompatActivity {
         req.categoria   = categoria;
         req.urlArchivo  = url;
         req.tipoArchivo = tipo;
+        req.institucion = institucion.isEmpty() ? null : institucion;
+        req.nivelEstudios = nivelEstudios.isEmpty() ? null : nivelEstudios;
 
         SupabaseClient.getApi().subirArchivo(req).enqueue(new Callback<Void>() {
             @Override

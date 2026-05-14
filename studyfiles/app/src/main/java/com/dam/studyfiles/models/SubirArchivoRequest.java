@@ -32,6 +32,12 @@ public class SubirArchivoRequest {
     @SerializedName("reportes")
     public int reportes = 0;
 
+    @SerializedName("institucion")
+    public String institucion;
+
+    @SerializedName("nivel_estudios")
+    public String nivelEstudios;
+
     @SerializedName("fecha_subida")
     public long fechaSubida = System.currentTimeMillis();
 }

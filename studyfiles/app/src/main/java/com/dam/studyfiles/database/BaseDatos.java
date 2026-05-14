@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase;
 
 @Database(
     entities = { Favorito.class, VotoLocal.class },
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 public abstract class BaseDatos extends RoomDatabase {

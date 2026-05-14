@@ -37,7 +37,7 @@ public class ActividadDetalle extends AppCompatActivity {
 
     private int     archivoId;
     private int     likes, dislikes, reportes;
-    private String  nombre, descripcion, categoria, uploader, urlArchivo, tipoArchivo;
+    private String  nombre, descripcion, categoria, uploader, urlArchivo, tipoArchivo, institucion, nivelEstudios;
     private boolean esFavorito = false;
 
     private TextView    tvNombre, tvDesc, tvAutor, tvCategoria, tvVotos;
@@ -60,6 +60,8 @@ public class ActividadDetalle extends AppCompatActivity {
         likes       = getIntent().getIntExtra("likes", 0);
         dislikes    = getIntent().getIntExtra("dislikes", 0);
         reportes    = getIntent().getIntExtra("reportes", 0);
+        institucion = getIntent().getStringExtra("institucion");
+        nivelEstudios = getIntent().getStringExtra("nivel_estudios");
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -95,7 +97,16 @@ public class ActividadDetalle extends AppCompatActivity {
     private void mostrarDatos() {
         tvNombre.setText(nombre);
         tvDesc.setText(descripcion != null && !descripcion.isEmpty() ? descripcion : "Sin descripción");
-        tvAutor.setText("Subido por: " + (uploader != null ? uploader : "Anónimo"));
+        
+        StringBuilder autorInfo = new StringBuilder("Subido por: " + (uploader != null ? uploader : "Anónimo"));
+        if (institucion != null && !institucion.isEmpty()) {
+            autorInfo.append(" (").append(institucion).append(")");
+        }
+        if (nivelEstudios != null && !nivelEstudios.isEmpty()) {
+            autorInfo.append(" - ").append(nivelEstudios);
+        }
+        tvAutor.setText(autorInfo.toString());
+        
         tvCategoria.setText("Categoría: " + (categoria != null ? categoria : "—"));
         actualizarVotos();
     }
@@ -275,6 +286,8 @@ public class ActividadDetalle extends AppCompatActivity {
                     Favorito fav = new Favorito(archivoId, nombre, descripcion, categoria,
                             uploader, urlArchivo, tipoArchivo, likes, dislikes);
                     fav.rutaLocal = finalRuta;
+                    fav.institucion = institucion;
+                    fav.nivelEstudios = nivelEstudios;
                     db.favoritoDao().insertar(fav);
                     esFavorito = true;
                     runOnUiThread(() -> {

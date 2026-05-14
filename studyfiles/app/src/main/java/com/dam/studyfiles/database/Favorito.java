@@ -20,6 +20,8 @@ public class Favorito {
     public String urlArchivo;
     public String tipoArchivo;
     public String rutaLocal;  // ruta al archivo descargado en el dispositivo
+    public String institucion;
+    public String nivelEstudios;
     public int    likes;
     public int    dislikes;
     public long   fechaGuardado;

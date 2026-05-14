@@ -156,6 +156,8 @@ public class ActividadPrincipal extends AppCompatActivity {
             i.putExtra("uploader",    a.uploader); i.putExtra("url_archivo", a.urlArchivo);
             i.putExtra("tipo_archivo",a.tipoArchivo); i.putExtra("likes",    a.likes);
             i.putExtra("dislikes",    a.dislikes); i.putExtra("reportes",   a.reportes);
+            i.putExtra("institucion", a.institucion);
+            i.putExtra("nivel_estudios", a.nivelEstudios);
             startActivity(i);
         });
         rvBusqueda.setLayoutManager(new LinearLayoutManager(this));

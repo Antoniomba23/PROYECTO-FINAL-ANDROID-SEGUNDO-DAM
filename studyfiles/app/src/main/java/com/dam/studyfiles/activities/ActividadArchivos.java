@@ -106,6 +106,8 @@ public class ActividadArchivos extends AppCompatActivity {
         i.putExtra("likes",        a.likes);
         i.putExtra("dislikes",     a.dislikes);
         i.putExtra("reportes",     a.reportes);
+        i.putExtra("institucion",  a.institucion);
+        i.putExtra("nivel_estudios", a.nivelEstudios);
         startActivity(i);
     }
 

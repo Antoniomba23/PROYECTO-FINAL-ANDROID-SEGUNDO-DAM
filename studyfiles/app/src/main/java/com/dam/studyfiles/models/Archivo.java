@@ -37,6 +37,12 @@ public class Archivo {
     @SerializedName("reportes")
     public int reportes;
 
+    @SerializedName("institucion")
+    public String institucion;
+
+    @SerializedName("nivel_estudios")
+    public String nivelEstudios;
+
     @SerializedName("fecha_subida")
     public long fechaSubida;
 
