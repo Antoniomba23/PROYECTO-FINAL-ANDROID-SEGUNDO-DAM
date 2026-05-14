@@ -2,6 +2,16 @@ plugins {
     id 'com.android.application'
 }
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { instr ->
+        localProperties.load(instr)
+    }
+}
+def geminiApiKey = localProperties.getProperty('GEMINI_API_KEY', '""')
+
+
 android {
     namespace 'com.dam.studyfiles'
     compileSdk 34
@@ -14,6 +24,11 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "GEMINI_API_KEY", "\"${geminiApiKey}\""
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
