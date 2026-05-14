@@ -138,6 +138,10 @@ public class ActividadPrincipal extends AppCompatActivity {
                 new AdaptadorCategorias.Categoria("Informática",    R.drawable.ic_informatica, R.color.cat_informatica),
                 new AdaptadorCategorias.Categoria("Inglés",         R.drawable.ic_ingles,      R.color.cat_ingles),
                 new AdaptadorCategorias.Categoria("Arte y Música",  R.drawable.ic_arte,        R.color.cat_arte),
+                new AdaptadorCategorias.Categoria("Filosofía",      R.drawable.ic_otros,       R.color.cat_filosofia),
+                new AdaptadorCategorias.Categoria("Economía",       R.drawable.ic_matematicas, R.color.cat_economia),
+                new AdaptadorCategorias.Categoria("Física y Química",R.drawable.ic_ciencias,    R.color.cat_fisica),
+                new AdaptadorCategorias.Categoria("Biología",       R.drawable.ic_ciencias,    R.color.cat_biologia),
                 new AdaptadorCategorias.Categoria("Otros",          R.drawable.ic_otros,       R.color.cat_otros)
         );
         rvCategorias.setLayoutManager(new GridLayoutManager(this, 2));

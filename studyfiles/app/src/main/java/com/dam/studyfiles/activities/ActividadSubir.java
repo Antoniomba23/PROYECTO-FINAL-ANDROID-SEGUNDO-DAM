@@ -49,7 +49,8 @@ public class ActividadSubir extends AppCompatActivity {
 
     private final String[] CATEGORIAS = {
             "Historia", "Matemáticas", "Lengua", "Ciencias",
-            "Informática", "Inglés", "Arte y Música", "Otros"
+            "Informática", "Inglés", "Arte y Música", 
+            "Filosofía", "Economía", "Física y Química", "Biología", "Otros"
     };
 
     private final ActivityResultLauncher<String[]> selectorArchivo =

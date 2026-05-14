@@ -21,6 +21,10 @@
     <color name="cat_ingles">#E65100</color>
     <color name="cat_arte">#AD1457</color>
     <color name="cat_otros">#37474F</color>
+    <color name="cat_filosofia">#5D4037</color>
+    <color name="cat_economia">#00897B</color>
+    <color name="cat_fisica">#455A64</color>
+    <color name="cat_biologia">#558B2F</color>
 
     <!-- Mi Nube — colores de carpeta -->
     <color name="folder_blue">#1565C0</color>
