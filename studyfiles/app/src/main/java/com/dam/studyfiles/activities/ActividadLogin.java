@@ -103,9 +103,7 @@ public class ActividadLogin extends AppCompatActivity {
                             Usuario u = response.body().get(0);
                             if (u.contrasena.equals(hashPass)) {
                                 // Login correcto
-                                DispositivoUtils.setUsuario(ActividadLogin.this, String.valueOf(u.id), u.nombreUsuario);
-                                Toast.makeText(ActividadLogin.this, "¡Bienvenido " + u.nombreUsuario + "!", Toast.LENGTH_SHORT).show();
-                                finish();
+                                migrarDatosYFinalizar(String.valueOf(u.id), u.nombreUsuario);
                             } else {
                                 Toast.makeText(ActividadLogin.this, "Contraseña incorrecta", Toast.LENGTH_SHORT).show();
                             }
@@ -163,9 +161,7 @@ public class ActividadLogin extends AppCompatActivity {
 
                         if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                             Usuario u = response.body().get(0);
-                            DispositivoUtils.setUsuario(ActividadLogin.this, String.valueOf(u.id), u.nombreUsuario);
-                            Toast.makeText(ActividadLogin.this, "Cuenta creada con éxito", Toast.LENGTH_SHORT).show();
-                            finish();
+                            migrarDatosYFinalizar(String.valueOf(u.id), u.nombreUsuario);
                         } else {
                             Toast.makeText(ActividadLogin.this, "Error al registrar usuario", Toast.LENGTH_SHORT).show();
                         }
@@ -178,6 +174,36 @@ public class ActividadLogin extends AppCompatActivity {
                         Toast.makeText(ActividadLogin.this, "Error de conexión", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void migrarDatosYFinalizar(String nuevoId, String nombreUsuario) {
+        String oldUUID = DispositivoUtils.getUUID(this);
+        String newUserId = "user_" + nuevoId;
+        
+        Map<String, Object> bodyMigracion = new HashMap<>();
+        bodyMigracion.put("usuario_id", newUserId);
+
+        // Migrar Carpetas
+        SupabaseClient.getMiNube().migrarCarpetas("eq." + oldUUID, bodyMigracion).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> call, Response<Void> response) {}
+            @Override public void onFailure(Call<Void> call, Throwable t) {}
+        });
+
+        // Migrar Archivos sueltos
+        SupabaseClient.getMiNube().migrarArchivos("eq." + oldUUID, bodyMigracion).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> call, Response<Void> response) {}
+            @Override public void onFailure(Call<Void> call, Throwable t) {}
+        });
+
+        // Migrar Mensajes de Chat
+        SupabaseClient.getChat().migrarMensajes("eq." + oldUUID, bodyMigracion).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> call, Response<Void> response) {}
+            @Override public void onFailure(Call<Void> call, Throwable t) {}
+        });
+
+        DispositivoUtils.setUsuario(this, nuevoId, nombreUsuario);
+        Toast.makeText(this, "¡Bienvenido " + nombreUsuario + "! Datos sincronizados.", Toast.LENGTH_SHORT).show();
+        finish();
     }
 
     @Override

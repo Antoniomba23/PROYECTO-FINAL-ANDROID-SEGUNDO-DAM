@@ -54,4 +54,12 @@ public interface MiNubeApi {
 
     @DELETE("rest/v1/mis_archivos")
     Call<Void> eliminarMiArchivo(@Query("id") String filtroId);
+
+    // ── MIGRACIÓN DE DATOS (UUID a USER_ID) ──────────────────────────────────
+    
+    @PATCH("rest/v1/mis_carpetas")
+    Call<Void> migrarCarpetas(@Query("usuario_id") String oldUsuarioId, @Body Map<String, Object> body);
+
+    @PATCH("rest/v1/mis_archivos")
+    Call<Void> migrarArchivos(@Query("usuario_id") String oldUsuarioId, @Body Map<String, Object> body);
 }

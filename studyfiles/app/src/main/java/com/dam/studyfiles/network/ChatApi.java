@@ -28,4 +28,12 @@ public interface ChatApi {
     })
     @POST("rest/v1/mensajes_chat")
     Call<List<MensajeChat>> insertarMensaje(@Body MensajeChat mensaje);
+
+    @Headers({
+        "apikey: " + SupabaseClient.API_KEY,
+        "Authorization: Bearer " + SupabaseClient.API_KEY,
+        "Content-Type: application/json"
+    })
+    @PATCH("rest/v1/mensajes_chat")
+    Call<Void> migrarMensajes(@Query("usuario_id") String eqUsuarioIdAntiguo, @Body Map<String, Object> body);
 }
