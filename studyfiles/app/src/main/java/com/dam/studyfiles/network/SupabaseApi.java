@@ -44,6 +44,15 @@ public interface SupabaseApi {
     @POST("rest/v1/comentarios")
     Call<Void> crearComentario(@Body com.dam.studyfiles.models.Comentario comentario);
 
+    @PATCH("rest/v1/comentarios")
+    Call<Void> actualizarComentario(
+            @Query("id") String filtroId,
+            @Body Map<String, Object> campos
+    );
+
+    @DELETE("rest/v1/comentarios")
+    Call<Void> eliminarComentario(@Query("id") String filtroId);
+
     // ── POST ─────────────────────────────────────────────────────────────────
 
     /** Insertar nuevo archivo en la tabla */

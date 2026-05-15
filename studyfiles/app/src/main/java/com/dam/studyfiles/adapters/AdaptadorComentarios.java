@@ -3,7 +3,9 @@ package com.dam.studyfiles.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,9 +18,18 @@ import java.util.List;
 public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentarios.ViewHolder> {
 
     private List<Comentario> comentarios;
+    private String currentUserId;
+    private OnComentarioActionListener listener;
 
-    public AdaptadorComentarios(List<Comentario> comentarios) {
+    public interface OnComentarioActionListener {
+        void onEditar(Comentario c);
+        void onEliminar(Comentario c);
+    }
+
+    public AdaptadorComentarios(List<Comentario> comentarios, String currentUserId, OnComentarioActionListener listener) {
         this.comentarios = comentarios;
+        this.currentUserId = currentUserId;
+        this.listener = listener;
     }
 
     public void actualizar(List<Comentario> nuevos) {
@@ -40,7 +51,6 @@ public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentar
         holder.tvNombre.setText(c.usuarioNombre);
         holder.tvTexto.setText(c.texto);
         
-        // Mostrar fecha formateada si existe
         if (c.fecha != null && c.fecha.length() >= 10) {
             String soloFecha = c.fecha.substring(0, 10);
             holder.tvFecha.setText(soloFecha);
@@ -48,6 +58,26 @@ public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentar
         } else {
             holder.tvFecha.setVisibility(View.GONE);
         }
+
+        // Lógica de opciones (Solo para el dueño)
+        if (currentUserId != null && currentUserId.equals(c.usuarioId)) {
+            holder.ivOpciones.setVisibility(View.VISIBLE);
+            holder.ivOpciones.setOnClickListener(v -> mostrarMenuOpciones(v, c));
+        } else {
+            holder.ivOpciones.setVisibility(View.GONE);
+        }
+    }
+
+    private void mostrarMenuOpciones(View view, Comentario c) {
+        PopupMenu menu = new PopupMenu(view.getContext(), view);
+        menu.getMenu().add(0, 1, 0, "✏️ Editar");
+        menu.getMenu().add(0, 2, 0, "🗑 Eliminar");
+        menu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 1) listener.onEditar(c);
+            if (item.getItemId() == 2) listener.onEliminar(c);
+            return true;
+        });
+        menu.show();
     }
 
     @Override
@@ -57,12 +87,14 @@ public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentar
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvNombre, tvTexto, tvFecha;
+        ImageView ivOpciones;
 
         ViewHolder(View itemView) {
             super(itemView);
             tvNombre = itemView.findViewById(R.id.tvComentarioNombre);
             tvTexto = itemView.findViewById(R.id.tvComentarioTexto);
             tvFecha = itemView.findViewById(R.id.tvComentarioFecha);
+            ivOpciones = itemView.findViewById(R.id.ivComentarioOpciones);
         }
     }
 }

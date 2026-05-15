@@ -10,6 +10,9 @@ public class Comentario {
     @SerializedName("archivo_id")
     public int archivoId;
 
+    @SerializedName("usuario_id")
+    public String usuarioId;
+
     @SerializedName("usuario_nombre")
     public String usuarioNombre;
 
@@ -21,8 +24,9 @@ public class Comentario {
 
     public Comentario() {}
 
-    public Comentario(int archivoId, String usuarioNombre, String texto) {
+    public Comentario(int archivoId, String usuarioId, String usuarioNombre, String texto) {
         this.archivoId = archivoId;
+        this.usuarioId = usuarioId;
         this.usuarioNombre = usuarioNombre;
         this.texto = texto;
     }

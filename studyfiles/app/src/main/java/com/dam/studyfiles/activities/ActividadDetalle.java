@@ -135,7 +135,20 @@ public class ActividadDetalle extends AppCompatActivity {
     // ── COMENTARIOS ───────────────────────────────────────────────────────────
 
     private void configurarComentarios() {
-        adaptadorComentarios = new com.dam.studyfiles.adapters.AdaptadorComentarios(listaComentarios);
+        String currentUserId = com.dam.studyfiles.utils.DispositivoUtils.getUsuarioId(this);
+        
+        adaptadorComentarios = new com.dam.studyfiles.adapters.AdaptadorComentarios(listaComentarios, currentUserId, new com.dam.studyfiles.adapters.AdaptadorComentarios.OnComentarioActionListener() {
+            @Override
+            public void onEditar(com.dam.studyfiles.models.Comentario c) {
+                editarComentario(c);
+            }
+
+            @Override
+            public void onEliminar(com.dam.studyfiles.models.Comentario c) {
+                eliminarComentario(c);
+            }
+        });
+        
         rvComentarios.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
         rvComentarios.setAdapter(adaptadorComentarios);
 
@@ -175,7 +188,8 @@ public class ActividadDetalle extends AppCompatActivity {
 
         btnEnviarComentario.setEnabled(false);
         String nombreUsuario = com.dam.studyfiles.utils.DispositivoUtils.getUsuarioNombre(this);
-        com.dam.studyfiles.models.Comentario nuevo = new com.dam.studyfiles.models.Comentario(archivoId, nombreUsuario, texto);
+        String usuarioId = com.dam.studyfiles.utils.DispositivoUtils.getUsuarioId(this);
+        com.dam.studyfiles.models.Comentario nuevo = new com.dam.studyfiles.models.Comentario(archivoId, usuarioId, nombreUsuario, texto);
 
         com.dam.studyfiles.network.SupabaseClient.getApi().crearComentario(nuevo)
                 .enqueue(new Callback<Void>() {
@@ -197,6 +211,53 @@ public class ActividadDetalle extends AppCompatActivity {
                         Toast.makeText(ActividadDetalle.this, "Sin conexión", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void eliminarComentario(com.dam.studyfiles.models.Comentario c) {
+        new AlertDialog.Builder(this)
+                .setTitle("Eliminar comentario")
+                .setMessage("¿Estás seguro de que quieres borrar este comentario?")
+                .setPositiveButton("Borrar", (dialog, which) -> {
+                    com.dam.studyfiles.network.SupabaseClient.getApi().eliminarComentario("eq." + c.id)
+                            .enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    cargarComentarios();
+                                }
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {}
+                            });
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void editarComentario(com.dam.studyfiles.models.Comentario c) {
+        android.widget.EditText et = new android.widget.EditText(this);
+        et.setText(c.texto);
+        
+        new AlertDialog.Builder(this)
+                .setTitle("Editar comentario")
+                .setView(et)
+                .setPositiveButton("Guardar", (dialog, which) -> {
+                    String nuevoTexto = et.getText().toString().trim();
+                    if (nuevoTexto.isEmpty() || nuevoTexto.equals(c.texto)) return;
+                    
+                    java.util.Map<String, Object> campos = new java.util.HashMap<>();
+                    campos.put("texto", nuevoTexto);
+                    
+                    com.dam.studyfiles.network.SupabaseClient.getApi().actualizarComentario("eq." + c.id, campos)
+                            .enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    cargarComentarios();
+                                }
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {}
+                            });
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     // ── Estado local (favorito + voto) ────────────────────────────────────────
