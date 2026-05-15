@@ -11,6 +11,7 @@
     <color name="like_color">#2E7D32</color>
     <color name="dislike_color">#C62828</color>
     <color name="ic_launcher_background">#3949AB</color>
+    <color name="ai_bubble">#E0E0E0</color>
 
     <!-- Categorías -->
     <color name="cat_historia">#C62828</color>
