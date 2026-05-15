@@ -134,10 +134,6 @@ public class ActividadChat extends AppCompatActivity {
 
                 // 5. Guardar respuesta en Supabase
                 guardarMensajeEnSupabase(msgIA);
-                
-                // Actualizar historial local para próximos mensajes
-                historial.add(msgUser);
-                historial.add(msgIA);
             }
 
             @Override
