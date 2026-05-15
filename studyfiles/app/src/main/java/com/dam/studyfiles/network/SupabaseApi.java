@@ -27,6 +27,10 @@ public interface SupabaseApi {
     @GET("rest/v1/archivos?order=fecha_subida.desc")
     Call<List<Archivo>> getArchivosPorCategoria(@Query("categoria") String categoria);
 
+    /** Obtener un solo archivo por su ID */
+    @GET("rest/v1/archivos")
+    Call<List<Archivo>> getArchivoPorId(@Query("id") String eqId);
+
     /** Buscar archivos por nombre (ilike = case-insensitive) */
     @GET("rest/v1/archivos?order=fecha_subida.desc")
     Call<List<Archivo>> buscarArchivos(@Query("nombre") String busqueda);
