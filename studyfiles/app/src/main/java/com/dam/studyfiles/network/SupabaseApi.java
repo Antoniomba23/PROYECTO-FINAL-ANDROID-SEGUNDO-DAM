@@ -31,9 +31,9 @@ public interface SupabaseApi {
     @GET("rest/v1/archivos")
     Call<List<Archivo>> getArchivoPorId(@Query("id") String eqId);
 
-    /** Buscar archivos por nombre (ilike = case-insensitive) */
+    /** Buscar archivos por nombre, descripción o categoría */
     @GET("rest/v1/archivos?order=fecha_subida.desc")
-    Call<List<Archivo>> buscarArchivos(@Query("nombre") String busqueda);
+    Call<List<Archivo>> buscarArchivosAvanzado(@Query(value = "or", encoded = true) String orQuery);
 
     // ── POST ─────────────────────────────────────────────────────────────────
 

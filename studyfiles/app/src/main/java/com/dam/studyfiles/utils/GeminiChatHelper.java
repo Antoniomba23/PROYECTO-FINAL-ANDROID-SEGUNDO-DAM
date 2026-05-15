@@ -186,7 +186,8 @@ public class GeminiChatHelper {
     }
 
     private static void ejecutarBusquedaSupaBase(String busqueda, List<MensajeChat> historial, String nuevoMensaje, JSONObject previousFunctionCall, GeminiCallback callback) {
-        SupabaseClient.getApi().buscarArchivos("ilike.%" + busqueda + "%").enqueue(new retrofit2.Callback<List<Archivo>>() {
+        String orQuery = "(nombre.ilike.%" + busqueda + "%,descripcion.ilike.%" + busqueda + "%,categoria.ilike.%" + busqueda + "%)";
+        SupabaseClient.getApi().buscarArchivosAvanzado(orQuery).enqueue(new retrofit2.Callback<List<Archivo>>() {
             @Override
             public void onResponse(retrofit2.Call<List<Archivo>> call, retrofit2.Response<List<Archivo>> response) {
                 try {
