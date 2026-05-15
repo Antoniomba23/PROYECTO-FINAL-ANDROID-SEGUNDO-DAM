@@ -186,7 +186,8 @@ public class ActividadPrincipal extends AppCompatActivity {
 
     private void buscar(String q) {
         pbBusqueda.setVisibility(View.VISIBLE);
-        SupabaseClient.getApi().buscarArchivos("ilike.*" + q + "*")
+        String orQuery = "(nombre.ilike.*" + q + "*,descripcion.ilike.*" + q + "*,categoria.ilike.*" + q + "*)";
+        SupabaseClient.getApi().buscarArchivosAvanzado(orQuery)
                 .enqueue(new Callback<List<Archivo>>() {
                     @Override public void onResponse(Call<List<Archivo>> c, Response<List<Archivo>> r) {
                         pbBusqueda.setVisibility(View.GONE);
