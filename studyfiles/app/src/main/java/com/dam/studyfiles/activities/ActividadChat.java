@@ -55,7 +55,7 @@ public class ActividadChat extends AppCompatActivity {
 
         adaptador = new AdaptadorChat(historial);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        // layoutManager.setStackFromEnd(true); // Opcional, para empezar desde abajo
+        layoutManager.setStackFromEnd(true); // Ayuda a que los mensajes salgan desde abajo
         rvChat.setLayoutManager(layoutManager);
         rvChat.setAdapter(adaptador);
 
@@ -166,7 +166,7 @@ public class ActividadChat extends AppCompatActivity {
 
     private void scrollToBottom() {
         if (adaptador.getItemCount() > 0) {
-            rvChat.smoothScrollToPosition(adaptador.getItemCount() - 1);
+            rvChat.scrollToPosition(adaptador.getItemCount() - 1);
         }
     }
 
