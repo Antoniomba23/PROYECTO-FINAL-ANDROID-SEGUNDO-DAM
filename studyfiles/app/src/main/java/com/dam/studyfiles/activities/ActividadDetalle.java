@@ -45,6 +45,15 @@ public class ActividadDetalle extends AppCompatActivity {
     private ProgressBar pbDescargando;
     private BaseDatos   db;
 
+    // Comentarios
+    private androidx.recyclerview.widget.RecyclerView rvComentarios;
+    private android.widget.LinearLayout llComentarInput;
+    private TextView tvAvisoLoginComentario;
+    private android.widget.EditText etNuevoComentario;
+    private com.google.android.material.floatingactionbutton.FloatingActionButton btnEnviarComentario;
+    private com.dam.studyfiles.adapters.AdaptadorComentarios adaptadorComentarios;
+    private java.util.List<com.dam.studyfiles.models.Comentario> listaComentarios = new java.util.ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,8 +93,16 @@ public class ActividadDetalle extends AppCompatActivity {
         btnReportar = findViewById(R.id.btnReportar);
         pbDescargando = findViewById(R.id.pbDescargando);
 
+        // Inicializar vistas de comentarios
+        rvComentarios = findViewById(R.id.rvComentarios);
+        llComentarInput = findViewById(R.id.llComentarInput);
+        tvAvisoLoginComentario = findViewById(R.id.tvAvisoLoginComentario);
+        etNuevoComentario = findViewById(R.id.etNuevoComentario);
+        btnEnviarComentario = findViewById(R.id.btnEnviarComentario);
+
         mostrarDatos();
         comprobarEstadoLocal();
+        configurarComentarios();
 
         btnLike.setOnClickListener(v -> votar("like"));
         btnDislike.setOnClickListener(v -> votar("dislike"));
@@ -113,6 +130,73 @@ public class ActividadDetalle extends AppCompatActivity {
 
     private void actualizarVotos() {
         tvVotos.setText("👍 " + likes + "   👎 " + dislikes);
+    }
+
+    // ── COMENTARIOS ───────────────────────────────────────────────────────────
+
+    private void configurarComentarios() {
+        adaptadorComentarios = new com.dam.studyfiles.adapters.AdaptadorComentarios(listaComentarios);
+        rvComentarios.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        rvComentarios.setAdapter(adaptadorComentarios);
+
+        if (com.dam.studyfiles.utils.DispositivoUtils.isLogged(this)) {
+            llComentarInput.setVisibility(View.VISIBLE);
+            tvAvisoLoginComentario.setVisibility(View.GONE);
+            
+            btnEnviarComentario.setOnClickListener(v -> enviarComentario());
+        } else {
+            llComentarInput.setVisibility(View.GONE);
+            tvAvisoLoginComentario.setVisibility(View.VISIBLE);
+        }
+
+        cargarComentarios();
+    }
+
+    private void cargarComentarios() {
+        com.dam.studyfiles.network.SupabaseClient.getApi().getComentarios("eq." + archivoId)
+                .enqueue(new Callback<java.util.List<com.dam.studyfiles.models.Comentario>>() {
+                    @Override
+                    public void onResponse(Call<java.util.List<com.dam.studyfiles.models.Comentario>> call, Response<java.util.List<com.dam.studyfiles.models.Comentario>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            adaptadorComentarios.actualizar(response.body());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<java.util.List<com.dam.studyfiles.models.Comentario>> call, Throwable t) {
+                        // Error silencioso al cargar comentarios
+                    }
+                });
+    }
+
+    private void enviarComentario() {
+        String texto = etNuevoComentario.getText().toString().trim();
+        if (texto.isEmpty()) return;
+
+        btnEnviarComentario.setEnabled(false);
+        String nombreUsuario = com.dam.studyfiles.utils.DispositivoUtils.getUsuarioNombre(this);
+        com.dam.studyfiles.models.Comentario nuevo = new com.dam.studyfiles.models.Comentario(archivoId, nombreUsuario, texto);
+
+        com.dam.studyfiles.network.SupabaseClient.getApi().crearComentario(nuevo)
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        btnEnviarComentario.setEnabled(true);
+                        if (response.isSuccessful()) {
+                            etNuevoComentario.setText("");
+                            cargarComentarios();
+                            Toast.makeText(ActividadDetalle.this, "Comentario publicado", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(ActividadDetalle.this, "Error al comentar", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        btnEnviarComentario.setEnabled(true);
+                        Toast.makeText(ActividadDetalle.this, "Sin conexión", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     // ── Estado local (favorito + voto) ────────────────────────────────────────

@@ -35,6 +35,15 @@ public interface SupabaseApi {
     @GET("rest/v1/archivos?order=fecha_subida.desc")
     Call<List<Archivo>> buscarArchivosAvanzado(@Query(value = "or", encoded = true) String orQuery);
 
+    // ── COMENTARIOS ──────────────────────────────────────────────────────────
+
+    @GET("rest/v1/comentarios?order=fecha.desc")
+    Call<List<com.dam.studyfiles.models.Comentario>> getComentarios(@Query("archivo_id") String eqArchivoId);
+
+    @Headers("Prefer: return=minimal")
+    @POST("rest/v1/comentarios")
+    Call<Void> crearComentario(@Body com.dam.studyfiles.models.Comentario comentario);
+
     // ── POST ─────────────────────────────────────────────────────────────────
 
     /** Insertar nuevo archivo en la tabla */
