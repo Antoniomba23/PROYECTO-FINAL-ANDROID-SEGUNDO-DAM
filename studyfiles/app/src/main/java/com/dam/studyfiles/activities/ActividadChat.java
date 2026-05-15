@@ -87,7 +87,12 @@ public class ActividadChat extends AppCompatActivity {
                     adaptador.actualizarMensajes(historial);
                     scrollToBottom();
                 } else {
-                    Toast.makeText(ActividadChat.this, "Error cargando historial", Toast.LENGTH_SHORT).show();
+                    try {
+                        String errorDetails = response.errorBody() != null ? response.errorBody().string() : "Error desconocido";
+                        Toast.makeText(ActividadChat.this, "Error DB: " + response.code() + " - " + errorDetails, Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(ActividadChat.this, "Error cargando historial", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
