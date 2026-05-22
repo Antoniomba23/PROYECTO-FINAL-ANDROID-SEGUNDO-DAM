@@ -42,6 +42,7 @@ public class ActividadDetalle extends AppCompatActivity {
     private int     likes, dislikes, reportes;
     private String  nombre, descripcion, categoria, uploader, urlArchivo, tipoArchivo, institucion, nivelEstudios;
     private boolean esFavorito = false;
+    private String  miVoto = null;
 
     private TextView    tvNombre, tvDesc, tvAutor, tvCategoria, tvVotos;
     private Button      btnLike, btnDislike, btnAbrir, btnFavorito, btnReportar;
@@ -368,14 +369,25 @@ public class ActividadDetalle extends AppCompatActivity {
             runOnUiThread(() -> {
                 esFavorito = fav;
                 actualizarBotonFavorito();
-                if (voto != null) {
-                    btnLike.setEnabled(false);
-                    btnDislike.setEnabled(false);
-                    btnLike.setText("like".equals(voto) ? "✅ Me gusta" : "👍 Me gusta");
-                    btnDislike.setText("dislike".equals(voto) ? "✅ No me gusta" : "👎 No me gusta");
-                }
+                miVoto = voto;
+                actualizarBotonesVotoUI();
             });
         });
+    }
+
+    private void actualizarBotonesVotoUI() {
+        if ("like".equals(miVoto)) {
+            btnLike.setText("✅ Me gusta");
+            btnDislike.setText("👎 No me gusta");
+        } else if ("dislike".equals(miVoto)) {
+            btnLike.setText("👍 Me gusta");
+            btnDislike.setText("✅ No me gusta");
+        } else {
+            btnLike.setText("👍 Me gusta");
+            btnDislike.setText("👎 No me gusta");
+        }
+        btnLike.setEnabled(true);
+        btnDislike.setEnabled(true);
     }
 
     // ── Votar ─────────────────────────────────────────────────────────────────
@@ -384,25 +396,70 @@ public class ActividadDetalle extends AppCompatActivity {
         btnLike.setEnabled(false);
         btnDislike.setEnabled(false);
 
-        if ("like".equals(tipo)) likes++;
-        else dislikes++;
-        actualizarVotos();
+        String nuevoVoto;
+        int diffLikes = 0;
+        int diffDislikes = 0;
 
-        Executors.newSingleThreadExecutor().execute(() ->
-                db.votoLocalDao().insertar(new VotoLocal(archivoId, tipo)));
+        if (tipo.equals(miVoto)) {
+            nuevoVoto = null;
+            if ("like".equals(tipo)) {
+                diffLikes = -1;
+            } else {
+                diffDislikes = -1;
+            }
+        } else {
+            if ("like".equals(tipo)) {
+                diffLikes = 1;
+                if ("dislike".equals(miVoto)) {
+                    diffDislikes = -1;
+                }
+            } else {
+                diffDislikes = 1;
+                if ("like".equals(miVoto)) {
+                    diffLikes = -1;
+                }
+            }
+            nuevoVoto = tipo;
+        }
+
+        final String finalNuevoVoto = nuevoVoto;
+        final int finalLikes = Math.max(0, likes + diffLikes);
+        final int finalDislikes = Math.max(0, dislikes + diffDislikes);
 
         Map<String, Object> campos = new HashMap<>();
-        campos.put("likes",    likes);
-        campos.put("dislikes", dislikes);
+        campos.put("likes",    finalLikes);
+        campos.put("dislikes", finalDislikes);
 
         SupabaseClient.getApi().actualizarArchivo("eq." + archivoId, campos)
                 .enqueue(new Callback<Void>() {
                     @Override public void onResponse(Call<Void> c, Response<Void> r) {
-                        // Eliminación ahora depende solo de reportes, no de dislikes
+                        if (r.isSuccessful()) {
+                            likes = finalLikes;
+                            dislikes = finalDislikes;
+                            miVoto = finalNuevoVoto;
+
+                            actualizarVotos();
+                            actualizarBotonesVotoUI();
+
+                            Executors.newSingleThreadExecutor().execute(() -> {
+                                if (finalNuevoVoto == null) {
+                                    db.votoLocalDao().eliminar(archivoId);
+                                } else {
+                                    db.votoLocalDao().insertar(new VotoLocal(archivoId, finalNuevoVoto));
+                                }
+                            });
+                        } else {
+                            btnLike.setEnabled(true);
+                            btnDislike.setEnabled(true);
+                            Toast.makeText(ActividadDetalle.this,
+                                    "Error al guardar voto en el servidor", Toast.LENGTH_SHORT).show();
+                        }
                     }
                     @Override public void onFailure(Call<Void> c, Throwable t) {
+                        btnLike.setEnabled(true);
+                        btnDislike.setEnabled(true);
                         Toast.makeText(ActividadDetalle.this,
-                                "Error al guardar voto", Toast.LENGTH_SHORT).show();
+                                "Sin conexión para votar", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
