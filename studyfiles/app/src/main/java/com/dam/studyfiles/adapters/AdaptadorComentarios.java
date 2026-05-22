@@ -71,8 +71,8 @@ public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentar
 
     private void mostrarMenuOpciones(View view, Comentario c) {
         PopupMenu menu = new PopupMenu(view.getContext(), view);
-        menu.getMenu().add(0, 1, 0, "✏️ Editar");
-        menu.getMenu().add(0, 2, 0, "🗑 Eliminar");
+        menu.getMenu().add(0, 1, 0, "Editar");
+        menu.getMenu().add(0, 2, 0, "Eliminar");
         menu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == 1) listener.onEditar(c);
             if (item.getItemId() == 2) listener.onEliminar(c);

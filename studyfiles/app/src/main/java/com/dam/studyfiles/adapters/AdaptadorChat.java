@@ -80,7 +80,7 @@ public class AdaptadorChat extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 String nombre = m.group(2);
 
                 android.widget.Button btn = new android.widget.Button(aiHolder.itemView.getContext());
-                btn.setText("📄 " + nombre);
+                btn.setText(nombre);
                 btn.setAllCaps(false);
                 btn.setBackgroundColor(android.graphics.Color.parseColor("#3949AB"));
                 btn.setTextColor(android.graphics.Color.WHITE);
@@ -132,7 +132,7 @@ public class AdaptadorChat extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 } else {
                     android.widget.Toast.makeText(context, "No se pudo cargar el archivo", android.widget.Toast.LENGTH_SHORT).show();
                 }
-                btn.setText("📄 " + (btn.getText().toString().replace("Cargando...", "").trim())); // Restaurar texto (aproximado)
+                btn.setText(btn.getText().toString().replace("Cargando...", "").trim()); // Restaurar texto (aproximado)
             }
 
             @Override

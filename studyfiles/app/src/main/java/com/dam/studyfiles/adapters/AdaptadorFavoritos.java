@@ -58,7 +58,7 @@ public class AdaptadorFavoritos extends RecyclerView.Adapter<AdaptadorFavoritos.
 
         // Indicador visual de disponibilidad offline
         boolean tieneLocal = f.rutaLocal != null && new File(f.rutaLocal).exists();
-        h.tvOffline.setText(tieneLocal ? "📴 Disponible sin internet" : "🌐 Requiere internet");
+        h.tvOffline.setText(tieneLocal ? "Disponible sin internet" : "Requiere internet");
         h.tvOffline.setAlpha(tieneLocal ? 1f : 0.5f);
 
         h.itemView.setOnClickListener(v -> {

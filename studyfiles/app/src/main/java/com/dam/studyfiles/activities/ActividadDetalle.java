@@ -144,7 +144,7 @@ public class ActividadDetalle extends AppCompatActivity {
 
         // Comprobar si soy el dueño del archivo para mostrar botón de eliminar
         Button btnEliminarPublicacion = new Button(this);
-        btnEliminarPublicacion.setText("🗑 Eliminar Publicación");
+        btnEliminarPublicacion.setText("Eliminar Publicación");
         btnEliminarPublicacion.setBackgroundColor(android.graphics.Color.RED);
         btnEliminarPublicacion.setTextColor(android.graphics.Color.WHITE);
         

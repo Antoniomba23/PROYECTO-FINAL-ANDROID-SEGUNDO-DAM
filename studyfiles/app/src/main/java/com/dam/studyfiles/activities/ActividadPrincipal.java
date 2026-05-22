@@ -287,7 +287,7 @@ public class ActividadPrincipal extends AppCompatActivity {
     private void mostrarMenuCarpeta(MiCarpeta carpeta) {
         new AlertDialog.Builder(this)
                 .setTitle(carpeta.nombre)
-                .setItems(new String[]{"✏️ Renombrar", "🗑 Eliminar"}, (d, w) -> {
+                .setItems(new String[]{"Renombrar", "Eliminar"}, (d, w) -> {
                     if (w == 0) renombrarCarpeta(carpeta);
                     else eliminarCarpeta(carpeta);
                 }).show();
@@ -380,7 +380,7 @@ public class ActividadPrincipal extends AppCompatActivity {
     private void mostrarMenuFavorito(com.dam.studyfiles.database.Favorito fav) {
         new AlertDialog.Builder(this)
                 .setTitle(fav.nombre)
-                .setItems(new String[]{"🌐 Abrir en navegador", "🗑 Quitar de favoritos"}, (d, w) -> {
+                .setItems(new String[]{"Abrir en navegador", "Quitar de favoritos"}, (d, w) -> {
                     if (w == 0) {
                         if (fav.urlArchivo != null && !fav.urlArchivo.isEmpty())
                             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(fav.urlArchivo)));
@@ -449,7 +449,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         if (seccionMiNube.getVisibility() == View.VISIBLE) {
             new AlertDialog.Builder(this)
                     .setTitle("Mi Nube")
-                    .setItems(new String[]{"📁 Nueva carpeta", "☁️ Subir archivo a Mi Nube", "🌐 Publicar archivo"}, (d, w) -> {
+                    .setItems(new String[]{"Nueva carpeta", "Subir archivo a Mi Nube", "Publicar archivo"}, (d, w) -> {
                         if (w == 0) crearCarpeta();
                         else if (w == 1) selectorArchivoNube.launch(new String[]{"*/*"});
                         else startActivity(new Intent(this, ActividadSubir.class));

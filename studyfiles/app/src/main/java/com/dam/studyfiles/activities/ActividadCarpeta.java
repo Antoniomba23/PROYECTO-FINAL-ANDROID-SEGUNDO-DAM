@@ -116,7 +116,7 @@ public class ActividadCarpeta extends AppCompatActivity {
     private void mostrarMenuFab() {
         new AlertDialog.Builder(this)
                 .setTitle("Carpeta")
-                .setItems(new String[]{"📁 Crear Subcarpeta", "☁️ Subir Archivo"}, (d, w) -> {
+                .setItems(new String[]{"Crear Subcarpeta", "Subir Archivo"}, (d, w) -> {
                     if (w == 0) crearSubcarpeta();
                     else selectorArchivo.launch(new String[]{"*/*"});
                 })
@@ -152,7 +152,7 @@ public class ActividadCarpeta extends AppCompatActivity {
     private void mostrarMenuCarpeta(MiCarpeta carpeta) {
         new AlertDialog.Builder(this)
                 .setTitle(carpeta.nombre)
-                .setItems(new String[]{"✏️ Renombrar", "🗑 Eliminar"}, (d, w) -> {
+                .setItems(new String[]{"Renombrar", "Eliminar"}, (d, w) -> {
                     if (w == 0) renombrarCarpeta(carpeta);
                     else eliminarCarpeta(carpeta);
                 }).show();
@@ -243,7 +243,7 @@ public class ActividadCarpeta extends AppCompatActivity {
     private void onArchivoLongClick(MiArchivo a, View anchor) {
         new AlertDialog.Builder(this)
                 .setTitle(a.nombre)
-                .setItems(new String[]{"🗑 Eliminar"}, (d, w) -> eliminarArchivo(a))
+                .setItems(new String[]{"Eliminar"}, (d, w) -> eliminarArchivo(a))
                 .show();
     }
 
