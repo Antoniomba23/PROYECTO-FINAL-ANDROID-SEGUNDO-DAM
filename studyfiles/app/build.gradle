@@ -9,7 +9,7 @@ if (localPropertiesFile.exists()) {
         localProperties.load(instr)
     }
 }
-def geminiApiKey = localProperties.getProperty('GEMINI_API_KEY', '""')
+def geminiApiKey = localProperties.getProperty('GEMINI_API_KEY', '').replace('"', '').trim()
 
 
 android {
