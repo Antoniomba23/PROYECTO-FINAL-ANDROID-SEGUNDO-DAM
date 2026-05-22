@@ -3,8 +3,8 @@ package com.dam.studyfiles.utils;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.dam.studyfiles.models.MensajeChat;
 import com.dam.studyfiles.models.Archivo;
+import com.dam.studyfiles.models.MensajeChat;
 import com.dam.studyfiles.network.SupabaseClient;
 
 import org.json.JSONArray;
@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -25,111 +26,153 @@ import okhttp3.Response;
 public class GeminiChatHelper {
 
     private static final String API_KEY = com.dam.studyfiles.BuildConfig.GEMINI_API_KEY;
-    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + API_KEY;
+    private static final String API_URL =
+            "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + API_KEY;
 
     public interface GeminiCallback {
         void onSuccess(String result);
         void onError(String error);
     }
 
+    /**
+     * Estrategia de búsqueda y respuesta contextual:
+     * 1. Busca en Supabase archivos relacionados con el mensaje del usuario.
+     * 2. Inyecta esos resultados como contexto en la consulta.
+     * 3. Obtiene la respuesta contextual con información real de la app.
+     */
     public static void enviarMensajeChat(List<MensajeChat> historial, String nuevoMensaje, GeminiCallback callback) {
-        hacerPeticionGemini(historial, nuevoMensaje, null, null, callback);
+        // Extraer palabras clave del mensaje (ignorar palabras vacías cortas)
+        String[] palabras = nuevoMensaje.split("\\s+");
+        StringBuilder orQueryBuilder = new StringBuilder("(");
+        boolean primero = true;
+        String[] stopWords = {"en", "el", "la", "los", "las", "un", "una", "de", "del", "al",
+                "y", "o", "que", "a", "por", "con", "para", "hay", "buscar", "busca",
+                "libro", "libros", "archivo", "archivos", "como", "si", "no", "me", "se",
+                "su", "mi", "tu", "nos", "es", "son", "fue", "ser", "esta", "estas",
+                "estos", "aquellos", "donde", "cuando", "quien", "quienes", "cual", "cuales",
+                "puedes", "puedo", "hola", "tutor", "ia", "encuentra", "encuentralo", "dime",
+                "sobre", "acerca", "llamado", "titulado", "nombre", "categoria", "ayuda"};
+        java.util.Set<String> stopSet = new java.util.HashSet<>(java.util.Arrays.asList(stopWords));
+
+        for (String p : palabras) {
+            String pal = p.trim().toLowerCase().replaceAll("[^a-záéíóúüñ0-9]", "");
+            if (pal.length() >= 3 && !stopSet.contains(pal)) {
+                if (!primero) orQueryBuilder.append(",");
+                
+                // Normalización para búsqueda insensible a acentos (Postgres ilike es sensible a acentos)
+                String palSinTildes = pal.replaceAll("[áàäâ]", "a")
+                                         .replaceAll("[éèëê]", "e")
+                                         .replaceAll("[íìïî]", "i")
+                                         .replaceAll("[óòöô]", "o")
+                                         .replaceAll("[úùüû]", "u");
+
+                orQueryBuilder.append("nombre.ilike.*").append(pal).append("*")
+                        .append(",descripcion.ilike.*").append(pal).append("*")
+                        .append(",categoria.ilike.*").append(pal).append("*");
+                
+                // Si la palabra tenía tildes, añadimos también la versión sin tildes a la búsqueda
+                if (!pal.equals(palSinTildes)) {
+                    orQueryBuilder.append(",nombre.ilike.*").append(palSinTildes).append("*")
+                            .append(",descripcion.ilike.*").append(palSinTildes).append("*");
+                }
+                primero = false;
+            }
+        }
+        orQueryBuilder.append(")");
+
+        // Si no hay palabras clave útiles, buscar con el mensaje completo recortado
+        String orQuery;
+        if (primero) {
+            String q = nuevoMensaje.trim().toLowerCase();
+            String qSinTildes = q.replaceAll("[áàäâ]", "a")
+                                .replaceAll("[éèëê]", "e")
+                                .replaceAll("[íìïî]", "i")
+                                .replaceAll("[óòöô]", "o")
+                                .replaceAll("[úùüû]", "u");
+            orQuery = "(nombre.ilike.*" + q + "*,descripcion.ilike.*" + q + "*,nombre.ilike.*" + qSinTildes + "*)";
+        } else {
+            orQuery = orQueryBuilder.toString();
+        }
+
+        SupabaseClient.getApi().buscarArchivosAvanzado(orQuery)
+                .enqueue(new retrofit2.Callback<List<Archivo>>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<List<Archivo>> call,
+                                           retrofit2.Response<List<Archivo>> response) {
+                        String contexto = "";
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("\n\n[ARCHIVOS ENCONTRADOS EN STUDYFILES - menciónalos usando el formato exacto [file:ID:NOMBRE]]:\n");
+                            for (Archivo a : response.body()) {
+                                sb.append("• [file:").append(a.id).append(":").append(a.nombre).append("]");
+                                if (a.descripcion != null && !a.descripcion.isEmpty())
+                                    sb.append(" — ").append(a.descripcion);
+                                if (a.categoria != null)
+                                    sb.append(" (Categoría: ").append(a.categoria).append(")");
+                                sb.append("\n");
+                            }
+                            contexto = sb.toString();
+                        }
+                        enviarConsulta(historial, nuevoMensaje, contexto, callback);
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<List<Archivo>> call, Throwable t) {
+                        // Si falla la búsqueda, se responde sin contexto
+                        enviarConsulta(historial, nuevoMensaje, "", callback);
+                    }
+                });
     }
 
-    private static void hacerPeticionGemini(List<MensajeChat> historial, String nuevoMensaje, JSONObject previousFunctionCall, JSONObject functionResponse, GeminiCallback callback) {
-        OkHttpClient client = new OkHttpClient();
+    private static void enviarConsulta(List<MensajeChat> historial,
+                                       String nuevoMensaje,
+                                       String contextoArchivos,
+                                       GeminiCallback callback) {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build();
 
         try {
-            JSONObject jsonRequest = new JSONObject();
             JSONArray contentsArray = new JSONArray();
 
-            String systemPrompt = "Eres un Asistente y Tutor Académico experto para la app StudyFiles. " +
-                    "Respondes de forma amable, clara y didáctica para ayudar a estudiantes. " +
-                    "Tienes acceso a una herramienta para buscar archivos en la base de datos. " +
-                    "IMPORTANTE: Cuando encuentres archivos usando buscarArchivos, DEBES responder al usuario listando los resultados usando ESTRICTAMENTE este formato por cada archivo: [file:ID_DEL_ARCHIVO:NOMBRE_DEL_ARCHIVO]. No uses Markdown para enlaces, usa SOLO ese formato exacto de corchetes, por ejemplo: '[file:14:Apuntes de Java]'.";
+            // --- System prompt (turno user + ack model) ---
+            String systemPrompt = "Eres un Tutor Académico experto integrado en la app StudyFiles. " +
+                    "Ayudas a estudiantes a encontrar apuntes, resúmenes y materiales de estudio. " +
+                    "Cuando se te proporcionen archivos disponibles en la app, debes mencionarlos usando " +
+                    "ESTRICTAMENTE este formato: [file:ID:NOMBRE]. Ejemplo: [file:14:Apuntes de Java]. " +
+                    "Si no hay archivos relevantes, responde con tu conocimiento general de forma didáctica.";
 
-            JSONObject sysUser = new JSONObject();
-            sysUser.put("role", "user");
-            JSONArray sysPartsUser = new JSONArray();
-            sysPartsUser.put(new JSONObject().put("text", systemPrompt));
-            sysUser.put("parts", sysPartsUser);
-            contentsArray.put(sysUser);
+            addTurn(contentsArray, "user", systemPrompt);
+            addTurn(contentsArray, "model",
+                    "Entendido. Soy el tutor de StudyFiles. Usaré [file:ID:NOMBRE] para referenciar archivos.");
 
-            JSONObject sysModel = new JSONObject();
-            sysModel.put("role", "model");
-            JSONArray sysPartsModel = new JSONArray();
-            sysPartsModel.put(new JSONObject().put("text", "Entendido, soy el tutor de StudyFiles. Usaré el formato [file:id:nombre] si encuentro archivos."));
-            sysModel.put("parts", sysPartsModel);
-            contentsArray.put(sysModel);
-
+            // --- Historial previo ---
             if (historial != null) {
                 for (MensajeChat msg : historial) {
-                    JSONObject contentObj = new JSONObject();
-                    contentObj.put("role", msg.rol);
-                    JSONArray partsArray = new JSONArray();
-                    partsArray.put(new JSONObject().put("text", msg.mensaje));
-                    contentObj.put("parts", partsArray);
-                    contentsArray.put(contentObj);
+                    addTurn(contentsArray, msg.rol, msg.mensaje);
                 }
             }
 
-            JSONObject currentContent = new JSONObject();
-            currentContent.put("role", "user");
-            JSONArray currentParts = new JSONArray();
-            currentParts.put(new JSONObject().put("text", nuevoMensaje));
-            currentContent.put("parts", currentParts);
-            contentsArray.put(currentContent);
-
-            if (previousFunctionCall != null && functionResponse != null) {
-                // Agregar el call del modelo
-                JSONObject callContent = new JSONObject();
-                callContent.put("role", "model");
-                JSONArray callParts = new JSONArray();
-                callParts.put(new JSONObject().put("functionCall", previousFunctionCall));
-                callContent.put("parts", callParts);
-                contentsArray.put(callContent);
-
-                // Agregar la respuesta de la funcion
-                JSONObject respContent = new JSONObject();
-                respContent.put("role", "function");
-                JSONArray respParts = new JSONArray();
-                respParts.put(new JSONObject().put("functionResponse", functionResponse));
-                respContent.put("parts", respParts);
-                contentsArray.put(respContent);
+            // --- Mensaje actual + contexto RAG ---
+            String mensajeConContexto = nuevoMensaje;
+            if (!contextoArchivos.isEmpty()) {
+                mensajeConContexto = nuevoMensaje + contextoArchivos;
             }
+            addTurn(contentsArray, "user", mensajeConContexto);
 
+            // --- Construcción del request ---
+            JSONObject jsonRequest = new JSONObject();
             jsonRequest.put("contents", contentsArray);
 
-            // Tools (Function Calling)
-            JSONArray toolsArray = new JSONArray();
-            JSONObject toolObj = new JSONObject();
-            JSONArray funcDecls = new JSONArray();
-            
-            JSONObject funcObj = new JSONObject();
-            funcObj.put("name", "buscarArchivos");
-            funcObj.put("description", "Busca apuntes, resúmenes, exámenes o archivos en la base de datos de la app.");
-            
-            JSONObject paramsObj = new JSONObject();
-            paramsObj.put("type", "OBJECT");
-            JSONObject propsObj = new JSONObject();
-            JSONObject busqObj = new JSONObject();
-            busqObj.put("type", "STRING");
-            busqObj.put("description", "El término de búsqueda, ej. 'java', 'matematicas'");
-            propsObj.put("busqueda", busqObj);
-            paramsObj.put("properties", propsObj);
-            paramsObj.put("required", new JSONArray().put("busqueda"));
-            
-            funcObj.put("parameters", paramsObj);
-            funcDecls.put(funcObj);
-            toolObj.put("functionDeclarations", funcDecls);
-            toolsArray.put(toolObj);
-            
-            jsonRequest.put("tools", toolsArray);
+            JSONObject genConfig = new JSONObject();
+            genConfig.put("temperature", 0.7);
+            genConfig.put("maxOutputTokens", 1024);
+            jsonRequest.put("generationConfig", genConfig);
 
             RequestBody body = RequestBody.create(
                     jsonRequest.toString(),
-                    MediaType.parse("application/json; charset=utf-8")
-            );
+                    MediaType.parse("application/json; charset=utf-8"));
 
             Request request = new Request.Builder()
                     .url(API_URL)
@@ -146,83 +189,44 @@ public class GeminiChatHelper {
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     if (!response.isSuccessful()) {
-                        enviarError(callback, "Error de IA (" + response.code() + ")");
+                        String err = response.body() != null ? response.body().string() : "Sin cuerpo de error";
+                        if (err.length() > 200) err = err.substring(0, 200);
+                        enviarError(callback, "Error del Tutor (" + response.code() + "): " + err);
                         return;
                     }
-
-                    String responseData = response.body().string();
+                    String data = response.body().string();
                     try {
-                        JSONObject jsonResponse = new JSONObject(responseData);
-                        JSONArray candidates = jsonResponse.optJSONArray("candidates");
+                        JSONObject json = new JSONObject(data);
+                        JSONArray candidates = json.optJSONArray("candidates");
                         if (candidates != null && candidates.length() > 0) {
-                            JSONObject part = candidates.getJSONObject(0)
-                                    .getJSONObject("content")
-                                    .getJSONArray("parts")
-                                    .getJSONObject(0);
-                                    
-                            if (part.has("functionCall")) {
-                                JSONObject functionCall = part.getJSONObject("functionCall");
-                                String name = functionCall.getString("name");
-                                if ("buscarArchivos".equals(name)) {
-                                    String busqueda = functionCall.getJSONObject("args").optString("busqueda", "");
-                                    ejecutarBusquedaSupaBase(busqueda, historial, nuevoMensaje, functionCall, callback);
+                            JSONObject content = candidates.getJSONObject(0).optJSONObject("content");
+                            if (content != null) {
+                                JSONArray parts = content.optJSONArray("parts");
+                                if (parts != null && parts.length() > 0) {
+                                    String text = parts.getJSONObject(0).optString("text", "");
+                                    enviarExito(callback, text);
+                                    return;
                                 }
-                            } else {
-                                String textResult = part.optString("text", "");
-                                enviarExito(callback, textResult);
                             }
-                        } else {
-                            enviarError(callback, "Respuesta vacía.");
                         }
+                        enviarError(callback, "Respuesta vacía del Tutor.");
                     } catch (JSONException e) {
-                        enviarError(callback, "Error de parseo.");
+                        enviarError(callback, "Error de parseo: " + e.getMessage());
                     }
                 }
             });
 
         } catch (JSONException e) {
-            callback.onError("Error al preparar la consulta.");
+            callback.onError("Error preparando la consulta: " + e.getMessage());
         }
     }
 
-    private static void ejecutarBusquedaSupaBase(String busqueda, List<MensajeChat> historial, String nuevoMensaje, JSONObject previousFunctionCall, GeminiCallback callback) {
-        String orQuery = "(nombre.ilike.%" + busqueda + "%,descripcion.ilike.%" + busqueda + "%,categoria.ilike.%" + busqueda + "%)";
-        SupabaseClient.getApi().buscarArchivosAvanzado(orQuery).enqueue(new retrofit2.Callback<List<Archivo>>() {
-            @Override
-            public void onResponse(retrofit2.Call<List<Archivo>> call, retrofit2.Response<List<Archivo>> response) {
-                try {
-                    JSONObject functionResponse = new JSONObject();
-                    functionResponse.put("name", "buscarArchivos");
-                    JSONObject responseBody = new JSONObject();
-                    
-                    if (response.isSuccessful() && response.body() != null) {
-                        JSONArray resultados = new JSONArray();
-                        for (Archivo a : response.body()) {
-                            JSONObject archObj = new JSONObject();
-                            archObj.put("id", a.id);
-                            archObj.put("nombre", a.nombre);
-                            archObj.put("descripcion", a.descripcion);
-                            archObj.put("categoria", a.categoria);
-                            resultados.put(archObj);
-                        }
-                        responseBody.put("resultados", resultados);
-                    } else {
-                        responseBody.put("error", "No se encontraron resultados");
-                    }
-                    functionResponse.put("response", responseBody);
-                    
-                    // Segundo round-trip a Gemini
-                    hacerPeticionGemini(historial, nuevoMensaje, previousFunctionCall, functionResponse, callback);
-                } catch (JSONException e) {
-                    enviarError(callback, "Error procesando búsqueda local.");
-                }
-            }
-
-            @Override
-            public void onFailure(retrofit2.Call<List<Archivo>> call, Throwable t) {
-                enviarError(callback, "Error buscando en base de datos.");
-            }
-        });
+    // Helper para añadir un turno al array de contents
+    private static void addTurn(JSONArray arr, String role, String text) throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put("role", role);
+        obj.put("parts", new JSONArray().put(new JSONObject().put("text", text)));
+        arr.put(obj);
     }
 
     private static void enviarExito(GeminiCallback callback, String resultado) {

@@ -44,7 +44,7 @@ public class ActividadChat extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Tutor IA");
+            getSupportActionBar().setTitle("Tutor Virtual");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -65,6 +65,54 @@ public class ActividadChat extends AppCompatActivity {
         cargarHistorial();
 
         btnEnviar.setOnClickListener(v -> enviarMensaje());
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_chat, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        if (item.getItemId() == R.id.action_limpiar_chat) {
+            confirmarLimpiarChat();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void confirmarLimpiarChat() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Limpiar historial")
+                .setMessage("¿Estás seguro de que quieres borrar toda la conversación con el tutor?")
+                .setPositiveButton("Borrar", (dialog, which) -> limpiarHistorialChat())
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void limpiarHistorialChat() {
+        pbEscribiendo.setVisibility(View.VISIBLE);
+        SupabaseClient.getChat().eliminarHistorial("eq." + usuarioId)
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        pbEscribiendo.setVisibility(View.GONE);
+                        if (response.isSuccessful()) {
+                            historial.clear();
+                            adaptador.actualizarMensajes(historial);
+                            Toast.makeText(ActividadChat.this, "Historial borrado", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(ActividadChat.this, "Error al borrar historial", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        pbEscribiendo.setVisibility(View.GONE);
+                        Toast.makeText(ActividadChat.this, "Error de conexión", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private String getIdentificador() {
@@ -120,14 +168,14 @@ public class ActividadChat extends AppCompatActivity {
         // 2. Guardar en Supabase
         guardarMensajeEnSupabase(msgUser);
 
-        // 3. Enviar a Gemini (pasando el historial que teníamos antes de añadir el nuevo mensaje)
+        // 3. Enviar consulta al tutor (pasando el historial que teníamos antes de añadir el nuevo mensaje)
         GeminiChatHelper.enviarMensajeChat(historial, texto, new GeminiChatHelper.GeminiCallback() {
             @Override
             public void onSuccess(String result) {
                 btnEnviar.setEnabled(true);
                 pbEscribiendo.setVisibility(View.GONE);
 
-                // 4. Crear y mostrar mensaje de la IA
+                // 4. Crear y mostrar respuesta del tutor
                 MensajeChat msgIA = new MensajeChat(usuarioId, "model", result, System.currentTimeMillis());
                 adaptador.agregarMensaje(msgIA);
                 scrollToBottom();
@@ -140,7 +188,7 @@ public class ActividadChat extends AppCompatActivity {
             public void onError(String error) {
                 btnEnviar.setEnabled(true);
                 pbEscribiendo.setVisibility(View.GONE);
-                Toast.makeText(ActividadChat.this, "Error IA: " + error, Toast.LENGTH_LONG).show();
+                Toast.makeText(ActividadChat.this, "Error del Tutor: " + error, Toast.LENGTH_LONG).show();
                 // Opcional: eliminar el mensaje fallido o mostrar aviso
             }
         });

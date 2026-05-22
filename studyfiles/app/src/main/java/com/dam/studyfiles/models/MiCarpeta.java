@@ -13,6 +13,9 @@ public class MiCarpeta {
     @SerializedName("usuario_id")
     public String usuarioId;
 
+    @SerializedName("carpeta_padre_id")
+    public Integer carpetaPadreId;
+
     @SerializedName("color")
     public String color;
 

@@ -3,8 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background">
+    android:layout_height="match_parent">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -94,7 +93,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:text="👍 Me gusta"
+                    android:text="Me gusta"
                     android:backgroundTint="@color/like_color"
                     style="@style/Widget.MaterialComponents.Button" />
 
@@ -104,7 +103,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    android:text="👎 No me gusta"
+                    android:text="No me gusta"
                     android:backgroundTint="@color/dislike_color"
                     style="@style/Widget.MaterialComponents.Button" />
 
@@ -116,7 +115,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="📂 Abrir / Descargar"
+                android:text=" Abrir Archivo"
                 android:backgroundTint="@color/primary"
                 style="@style/Widget.MaterialComponents.Button" />
 
@@ -126,7 +125,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:text="☆ Añadir a favoritos"
+                android:text="Añadir a favoritos"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
             <!-- ProgressBar descarga -->
@@ -154,7 +153,7 @@
                 android:id="@+id/btnReportar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🚩 Reportar archivo"
+                android:text="Reportar archivo"
                 android:backgroundTint="@color/dislike_color"
                 style="@style/Widget.MaterialComponents.Button.TextButton" />
 
@@ -223,7 +222,7 @@
                 android:textColor="@color/text_secondary"
                 android:gravity="center"
                 android:padding="12dp"
-                android:background="@drawable/bg_mensaje_ai"
+                android:background="@drawable/bg_mensaje_tutor"
                 android:visibility="gone" />
 
         </LinearLayout>

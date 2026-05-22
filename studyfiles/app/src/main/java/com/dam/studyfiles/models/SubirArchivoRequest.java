@@ -8,6 +8,9 @@ public class SubirArchivoRequest {
     @SerializedName("nombre")
     public String nombre;
 
+    @SerializedName("usuario_id")
+    public String usuarioId;
+
     @SerializedName("descripcion")
     public String descripcion;
 

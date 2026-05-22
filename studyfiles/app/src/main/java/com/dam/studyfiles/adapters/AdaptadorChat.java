@@ -52,7 +52,7 @@ public class AdaptadorChat extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             return new UserViewHolder(view);
         } else {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_mensaje_ai, parent, false);
+                    .inflate(R.layout.item_mensaje_tutor, parent, false);
             return new AIViewHolder(view);
         }
     }

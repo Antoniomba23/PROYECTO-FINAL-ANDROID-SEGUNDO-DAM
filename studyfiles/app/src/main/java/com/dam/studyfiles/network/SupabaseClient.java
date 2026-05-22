@@ -8,7 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SupabaseClient {
 
     public static final String URL_BASE = "https://flpdwxgobctdkudovdyx.supabase.co/";
-    public static final String API_KEY  = "sb_publishable_UIlhHgMKteF9cS0Th7ztLA_9qT7VnTX";
+    public static final String API_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZscGR3eGdvYmN0ZGt1ZG92ZHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzY4MDAsImV4cCI6MjA4NzMxMjgwMH0.2W-qJiyxeBNOLRXyC6kMtwJ5myX_TXRomns-jhuIJ0c";
 
     private static Retrofit retrofit;
 

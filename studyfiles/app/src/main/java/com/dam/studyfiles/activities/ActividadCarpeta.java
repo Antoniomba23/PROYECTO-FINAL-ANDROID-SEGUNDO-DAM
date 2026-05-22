@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.dam.studyfiles.R;
 import com.dam.studyfiles.adapters.AdaptadorMisArchivos;
 import com.dam.studyfiles.models.MiArchivo;
+import com.dam.studyfiles.models.MiCarpeta;
 import com.dam.studyfiles.network.SupabaseClient;
 import com.dam.studyfiles.utils.DispositivoUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -41,11 +42,15 @@ import retrofit2.Callback;
 
 public class ActividadCarpeta extends AppCompatActivity {
 
-    private RecyclerView         rv;
+    private RecyclerView         rv, rvCarpetas;
     private ProgressBar          pb;
     private TextView             tvVacio;
+    
     private AdaptadorMisArchivos adaptador;
     private List<MiArchivo>      lista = new ArrayList<>();
+    
+    private com.dam.studyfiles.adapters.AdaptadorCarpetas adaptadorCarpetas;
+    private List<MiCarpeta>      listaCarpetas = new ArrayList<>();
 
     private int    carpetaId;
     private String carpetaNombre;
@@ -79,9 +84,10 @@ public class ActividadCarpeta extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        rv      = findViewById(R.id.rvArchivosCarpeta);
-        pb      = findViewById(R.id.pbCargandoCarpeta);
-        tvVacio = findViewById(R.id.tvVacioCarpeta);
+        rv          = findViewById(R.id.rvArchivosCarpeta);
+        rvCarpetas  = findViewById(R.id.rvCarpetasHijas);
+        pb          = findViewById(R.id.pbCargandoCarpeta);
+        tvVacio     = findViewById(R.id.tvVacioCarpeta);
 
         adaptador = new AdaptadorMisArchivos(lista,
                 this::onArchivoClick,
@@ -89,14 +95,120 @@ public class ActividadCarpeta extends AppCompatActivity {
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setAdapter(adaptador);
 
-        FloatingActionButton fab = findViewById(R.id.fabSubirACarpeta);
-        fab.setOnClickListener(v -> selectorArchivo.launch(new String[]{"*/*"}));
+        adaptadorCarpetas = new com.dam.studyfiles.adapters.AdaptadorCarpetas(listaCarpetas,
+                carpeta -> {
+                    Intent i = new Intent(this, ActividadCarpeta.class);
+                    i.putExtra("carpeta_id",     carpeta.id);
+                    i.putExtra("carpeta_nombre", carpeta.nombre);
+                    startActivity(i);
+                },
+                (carpeta, anchor) -> mostrarMenuCarpeta(carpeta)
+        );
+        rvCarpetas.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
+        rvCarpetas.setAdapter(adaptadorCarpetas);
 
-        cargarArchivos();
+        FloatingActionButton fab = findViewById(R.id.fabSubirACarpeta);
+        fab.setOnClickListener(v -> mostrarMenuFab());
+
+        cargarArchivosYCarpetas();
     }
 
-    private void cargarArchivos() {
+    private void mostrarMenuFab() {
+        new AlertDialog.Builder(this)
+                .setTitle("Carpeta")
+                .setItems(new String[]{"📁 Crear Subcarpeta", "☁️ Subir Archivo"}, (d, w) -> {
+                    if (w == 0) crearSubcarpeta();
+                    else selectorArchivo.launch(new String[]{"*/*"});
+                })
+                .show();
+    }
+
+    private void crearSubcarpeta() {
+        String[] colores = {"#1565C0","#2E7D32","#E65100","#6A1B9A","#C62828","#00695C"};
+        EditText et = new EditText(this);
+        et.setHint("Nombre de la subcarpeta");
+        new AlertDialog.Builder(this)
+                .setTitle("Nueva Subcarpeta")
+                .setView(et)
+                .setPositiveButton("Crear", (d, w) -> {
+                    String nombre = et.getText().toString().trim();
+                    if (nombre.isEmpty()) return;
+                    int idx = (int)(Math.random() * colores.length);
+                    Map<String, Object> body = new HashMap<>();
+                    body.put("nombre",         nombre);
+                    body.put("usuario_id",     uuid);
+                    body.put("carpeta_padre_id", carpetaId);
+                    body.put("color",          colores[idx]);
+                    body.put("fecha_creacion", System.currentTimeMillis());
+                    SupabaseClient.getMiNube().crearCarpeta(body)
+                            .enqueue(new Callback<List<MiCarpeta>>() {
+                                @Override public void onResponse(Call<List<MiCarpeta>> c, retrofit2.Response<List<MiCarpeta>> r) { cargarArchivosYCarpetas(); }
+                                @Override public void onFailure(Call<List<MiCarpeta>> c, Throwable t) {}
+                            });
+                })
+                .setNegativeButton("Cancelar", null).show();
+    }
+
+    private void mostrarMenuCarpeta(MiCarpeta carpeta) {
+        new AlertDialog.Builder(this)
+                .setTitle(carpeta.nombre)
+                .setItems(new String[]{"✏️ Renombrar", "🗑 Eliminar"}, (d, w) -> {
+                    if (w == 0) renombrarCarpeta(carpeta);
+                    else eliminarCarpeta(carpeta);
+                }).show();
+    }
+
+    private void renombrarCarpeta(MiCarpeta carpeta) {
+        EditText et = new EditText(this);
+        et.setText(carpeta.nombre);
+        new AlertDialog.Builder(this)
+                .setTitle("Renombrar subcarpeta")
+                .setView(et)
+                .setPositiveButton("Guardar", (d, w) -> {
+                    String nuevo = et.getText().toString().trim();
+                    if (nuevo.isEmpty()) return;
+                    Map<String, Object> body = new HashMap<>();
+                    body.put("nombre", nuevo);
+                    SupabaseClient.getMiNube().renombrarCarpeta("eq." + carpeta.id, body)
+                            .enqueue(new Callback<Void>() {
+                                @Override public void onResponse(Call<Void> c, retrofit2.Response<Void> r) { cargarArchivosYCarpetas(); }
+                                @Override public void onFailure(Call<Void> c, Throwable t) {}
+                            });
+                })
+                .setNegativeButton("Cancelar", null).show();
+    }
+
+    private void eliminarCarpeta(MiCarpeta carpeta) {
+        new AlertDialog.Builder(this)
+                .setMessage("¿Eliminar la subcarpeta '" + carpeta.nombre + "' y todo su contenido?")
+                .setPositiveButton("Eliminar", (d, w) ->
+                        SupabaseClient.getMiNube().eliminarCarpeta("eq." + carpeta.id)
+                                .enqueue(new Callback<Void>() {
+                                    @Override public void onResponse(Call<Void> c, retrofit2.Response<Void> r) { cargarArchivosYCarpetas(); }
+                                    @Override public void onFailure(Call<Void> c, Throwable t) {}
+                                }))
+                .setNegativeButton("Cancelar", null).show();
+    }
+
+    private void cargarArchivosYCarpetas() {
         pb.setVisibility(View.VISIBLE);
+
+        // Cargar Subcarpetas
+        SupabaseClient.getMiNube().getMisCarpetasHijas("eq." + uuid, "eq." + carpetaId)
+                .enqueue(new Callback<List<MiCarpeta>>() {
+                    @Override
+                    public void onResponse(Call<List<MiCarpeta>> c, retrofit2.Response<List<MiCarpeta>> r) {
+                        if (r.isSuccessful() && r.body() != null) {
+                            listaCarpetas.clear();
+                            listaCarpetas.addAll(r.body());
+                            adaptadorCarpetas.actualizar(listaCarpetas);
+                            verificarVacio();
+                        }
+                    }
+                    @Override public void onFailure(Call<List<MiCarpeta>> c, Throwable t) {}
+                });
+
+        // Cargar Archivos
         SupabaseClient.getMiNube()
                 .getMisArchivosDeCarpeta("eq." + uuid, "eq." + carpetaId)
                 .enqueue(new Callback<List<MiArchivo>>() {
@@ -107,7 +219,7 @@ public class ActividadCarpeta extends AppCompatActivity {
                             lista.clear();
                             lista.addAll(r.body());
                             adaptador.actualizar(lista);
-                            tvVacio.setVisibility(lista.isEmpty() ? View.VISIBLE : View.GONE);
+                            verificarVacio();
                         }
                     }
                     @Override
@@ -116,6 +228,10 @@ public class ActividadCarpeta extends AppCompatActivity {
                         Toast.makeText(ActividadCarpeta.this, "Sin conexión", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void verificarVacio() {
+        tvVacio.setVisibility(lista.isEmpty() && listaCarpetas.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private void onArchivoClick(MiArchivo a) {
@@ -138,7 +254,7 @@ public class ActividadCarpeta extends AppCompatActivity {
                     public void onResponse(Call<Void> c, retrofit2.Response<Void> r) {
                         Toast.makeText(ActividadCarpeta.this,
                                 "Archivo eliminado", Toast.LENGTH_SHORT).show();
-                        cargarArchivos();
+                        cargarArchivosYCarpetas();
                     }
                     @Override
                     public void onFailure(Call<Void> c, Throwable t) {}
@@ -178,9 +294,11 @@ public class ActividadCarpeta extends AppCompatActivity {
                 is.close();
                 byte[] bytes = buf.toByteArray();
 
-                String ext       = obtenerExtension(nombreArchivoLocal);
                 String mime      = getContentResolver().getType(uriSubir);
                 if (mime == null) mime = "application/octet-stream";
+                // Usar MIME como fallback si el nombre no tiene extensión
+                String ext = obtenerExtension(nombreArchivoLocal);
+                if (ext.equals("bin")) ext = extensionDesdeMime(mime);
                 String ruta      = "minube/" + uuid + "/" + carpetaId + "/"
                         + System.currentTimeMillis() + "_" + nombreArchivoLocal;
 
@@ -214,7 +332,7 @@ public class ActividadCarpeta extends AppCompatActivity {
                                         pb.setVisibility(View.GONE);
                                         Toast.makeText(ActividadCarpeta.this,
                                                 "Archivo subido!", Toast.LENGTH_SHORT).show();
-                                        cargarArchivos();
+                                        cargarArchivosYCarpetas();
                                     });
                                 }
                                 @Override public void onFailure(Call<List<MiArchivo>> c, Throwable t) {
@@ -222,9 +340,13 @@ public class ActividadCarpeta extends AppCompatActivity {
                                 }
                             });
                 } else {
+                    String errorBody = "";
+                    try { if (res.body() != null) errorBody = res.body().string(); } catch (Exception ignored) {}
+                    final String msg = "Error " + res.code() + ": " + errorBody;
                     runOnUiThread(() -> {
                         pb.setVisibility(View.GONE);
-                        Toast.makeText(this, "Error al subir archivo", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                        android.util.Log.e("SUBIDA_NUBE", msg);
                     });
                 }
             } catch (Exception e) {
@@ -236,16 +358,48 @@ public class ActividadCarpeta extends AppCompatActivity {
         }).start();
     }
 
+    /** Obtiene el nombre real del archivo (con extensión) usando ContentResolver */
     private String obtenerNombreArchivo(Uri uri) {
+        // 1. Intentar obtener DISPLAY_NAME del ContentResolver (el más fiable)
+        try (android.database.Cursor cursor = getContentResolver().query(
+                uri, new String[]{android.provider.OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String name = cursor.getString(0);
+                if (name != null && !name.isEmpty()) return name;
+            }
+        } catch (Exception ignored) {}
+        // 2. Fallback: último segmento del path
         String p = uri.getLastPathSegment();
         if (p != null && p.contains("/")) p = p.substring(p.lastIndexOf("/") + 1);
-        return p != null ? p : "archivo";
+        return (p != null && !p.isEmpty()) ? p : "archivo";
     }
 
+    /** Extrae la extensión del nombre; si no tiene, deduce desde el MIME type */
     private String obtenerExtension(String nombre) {
         if (nombre != null && nombre.contains("."))
             return nombre.substring(nombre.lastIndexOf(".") + 1).toLowerCase();
         return "bin";
+    }
+
+    /** Deduce la extensión a partir del MIME type cuando el nombre no la tiene */
+    private String extensionDesdeMime(String mime) {
+        if (mime == null) return "bin";
+        switch (mime) {
+            case "application/pdf":  return "pdf";
+            case "image/jpeg":       return "jpg";
+            case "image/png":        return "png";
+            case "image/gif":        return "gif";
+            case "image/webp":       return "webp";
+            case "application/msword": return "doc";
+            case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": return "docx";
+            case "application/vnd.ms-powerpoint": return "ppt";
+            case "application/vnd.openxmlformats-officedocument.presentationml.presentation": return "pptx";
+            case "application/vnd.ms-excel": return "xls";
+            case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": return "xlsx";
+            case "text/plain":       return "txt";
+            case "application/zip": return "zip";
+            default: return "bin";
+        }
     }
 
     @Override

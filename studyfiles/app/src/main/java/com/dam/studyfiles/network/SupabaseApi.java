@@ -38,11 +38,10 @@ public interface SupabaseApi {
     // ── COMENTARIOS ──────────────────────────────────────────────────────────
 
     @GET("rest/v1/comentarios?order=fecha.desc")
-    Call<List<com.dam.studyfiles.models.Comentario>> getComentarios(@Query("archivo_id") String eqArchivoId);
+    Call<List<com.dam.studyfiles.models.Comentario>> getComentarios(@Query("publicacion_id") String eqPublicacionId);
 
-    @Headers("Prefer: return=minimal")
     @POST("rest/v1/comentarios")
-    Call<Void> crearComentario(@Body com.dam.studyfiles.models.Comentario comentario);
+    Call<Void> crearComentario(@Body Map<String, Object> comentario);
 
     @PATCH("rest/v1/comentarios")
     Call<Void> actualizarComentario(
@@ -69,9 +68,16 @@ public interface SupabaseApi {
             @Body Map<String, Object> campos
     );
 
+    /** Migrar archivos públicos (Invitado -> Registrado) */
+    @PATCH("rest/v1/archivos")
+    Call<Void> migrarArchivosPublicos(
+            @Query("usuario_id") String oldUsuarioId,
+            @Body Map<String, Object> campos
+    );
+
     // ── DELETE ───────────────────────────────────────────────────────────────
 
-    /** Eliminar archivo (cuando dislikes >= 10) */
+    /** Eliminar archivo (cuando dislikes >= 10 o el dueño lo borra) */
     @DELETE("rest/v1/archivos")
     Call<Void> eliminarArchivo(@Query("id") String filtroId);
 }

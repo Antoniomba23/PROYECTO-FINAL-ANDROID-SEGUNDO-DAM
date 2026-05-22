@@ -5,29 +5,32 @@ import com.google.gson.annotations.SerializedName;
 public class Comentario {
 
     @SerializedName("id")
-    public int id;
+    public long id;
 
-    @SerializedName("archivo_id")
-    public int archivoId;
+    @SerializedName("contenido")
+    public String contenido;          // era "texto" — campo real en Supabase
+
+    @SerializedName("fecha")
+    public long fecha;                // bigint (epoch millis)
 
     @SerializedName("usuario_id")
     public String usuarioId;
 
     @SerializedName("usuario_nombre")
-    public String usuarioNombre;
+    public String usuarioNombre;      // Nueva columna
 
-    @SerializedName("texto")
-    public String texto;
+    @SerializedName("publicacion_id")
+    public long publicacionId;        // era "archivo_id"
 
-    @SerializedName("fecha")
-    public String fecha;
+    @SerializedName("parent_id")
+    public Long parentId;             // nullable
 
     public Comentario() {}
 
-    public Comentario(int archivoId, String usuarioId, String usuarioNombre, String texto) {
-        this.archivoId = archivoId;
-        this.usuarioId = usuarioId;
-        this.usuarioNombre = usuarioNombre;
-        this.texto = texto;
+    public Comentario(long publicacionId, String usuarioId, String contenido) {
+        this.publicacionId = publicacionId;
+        this.usuarioId     = usuarioId;
+        this.contenido     = contenido;
+        this.fecha         = System.currentTimeMillis();
     }
 }

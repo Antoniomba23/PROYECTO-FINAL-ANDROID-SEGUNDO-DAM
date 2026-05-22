@@ -48,12 +48,13 @@ public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentar
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Comentario c = comentarios.get(position);
-        holder.tvNombre.setText(c.usuarioNombre);
-        holder.tvTexto.setText(c.texto);
+        holder.tvNombre.setText(c.usuarioNombre != null ? c.usuarioNombre : "Anónimo");
+        holder.tvTexto.setText(c.contenido);
         
-        if (c.fecha != null && c.fecha.length() >= 10) {
-            String soloFecha = c.fecha.substring(0, 10);
-            holder.tvFecha.setText(soloFecha);
+        if (c.fecha > 0) {
+            java.util.Date date = new java.util.Date(c.fecha);
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault());
+            holder.tvFecha.setText(sdf.format(date));
             holder.tvFecha.setVisibility(View.VISIBLE);
         } else {
             holder.tvFecha.setVisibility(View.GONE);

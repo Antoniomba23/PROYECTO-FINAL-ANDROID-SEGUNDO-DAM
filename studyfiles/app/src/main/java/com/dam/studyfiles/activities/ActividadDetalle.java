@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import org.json.JSONObject;
+import org.json.JSONException;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -136,8 +139,24 @@ public class ActividadDetalle extends AppCompatActivity {
 
     private void configurarComentarios() {
         String currentUserId = com.dam.studyfiles.utils.DispositivoUtils.getUsuarioId(this);
+        String uuid = com.dam.studyfiles.utils.DispositivoUtils.getUUID(this);
+        String myId = currentUserId != null ? "user_" + currentUserId : uuid;
+
+        // Comprobar si soy el dueño del archivo para mostrar botón de eliminar
+        Button btnEliminarPublicacion = new Button(this);
+        btnEliminarPublicacion.setText("🗑 Eliminar Publicación");
+        btnEliminarPublicacion.setBackgroundColor(android.graphics.Color.RED);
+        btnEliminarPublicacion.setTextColor(android.graphics.Color.WHITE);
         
-        adaptadorComentarios = new com.dam.studyfiles.adapters.AdaptadorComentarios(listaComentarios, currentUserId, new com.dam.studyfiles.adapters.AdaptadorComentarios.OnComentarioActionListener() {
+        // Asumiendo que tenemos que pedir al backend el archivo para saber su usuario_id,
+        // o pasarlo por el Intent desde el adaptador. Vamos a comprobar el Intent.
+        String fileUserId = getIntent().getStringExtra("usuario_id");
+        if (fileUserId != null && fileUserId.equals(myId)) {
+            ((android.widget.LinearLayout) btnReportar.getParent()).addView(btnEliminarPublicacion, ((android.view.ViewGroup) btnReportar.getParent()).indexOfChild(btnReportar) + 1);
+            btnEliminarPublicacion.setOnClickListener(v -> eliminarPublicacion());
+        }
+
+        adaptadorComentarios = new com.dam.studyfiles.adapters.AdaptadorComentarios(listaComentarios, myId, new com.dam.studyfiles.adapters.AdaptadorComentarios.OnComentarioActionListener() {
             @Override
             public void onEditar(com.dam.studyfiles.models.Comentario c) {
                 editarComentario(c);
@@ -166,7 +185,8 @@ public class ActividadDetalle extends AppCompatActivity {
     }
 
     private void cargarComentarios() {
-        com.dam.studyfiles.network.SupabaseClient.getApi().getComentarios("eq." + archivoId)
+        com.dam.studyfiles.network.SupabaseClient.getApi()
+                .getComentarios("eq." + archivoId)
                 .enqueue(new Callback<java.util.List<com.dam.studyfiles.models.Comentario>>() {
                     @Override
                     public void onResponse(Call<java.util.List<com.dam.studyfiles.models.Comentario>> call, Response<java.util.List<com.dam.studyfiles.models.Comentario>> response) {
@@ -188,10 +208,22 @@ public class ActividadDetalle extends AppCompatActivity {
 
         btnEnviarComentario.setEnabled(false);
         String nombreUsuario = com.dam.studyfiles.utils.DispositivoUtils.getUsuarioNombre(this);
-        String usuarioId = com.dam.studyfiles.utils.DispositivoUtils.getUsuarioId(this);
-        com.dam.studyfiles.models.Comentario nuevo = new com.dam.studyfiles.models.Comentario(archivoId, usuarioId, nombreUsuario, texto);
+        String usuarioId     = com.dam.studyfiles.utils.DispositivoUtils.getUsuarioId(this);
+        String uuid          = com.dam.studyfiles.utils.DispositivoUtils.getUUID(this);
 
-        com.dam.studyfiles.network.SupabaseClient.getApi().crearComentario(nuevo)
+        // Campos exactos de la tabla comentarios en Supabase
+        java.util.Map<String, Object> body = new java.util.HashMap<>();
+        body.put("publicacion_id", (long) archivoId);
+        
+        // Restauramos el usuario_id con el prefijo estándar del proyecto
+        String myId = usuarioId != null ? "user_" + usuarioId : uuid;
+        body.put("usuario_id",     myId);
+        body.put("usuario_nombre", nombreUsuario != null ? nombreUsuario : "Anónimo");
+        body.put("contenido",      texto);
+        // Eliminamos 'fecha' para que la base de datos use su valor DEFAULT (now())
+        // Esto suele evitar conflictos de duplicidad en milisegundos.
+
+        com.dam.studyfiles.network.SupabaseClient.getApi().crearComentario(body)
                 .enqueue(new Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
@@ -199,9 +231,16 @@ public class ActividadDetalle extends AppCompatActivity {
                         if (response.isSuccessful()) {
                             etNuevoComentario.setText("");
                             cargarComentarios();
-                            Toast.makeText(ActividadDetalle.this, "Comentario publicado", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ActividadDetalle.this, "Comentario publicado ✅", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(ActividadDetalle.this, "Error al comentar", Toast.LENGTH_SHORT).show();
+                            String errDetail = "Conflicto en la base de datos";
+                            try {
+                                if (response.errorBody() != null) {
+                                    errDetail = response.errorBody().string();
+                                }
+                            } catch (Exception ignored) {}
+                            android.util.Log.e("COMENTARIO_ERROR", "Error: " + errDetail);
+                            Toast.makeText(ActividadDetalle.this, "Error: " + errDetail, Toast.LENGTH_LONG).show();
                         }
                     }
 
@@ -234,17 +273,17 @@ public class ActividadDetalle extends AppCompatActivity {
 
     private void editarComentario(com.dam.studyfiles.models.Comentario c) {
         android.widget.EditText et = new android.widget.EditText(this);
-        et.setText(c.texto);
+        et.setText(c.contenido);
         
         new AlertDialog.Builder(this)
                 .setTitle("Editar comentario")
                 .setView(et)
                 .setPositiveButton("Guardar", (dialog, which) -> {
                     String nuevoTexto = et.getText().toString().trim();
-                    if (nuevoTexto.isEmpty() || nuevoTexto.equals(c.texto)) return;
+                    if (nuevoTexto.isEmpty() || nuevoTexto.equals(c.contenido)) return;
                     
                     java.util.Map<String, Object> campos = new java.util.HashMap<>();
-                    campos.put("texto", nuevoTexto);
+                    campos.put("contenido", nuevoTexto);
                     
                     com.dam.studyfiles.network.SupabaseClient.getApi().actualizarComentario("eq." + c.id, campos)
                             .enqueue(new Callback<Void>() {
@@ -258,6 +297,44 @@ public class ActividadDetalle extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
+    }
+
+    private void eliminarPublicacion() {
+        new AlertDialog.Builder(this)
+                .setTitle("Eliminar Publicación")
+                .setMessage("¿Seguro que quieres borrar este archivo público? Se perderá para todos.")
+                .setPositiveButton("Borrar", (dialog, which) -> {
+                    com.dam.studyfiles.network.SupabaseClient.getApi().eliminarArchivo("eq." + archivoId)
+                            .enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    limpiarFavoritoLocal(); // Quitar de favoritos locales
+                                    Toast.makeText(ActividadDetalle.this, "Publicación eliminada", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                }
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {
+                                    Toast.makeText(ActividadDetalle.this, "Error al eliminar", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    /** Elimina el favorito de Room y su archivo local si existía */
+    private void limpiarFavoritoLocal() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            // Borrar de favoritos Room
+            db.favoritoDao().eliminarPorId(archivoId);
+            // Borrar archivo descargado localmente si existe
+            if (tipoArchivo != null) {
+                java.io.File f = new java.io.File(
+                        new java.io.File(getFilesDir(), "favoritos"),
+                        "fav_" + archivoId + "." + tipoArchivo);
+                if (f.exists()) f.delete();
+            }
+        });
     }
 
     // ── Estado local (favorito + voto) ────────────────────────────────────────
@@ -299,7 +376,7 @@ public class ActividadDetalle extends AppCompatActivity {
         SupabaseClient.getApi().actualizarArchivo("eq." + archivoId, campos)
                 .enqueue(new Callback<Void>() {
                     @Override public void onResponse(Call<Void> c, Response<Void> r) {
-                        if (dislikes >= 10) eliminarPorMalosDislikes();
+                        // Eliminación ahora depende solo de reportes, no de dislikes
                     }
                     @Override public void onFailure(Call<Void> c, Throwable t) {
                         Toast.makeText(ActividadDetalle.this,
@@ -312,8 +389,9 @@ public class ActividadDetalle extends AppCompatActivity {
         SupabaseClient.getApi().eliminarArchivo("eq." + archivoId)
                 .enqueue(new Callback<Void>() {
                     @Override public void onResponse(Call<Void> c, Response<Void> r) {
+                        limpiarFavoritoLocal();
                         Toast.makeText(ActividadDetalle.this,
-                                "Archivo eliminado por exceso de 'No me gusta'",
+                                "⚠️ Archivo eliminado por exceso de reportes de la comunidad.",
                                 Toast.LENGTH_LONG).show();
                         finish();
                     }
@@ -352,7 +430,14 @@ public class ActividadDetalle extends AppCompatActivity {
         try {
             Uri uri = FileProvider.getUriForFile(this,
                     getPackageName() + ".fileprovider", file);
-            String mime = getMimeType(tipoArchivo);
+            
+            // Intentamos inferir la extensión real si viene como bin
+            String extReal = tipoArchivo;
+            if (extReal == null || extReal.equals("bin")) {
+                extReal = com.dam.studyfiles.utils.DispositivoUtils.obtenerExtension(urlArchivo);
+            }
+            
+            String mime = com.dam.studyfiles.utils.DispositivoUtils.getMimeType(extReal);
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setDataAndType(uri, mime);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -400,8 +485,14 @@ public class ActividadDetalle extends AppCompatActivity {
                 File dir = new File(getFilesDir(), "favoritos");
                 if (!dir.exists()) dir.mkdirs();
 
-                String ext  = tipoArchivo != null ? "." + tipoArchivo : "";
-                File   dest = new File(dir, "fav_" + archivoId + ext);
+                // Intentamos sacar la extensión real de la URL si el tipoArchivo es bin o null
+                String extParaArchivo = tipoArchivo;
+                if (extParaArchivo == null || extParaArchivo.equals("bin")) {
+                    extParaArchivo = com.dam.studyfiles.utils.DispositivoUtils.obtenerExtension(urlArchivo);
+                }
+
+                String extSuffix = (extParaArchivo != null && !extParaArchivo.equals("bin")) ? "." + extParaArchivo : "";
+                File   dest = new File(dir, "fav_" + archivoId + extSuffix);
 
                 URL url = new URL(urlArchivo);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -467,29 +558,25 @@ public class ActividadDetalle extends AppCompatActivity {
 
     /** Devuelve el archivo local si existe */
     private File obtenerArchivoLocal() {
-        if (tipoArchivo == null) return null;
-        String ext  = "." + tipoArchivo;
-        File   file = new File(new File(getFilesDir(), "favoritos"), "fav_" + archivoId + ext);
-        return file;
+        // Probamos con la extensión declarada
+        String extDeclarada = tipoArchivo != null && !tipoArchivo.equals("bin") ? "." + tipoArchivo : "";
+        File f1 = new File(new File(getFilesDir(), "favoritos"), "fav_" + archivoId + extDeclarada);
+        if (f1.exists()) return f1;
+
+        // Si no existe, probamos deduciendo de la URL (por si se descargó así)
+        String extUrl = com.dam.studyfiles.utils.DispositivoUtils.obtenerExtension(urlArchivo);
+        if (!extUrl.equals("bin")) {
+            File f2 = new File(new File(getFilesDir(), "favoritos"), "fav_" + archivoId + "." + extUrl);
+            if (f2.exists()) return f2;
+        }
+
+        // Por último, probamos sin extensión (formato antiguo)
+        File f3 = new File(new File(getFilesDir(), "favoritos"), "fav_" + archivoId);
+        if (f3.exists()) return f3;
+
+        return null;
     }
 
-    private String getMimeType(String ext) {
-        if (ext == null) return "*/*";
-        switch (ext.toLowerCase()) {
-            case "pdf":  return "application/pdf";
-            case "doc":  return "application/msword";
-            case "docx": return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-            case "ppt":  return "application/vnd.ms-powerpoint";
-            case "pptx": return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-            case "xls":  return "application/vnd.ms-excel";
-            case "xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-            case "png":  return "image/png";
-            case "jpg":  case "jpeg": return "image/jpeg";
-            case "txt":  return "text/plain";
-            case "zip":  return "application/zip";
-            default:     return "*/*";
-        }
-    }
 
     // ── Reporte ───────────────────────────────────────────────────────────────
 
@@ -509,9 +596,14 @@ public class ActividadDetalle extends AppCompatActivity {
         SupabaseClient.getApi().actualizarArchivo("eq." + archivoId, campos)
                 .enqueue(new Callback<Void>() {
                     @Override public void onResponse(Call<Void> c, Response<Void> r) {
-                        Toast.makeText(ActividadDetalle.this,
-                                "Archivo reportado. Gracias.", Toast.LENGTH_SHORT).show();
-                        btnReportar.setEnabled(false);
+                        if (reportes >= 20) {
+                            // Auto-eliminar: demasiados reportes de la comunidad
+                            eliminarPorMalosDislikes();
+                        } else {
+                            Toast.makeText(ActividadDetalle.this,
+                                    "Archivo reportado. Gracias.", Toast.LENGTH_SHORT).show();
+                            btnReportar.setEnabled(false);
+                        }
                     }
                     @Override public void onFailure(Call<Void> c, Throwable t) {
                         Toast.makeText(ActividadDetalle.this,

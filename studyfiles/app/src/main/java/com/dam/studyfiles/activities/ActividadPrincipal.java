@@ -13,6 +13,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -37,6 +39,8 @@ import com.dam.studyfiles.utils.DispositivoUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -44,9 +48,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+// okhttp3.Response se usa con nombre completo para evitar conflicto con retrofit2.Response
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 
 public class ActividadPrincipal extends AppCompatActivity {
 
@@ -78,6 +88,19 @@ public class ActividadPrincipal extends AppCompatActivity {
     private List<MiCarpeta>  listaCarpetas       = new ArrayList<>();
     private List<MiArchivo>  listaArchivosSueltos = new ArrayList<>();
     private List<Favorito>   listaFavoritos       = new ArrayList<>();
+    
+    private Uri    uriArchivoNube;
+    private String nombreArchivoNube;
+
+    private final ActivityResultLauncher<String[]> selectorArchivoNube =
+            registerForActivityResult(new ActivityResultContracts.OpenDocument(), uri -> {
+                if (uri != null) {
+                    uriArchivoNube = uri;
+                    nombreArchivoNube = obtenerNombreArchivo(uri);
+                    mostrarDialogoSubirNube();
+                }
+            });
+
     private String getIdentificador() {
         String userId = DispositivoUtils.getUsuarioId(this);
         return userId != null ? "user_" + userId : DispositivoUtils.getUUID(this);
@@ -164,6 +187,7 @@ public class ActividadPrincipal extends AppCompatActivity {
             i.putExtra("dislikes",    a.dislikes); i.putExtra("reportes",   a.reportes);
             i.putExtra("institucion", a.institucion);
             i.putExtra("nivel_estudios", a.nivelEstudios);
+            i.putExtra("usuario_id",  a.usuarioId);
             startActivity(i);
         });
         rvBusqueda.setLayoutManager(new LinearLayoutManager(this));
@@ -230,7 +254,7 @@ public class ActividadPrincipal extends AppCompatActivity {
 
     private void cargarMiNube() {
         String iden = getIdentificador();
-        SupabaseClient.getMiNube().getMisCarpetas("eq." + iden)
+        SupabaseClient.getMiNube().getMisCarpetasRaiz("eq." + iden, "is.null")
                 .enqueue(new Callback<List<MiCarpeta>>() {
                     @Override public void onResponse(Call<List<MiCarpeta>> c, Response<List<MiCarpeta>> r) {
                         if (r.isSuccessful() && r.body() != null) {
@@ -337,17 +361,39 @@ public class ActividadPrincipal extends AppCompatActivity {
     // ── FAVORITOS ─────────────────────────────────────────────────────────────
 
     private void configurarFavoritos() {
-        adaptadorFavoritos = new AdaptadorFavoritos(listaFavoritos, fav -> {
-            Intent i = new Intent(this, ActividadDetalle.class);
-            i.putExtra("archivo_id",   fav.id);   i.putExtra("nombre",       fav.nombre);
-            i.putExtra("descripcion",  fav.descripcion); i.putExtra("categoria", fav.categoria);
-            i.putExtra("uploader",     fav.uploader); i.putExtra("url_archivo", fav.urlArchivo);
-            i.putExtra("tipo_archivo", fav.tipoArchivo); i.putExtra("likes",    fav.likes);
-            i.putExtra("dislikes",     fav.dislikes); i.putExtra("reportes",   0);
-            startActivity(i);
-        });
+        adaptadorFavoritos = new AdaptadorFavoritos(listaFavoritos,
+                fav -> {
+                    Intent i = new Intent(this, ActividadDetalle.class);
+                    i.putExtra("archivo_id",   fav.id);   i.putExtra("nombre",       fav.nombre);
+                    i.putExtra("descripcion",  fav.descripcion); i.putExtra("categoria", fav.categoria);
+                    i.putExtra("uploader",     fav.uploader); i.putExtra("url_archivo", fav.urlArchivo);
+                    i.putExtra("tipo_archivo", fav.tipoArchivo); i.putExtra("likes",    fav.likes);
+                    i.putExtra("dislikes",     fav.dislikes); i.putExtra("reportes",   0);
+                    startActivity(i);
+                },
+                fav -> mostrarMenuFavorito(fav)
+        );
         rvFavoritos.setLayoutManager(new LinearLayoutManager(this));
         rvFavoritos.setAdapter(adaptadorFavoritos);
+    }
+
+    private void mostrarMenuFavorito(com.dam.studyfiles.database.Favorito fav) {
+        new AlertDialog.Builder(this)
+                .setTitle(fav.nombre)
+                .setItems(new String[]{"🌐 Abrir en navegador", "🗑 Quitar de favoritos"}, (d, w) -> {
+                    if (w == 0) {
+                        if (fav.urlArchivo != null && !fav.urlArchivo.isEmpty())
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(fav.urlArchivo)));
+                    } else {
+                        Executors.newSingleThreadExecutor().execute(() -> {
+                            BaseDatos.getInstance(getApplicationContext()).favoritoDao().eliminarPorId(fav.id);
+                            runOnUiThread(() -> {
+                                Toast.makeText(this, "Eliminado de favoritos", Toast.LENGTH_SHORT).show();
+                                cargarFavoritos();
+                            });
+                        });
+                    }
+                }).show();
     }
 
     private void cargarFavoritos() {
@@ -403,8 +449,9 @@ public class ActividadPrincipal extends AppCompatActivity {
         if (seccionMiNube.getVisibility() == View.VISIBLE) {
             new AlertDialog.Builder(this)
                     .setTitle("Mi Nube")
-                    .setItems(new String[]{"📁 Nueva carpeta", "☁️ Subir archivo aquí"}, (d, w) -> {
+                    .setItems(new String[]{"📁 Nueva carpeta", "☁️ Subir archivo a Mi Nube", "🌐 Publicar archivo"}, (d, w) -> {
                         if (w == 0) crearCarpeta();
+                        else if (w == 1) selectorArchivoNube.launch(new String[]{"*/*"});
                         else startActivity(new Intent(this, ActividadSubir.class));
                     }).show();
         } else {
@@ -456,8 +503,133 @@ public class ActividadPrincipal extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // Refrescar menú por si el estado de login cambió
+        invalidateOptionsMenu();
+        
         // Refrescar favoritos al volver
         if (seccionFavoritos.getVisibility() == View.VISIBLE) cargarFavoritos();
         if (seccionMiNube.getVisibility() == View.VISIBLE) cargarMiNube();
+    }
+
+    // ── SUBIDA DE ARCHIVOS SUELTOS A MI NUBE ─────────────────────────────────
+
+    private void mostrarDialogoSubirNube() {
+        EditText et = new EditText(this);
+        et.setHint("Nombre del archivo");
+        et.setText(nombreArchivoNube);
+        new AlertDialog.Builder(this)
+                .setTitle("Subir a Mi Nube")
+                .setView(et)
+                .setPositiveButton("Subir", (d, w) -> {
+                    String nombre = et.getText().toString().trim();
+                    if (nombre.isEmpty()) nombre = nombreArchivoNube;
+                    subirArchivoNube(nombre);
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void subirArchivoNube(String nombre) {
+        String iden = getIdentificador();
+        String finalNombre = nombre;
+        new Thread(() -> {
+            try {
+                InputStream is = getContentResolver().openInputStream(uriArchivoNube);
+                if (is == null) throw new Exception("No se pudo leer el archivo");
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                byte[] chunk = new byte[8192];
+                int n;
+                while ((n = is.read(chunk)) != -1) buf.write(chunk, 0, n);
+                is.close();
+                byte[] bytes = buf.toByteArray();
+
+                String mime = getContentResolver().getType(uriArchivoNube);
+                if (mime == null) mime = "application/octet-stream";
+                String ext  = obtenerExtension(nombreArchivoNube);
+                if (ext.equals("bin")) ext = extensionDesdeMime(mime);
+                String ruta = "minube/" + iden + "/sueltos/" + System.currentTimeMillis() + "_" + nombreArchivoNube;
+                
+                // Si el nombre no tiene extensión, se la añadimos basándonos en el MIME detectado
+                if (!nombreArchivoNube.contains(".") && !ext.equals("bin")) {
+                    ruta += "." + ext;
+                }
+
+                okhttp3.RequestBody body = okhttp3.RequestBody.create(bytes, MediaType.parse(mime));
+                Request req = new Request.Builder()
+                        .url(SupabaseClient.URL_BASE + "storage/v1/object/mi-nube/" + ruta)
+                        .addHeader("apikey", SupabaseClient.API_KEY)
+                        .addHeader("Authorization", "Bearer " + SupabaseClient.API_KEY)
+                        .addHeader("Content-Type", mime)
+                        .post(body).build();
+
+                okhttp3.Response res = new OkHttpClient().newCall(req).execute();
+                if (res.isSuccessful()) {
+                    String url = SupabaseClient.URL_BASE + "storage/v1/object/public/mi-nube/" + ruta;
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("nombre",       finalNombre);
+                    data.put("carpeta_id",   null);
+                    data.put("usuario_id",   iden);
+                    data.put("url_archivo",  url);
+                    data.put("tipo_archivo", ext);
+                    data.put("fecha_subida", System.currentTimeMillis());
+                    SupabaseClient.getMiNube().subirMiArchivo(data)
+                            .enqueue(new Callback<List<MiArchivo>>() {
+                                @Override public void onResponse(Call<List<MiArchivo>> c, Response<List<MiArchivo>> r) {
+                                    runOnUiThread(() -> {
+                                        Toast.makeText(ActividadPrincipal.this, "✅ Archivo subido a Mi Nube", Toast.LENGTH_SHORT).show();
+                                        cargarMiNube();
+                                    });
+                                }
+                                @Override public void onFailure(Call<List<MiArchivo>> c, Throwable t) {
+                                    runOnUiThread(() -> Toast.makeText(ActividadPrincipal.this, "Error al guardar metadata", Toast.LENGTH_SHORT).show());
+                                }
+                            });
+                } else {
+                    runOnUiThread(() -> Toast.makeText(this, "Error al subir al servidor: " + res.code(), Toast.LENGTH_SHORT).show());
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            }
+        }).start();
+    }
+
+    /** Obtiene el nombre real del archivo (con extensión) usando ContentResolver */
+    private String obtenerNombreArchivo(Uri uri) {
+        try (android.database.Cursor cursor = getContentResolver().query(
+                uri, new String[]{android.provider.OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String name = cursor.getString(0);
+                if (name != null && !name.isEmpty()) return name;
+            }
+        } catch (Exception ignored) {}
+        String p = uri.getLastPathSegment();
+        if (p != null && p.contains("/")) p = p.substring(p.lastIndexOf("/") + 1);
+        return (p != null && !p.isEmpty()) ? p : "archivo";
+    }
+
+    private String obtenerExtension(String nombre) {
+        if (nombre != null && nombre.contains("."))
+            return nombre.substring(nombre.lastIndexOf(".") + 1).toLowerCase();
+        return "bin";
+    }
+
+    private String extensionDesdeMime(String mime) {
+        if (mime == null) return "bin";
+        switch (mime) {
+            case "application/pdf":  return "pdf";
+            case "image/jpeg":       return "jpg";
+            case "image/png":        return "png";
+            case "image/gif":        return "gif";
+            case "image/webp":       return "webp";
+            case "application/msword": return "doc";
+            case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": return "docx";
+            case "application/vnd.ms-powerpoint": return "ppt";
+            case "application/vnd.openxmlformats-officedocument.presentationml.presentation": return "pptx";
+            case "application/vnd.ms-excel": return "xls";
+            case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": return "xlsx";
+            case "text/plain":       return "txt";
+            case "application/zip": return "zip";
+            default: return "bin";
+        }
     }
 }

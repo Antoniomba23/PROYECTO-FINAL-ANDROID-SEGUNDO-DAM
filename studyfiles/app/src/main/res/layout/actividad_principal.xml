@@ -3,8 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background">
+    android:layout_height="match_parent">
 
     <!-- TOOLBAR -->
     <com.google.android.material.appbar.AppBarLayout
@@ -195,16 +194,16 @@
         app:backgroundTint="@color/accent"
         android:contentDescription="Acción" />
 
-    <!-- FAB Chat IA -->
+    <!-- FAB Chat Tutor -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabChat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:layout_margin="72dp"
-        android:src="@drawable/ic_chat_ia"
+        android:src="@drawable/ic_chat_tutor"
         app:backgroundTint="#00E676"
-        android:contentDescription="Chat IA" />
+        android:contentDescription="Tutor Virtual" />
 
     <!-- BOTTOM NAVIGATION -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

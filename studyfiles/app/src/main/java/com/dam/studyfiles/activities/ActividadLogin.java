@@ -163,7 +163,13 @@ public class ActividadLogin extends AppCompatActivity {
                             Usuario u = response.body().get(0);
                             migrarDatosYFinalizar(String.valueOf(u.id), u.nombreUsuario);
                         } else {
-                            Toast.makeText(ActividadLogin.this, "Error al registrar usuario", Toast.LENGTH_SHORT).show();
+                            String errMsg = "Error al registrar usuario";
+                            try {
+                                if (response.errorBody() != null) {
+                                    errMsg = response.errorBody().string();
+                                }
+                            } catch (Exception e) {}
+                            Toast.makeText(ActividadLogin.this, errMsg, Toast.LENGTH_LONG).show();
                         }
                     }
 
@@ -183,13 +189,13 @@ public class ActividadLogin extends AppCompatActivity {
         Map<String, Object> bodyMigracion = new HashMap<>();
         bodyMigracion.put("usuario_id", newUserId);
 
-        // Migrar Carpetas
+        // Migrar Carpetas Privadas
         SupabaseClient.getMiNube().migrarCarpetas("eq." + oldUUID, bodyMigracion).enqueue(new Callback<Void>() {
             @Override public void onResponse(Call<Void> call, Response<Void> response) {}
             @Override public void onFailure(Call<Void> call, Throwable t) {}
         });
 
-        // Migrar Archivos sueltos
+        // Migrar Archivos Privados
         SupabaseClient.getMiNube().migrarArchivos("eq." + oldUUID, bodyMigracion).enqueue(new Callback<Void>() {
             @Override public void onResponse(Call<Void> call, Response<Void> response) {}
             @Override public void onFailure(Call<Void> call, Throwable t) {}
@@ -197,6 +203,16 @@ public class ActividadLogin extends AppCompatActivity {
 
         // Migrar Mensajes de Chat
         SupabaseClient.getChat().migrarMensajes("eq." + oldUUID, bodyMigracion).enqueue(new Callback<Void>() {
+            @Override public void onResponse(Call<Void> call, Response<Void> response) {}
+            @Override public void onFailure(Call<Void> call, Throwable t) {}
+        });
+
+        // Migrar Archivos Públicos (Publicaciones)
+        Map<String, Object> bodyMigracionPublica = new HashMap<>();
+        bodyMigracionPublica.put("usuario_id", newUserId);
+        bodyMigracionPublica.put("uploader", nombreUsuario);
+        
+        SupabaseClient.getApi().migrarArchivosPublicos("eq." + oldUUID, bodyMigracionPublica).enqueue(new Callback<Void>() {
             @Override public void onResponse(Call<Void> call, Response<Void> response) {}
             @Override public void onFailure(Call<Void> call, Throwable t) {}
         });

@@ -158,10 +158,17 @@ public class ActividadSubir extends AppCompatActivity {
                 is.close();
                 byte[] bytes = buffer.toByteArray();
 
-                String extension = obtenerExtension(nombreArchivoLocal);
-                String rutaStorage = "archivos/" + System.currentTimeMillis() + "_" + nombreArchivoLocal;
                 String mimeType = getContentResolver().getType(uriSeleccionado);
                 if (mimeType == null) mimeType = "application/octet-stream";
+                
+                String extension = obtenerExtension(nombreArchivoLocal);
+                if (extension.equals("bin")) extension = extensionDesdeMime(mimeType);
+                
+                String rutaStorage = "archivos/" + System.currentTimeMillis() + "_" + nombreArchivoLocal;
+                // Si el nombre local no tiene extensión, se la añadimos para que el storage lo reconozca
+                if (!nombreArchivoLocal.contains(".") && !extension.equals("bin")) {
+                    rutaStorage += "." + extension;
+                }
 
                 RequestBody body = RequestBody.create(bytes, MediaType.parse(mimeType));
                 Request request = new Request.Builder()
@@ -209,6 +216,9 @@ public class ActividadSubir extends AppCompatActivity {
         req.tipoArchivo = tipo;
         req.institucion = institucion.isEmpty() ? null : institucion;
         req.nivelEstudios = nivelEstudios.isEmpty() ? null : nivelEstudios;
+        
+        String userId = com.dam.studyfiles.utils.DispositivoUtils.getUsuarioId(this);
+        req.usuarioId = userId != null ? "user_" + userId : com.dam.studyfiles.utils.DispositivoUtils.getUUID(this);
 
         SupabaseClient.getApi().subirArchivo(req).enqueue(new Callback<Void>() {
             @Override
@@ -235,16 +245,42 @@ public class ActividadSubir extends AppCompatActivity {
     }
 
     private String obtenerNombreArchivo(Uri uri) {
-        String path = uri.getLastPathSegment();
-        if (path != null && path.contains("/"))
-            path = path.substring(path.lastIndexOf("/") + 1);
-        return path != null ? path : "archivo_" + System.currentTimeMillis();
+        try (android.database.Cursor cursor = getContentResolver().query(
+                uri, new String[]{android.provider.OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String name = cursor.getString(0);
+                if (name != null && !name.isEmpty()) return name;
+            }
+        } catch (Exception ignored) {}
+        String p = uri.getLastPathSegment();
+        if (p != null && p.contains("/")) p = p.substring(p.lastIndexOf("/") + 1);
+        return (p != null && !p.isEmpty()) ? p : "archivo_" + System.currentTimeMillis();
     }
 
     private String obtenerExtension(String nombre) {
         if (nombre != null && nombre.contains("."))
             return nombre.substring(nombre.lastIndexOf(".") + 1).toLowerCase();
         return "bin";
+    }
+
+    private String extensionDesdeMime(String mime) {
+        if (mime == null) return "bin";
+        switch (mime) {
+            case "application/pdf":  return "pdf";
+            case "image/jpeg":       return "jpg";
+            case "image/png":        return "png";
+            case "image/gif":        return "gif";
+            case "image/webp":       return "webp";
+            case "application/msword": return "doc";
+            case "application/vnd.openxmlformats-officedocument.wordprocessingml.document": return "docx";
+            case "application/vnd.ms-powerpoint": return "ppt";
+            case "application/vnd.openxmlformats-officedocument.presentationml.presentation": return "pptx";
+            case "application/vnd.ms-excel": return "xls";
+            case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": return "xlsx";
+            case "text/plain":       return "txt";
+            case "application/zip": return "zip";
+            default: return "bin";
+        }
     }
 
     @Override

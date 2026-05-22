@@ -19,8 +19,19 @@ public interface MiNubeApi {
 
     // ── CARPETAS ─────────────────────────────────────────────────────────────
 
+    /** Carpetas en la raíz (sin padre) */
     @GET("rest/v1/mis_carpetas?order=fecha_creacion.desc")
-    Call<List<MiCarpeta>> getMisCarpetas(@Query("usuario_id") String usuarioIdFiltro);
+    Call<List<MiCarpeta>> getMisCarpetasRaiz(
+            @Query("usuario_id") String usuarioIdFiltro,
+            @Query("carpeta_padre_id") String carpetaPadreIdFiltro // "is.null"
+    );
+
+    /** Subcarpetas dentro de una carpeta padre */
+    @GET("rest/v1/mis_carpetas?order=fecha_creacion.desc")
+    Call<List<MiCarpeta>> getMisCarpetasHijas(
+            @Query("usuario_id") String usuarioIdFiltro,
+            @Query("carpeta_padre_id") String carpetaPadreIdFiltro // "eq.{id}"
+    );
 
     @Headers("Prefer: return=representation")
     @POST("rest/v1/mis_carpetas")

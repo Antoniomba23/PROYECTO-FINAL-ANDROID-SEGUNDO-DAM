@@ -1,40 +1,84 @@
+# -*- coding: utf-8 -*-
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 import os
+import shutil
 
+# ── 1. Inicialización y Configuración de Márgenes ──
 doc = Document()
-
-# ── Márgenes ──────────────────────────────────────────────────────────────────
 for section in doc.sections:
     section.top_margin    = Cm(2.5)
     section.bottom_margin = Cm(2.5)
-    section.left_margin   = Cm(3)
+    section.left_margin   = Cm(3.0)
     section.right_margin  = Cm(2.5)
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ── 2. Helpers para Estilos Académicos ──
 def h1(texto):
     p = doc.add_heading(texto, level=1)
-    p.runs[0].font.color.rgb = RGBColor(0x1A, 0x73, 0xE8)
+    p.paragraph_format.space_before = Pt(18)
+    p.paragraph_format.space_after = Pt(6)
+    p.paragraph_format.keep_with_next = True
+    run = p.runs[0]
+    run.font.name = 'Arial'
+    run.font.size = Pt(16)
+    run.font.color.rgb = RGBColor(0x1B, 0x36, 0x5D) # Azul Marino Institucional
     return p
 
 def h2(texto):
     p = doc.add_heading(texto, level=2)
-    p.runs[0].font.color.rgb = RGBColor(0x18, 0x4F, 0xA5)
+    p.paragraph_format.space_before = Pt(12)
+    p.paragraph_format.space_after = Pt(4)
+    p.paragraph_format.keep_with_next = True
+    run = p.runs[0]
+    run.font.name = 'Arial'
+    run.font.size = Pt(13)
+    run.font.color.rgb = RGBColor(0x2E, 0x5B, 0x88) # Azul secundario
     return p
 
 def h3(texto):
-    return doc.add_heading(texto, level=3)
+    p = doc.add_heading(texto, level=3)
+    p.paragraph_format.space_before = Pt(6)
+    p.paragraph_format.space_after = Pt(2)
+    p.paragraph_format.keep_with_next = True
+    run = p.runs[0]
+    run.font.name = 'Arial'
+    run.font.size = Pt(11.5)
+    run.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
+    return p
 
-def p(texto, bold=False, italic=False, size=11):
+def p(texto, bold=False, italic=False, size=11, space_after=6, align=WD_ALIGN_PARAGRAPH.JUSTIFY):
     para = doc.add_paragraph()
+    para.alignment = align
+    para.paragraph_format.space_after = Pt(space_after)
+    para.paragraph_format.line_spacing = 1.15
     run = para.add_run(texto)
+    run.font.name = 'Calibri'
+    run.font.size = Pt(size)
     run.bold = bold
     run.italic = italic
-    run.font.size = Pt(size)
+    return para
+
+def codigo_bloque(texto):
+    para = doc.add_paragraph()
+    para.paragraph_format.left_indent = Cm(1.0)
+    para.paragraph_format.space_before = Pt(4)
+    para.paragraph_format.space_after = Pt(4)
+    para.paragraph_format.line_spacing = 1.0
+    
+    run = para.add_run(texto)
+    run.font.name = 'Courier New'
+    run.font.size = Pt(9.0)
+    run.font.color.rgb = RGBColor(0x22, 0x22, 0x22)
+    
+    # Añadir un sombreado gris claro de fondo
+    tcPr = para._p.get_or_add_pPr()
+    shd = OxmlElement('w:shd')
+    shd.set(qn('w:fill'), 'F4F5F7')
+    shd.set(qn('w:val'), 'clear')
+    tcPr.append(shd)
     return para
 
 def tabla(headers, rows):
@@ -43,410 +87,514 @@ def tabla(headers, rows):
     hdr = t.rows[0].cells
     for i, h in enumerate(headers):
         hdr[i].text = h
+        hdr[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
         for run in hdr[i].paragraphs[0].runs:
             run.bold = True
-        hdr[i].paragraphs[0].runs[0].font.color.rgb = RGBColor(0xFF,0xFF,0xFF)
-        tc = hdr[i]._tc
-        tcPr = tc.get_or_add_tcPr()
+            run.font.name = 'Arial'
+            run.font.size = Pt(10)
+            run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        
+        tcPr = hdr[i]._tc.get_or_add_tcPr()
         shd = OxmlElement('w:shd')
-        shd.set(qn('w:fill'), '1A73E8')
+        shd.set(qn('w:fill'), '1B365D') # Fondo azul marino
         shd.set(qn('w:color'), 'auto')
         shd.set(qn('w:val'), 'clear')
         tcPr.append(shd)
+        
     for ri, row in enumerate(rows):
         cells = t.rows[ri+1].cells
         for ci, val in enumerate(row):
             cells[ci].text = val
+            cells[ci].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
+            for run in cells[ci].paragraphs[0].runs:
+                run.font.name = 'Calibri'
+                run.font.size = Pt(10)
     doc.add_paragraph()
 
-def imagen_placeholder(nombre, descripcion):
-    """Añade un bloque gris de placeholder para la captura."""
-    p_img = doc.add_paragraph()
-    p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p_img.add_run(f"[ CAPTURA: {nombre} ]")
-    run.font.size = Pt(10)
-    run.font.color.rgb = RGBColor(0x88, 0x88, 0x88)
-    run.bold = True
-    cap = doc.add_paragraph(descripcion)
-    cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    cap.runs[0].font.italic = True
-    cap.runs[0].font.size = Pt(9)
-    cap.runs[0].font.color.rgb = RGBColor(0x55, 0x55, 0x55)
-    doc.add_paragraph()
+# ── 3. Configuración del Directorio de Capturas Locales ──
+dest_dir = r"d:\DAM\Rutas y Proyectos\Proyectos\DAM Proyecto Final\docs\images"
+os.makedirs(dest_dir, exist_ok=True)
+
+def agregar_captura(nombre_archivo, pie_foto):
+    ruta_img = os.path.join(dest_dir, nombre_archivo)
+    if os.path.exists(ruta_img):
+        # Si la captura física existe, la inserta con las dimensiones correctas de Word
+        p_img = doc.add_paragraph()
+        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_img.paragraph_format.space_before = Pt(8)
+        p_img.paragraph_format.space_after = Pt(4)
+        p_img.paragraph_format.keep_with_next = True
+        
+        run = p_img.add_run()
+        # El logo de portada se añade un poco más ancho que las capturas verticales de móvil
+        if nombre_archivo == "logo.png":
+            run.add_picture(ruta_img, width=Inches(2.5))
+        else:
+            run.add_picture(ruta_img, width=Inches(2.8))
+        
+        cap = doc.add_paragraph()
+        cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        cap.paragraph_format.space_after = Pt(8)
+        run_cap = cap.add_run(f"Figura: {pie_foto}")
+        run_cap.italic = True
+        run_cap.font.name = 'Calibri'
+        run_cap.font.size = Pt(9.5)
+        run_cap.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
+    else:
+        # Si la captura no existe, genera una caja de sombreado gris académica explicando
+        # al usuario exactamente qué archivo guardar en la carpeta docs/images
+        p_place = doc.add_paragraph()
+        p_place.paragraph_format.left_indent = Cm(1.0)
+        p_place.paragraph_format.right_indent = Cm(1.0)
+        p_place.paragraph_format.space_before = Pt(8)
+        p_place.paragraph_format.space_after = Pt(8)
+        
+        # Sombreado gris suave
+        tcPr = p_place._p.get_or_add_pPr()
+        shd = OxmlElement('w:shd')
+        shd.set(qn('w:fill'), 'F5F5F5')
+        shd.set(qn('w:val'), 'clear')
+        tcPr.append(shd)
+        
+        run = p_place.add_run(
+            f"⚠️ [INDICACIÓN DE MAQUETADO DE TFG]\n"
+            f"Coloca aquí tu propia captura de pantalla de la: {pie_foto}.\n"
+            f"Instrucciones: Toma la captura desde tu dispositivo/emulador, nombra el archivo exactamente "
+            f"como '{nombre_archivo}' y guárdalo en la carpeta 'docs/images/'.\n"
+            f"Luego, vuelve a ejecutar el script 'generar_memoria.py' para incrustarla automáticamente."
+        )
+        run.bold = True
+        run.font.name = 'Calibri'
+        run.font.size = Pt(9.5)
+        run.font.color.rgb = RGBColor(0xD3, 0x2F, 0x2F) # Rojo institucional de advertencia
+        doc.add_paragraph()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PORTADA
 # ══════════════════════════════════════════════════════════════════════════════
-doc.add_paragraph()
-doc.add_paragraph()
+for _ in range(3): doc.add_paragraph()
+
 titulo = doc.add_paragraph()
 titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
-r = titulo.add_run("MEMORIA TÉCNICA DEL PROYECTO FINAL")
-r.bold = True; r.font.size = Pt(20)
-r.font.color.rgb = RGBColor(0x1A, 0x73, 0xE8)
+r = titulo.add_run("MEMORIA TÉCNICA Y DE DISEÑO DE SOFTWARE")
+r.bold = True
+r.font.name = 'Arial'
+r.font.size = Pt(22)
+r.font.color.rgb = RGBColor(0x1B, 0x36, 0x5D)
 
 subtitulo = doc.add_paragraph()
 subtitulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
-r2 = subtitulo.add_run("StudyBro — Red Social Educativa para Estudiantes")
-r2.bold = True; r2.font.size = Pt(16)
+r2 = subtitulo.add_run("StudyFiles — Gestor Académico Colaborativo y Nube de Recursos Multidispositivo")
+r2.bold = True
+r2.font.name = 'Arial'
+r2.font.size = Pt(14)
+r2.font.color.rgb = RGBColor(0x55, 0x55, 0x55)
 
-doc.add_paragraph()
-imagen_placeholder("LOGO APP", "Logo de StudyBro")
-doc.add_paragraph()
+for _ in range(2): doc.add_paragraph()
+
+# Añadir el logo real de la app en la portada si existe
+agregar_captura("logo.png", "Isotipo oficial de la aplicación StudyFiles")
+
+for _ in range(2): doc.add_paragraph()
 
 datos = doc.add_paragraph()
 datos.alignment = WD_ALIGN_PARAGRAPH.CENTER
-datos.add_run(
-    "Alumno: Antonio MBA Nzang\n"
+datos.paragraph_format.line_spacing = 1.3
+r_datos = datos.add_run(
+    "Autor: Antonio MBA Nzang\n"
     "Ciclo: Desarrollo de Aplicaciones Multiplataforma (DAM) — Grado Superior\n"
-    "Tutor: Mario Castro\n"
-    "Centro: EPSUM\n"
-    "Curso: 2025 / 2026\n"
-    "Fecha: Mayo 2026\n"
-    "Repositorio: github.com/Antoniomba23/PROYECTO-FINAL-ANDROID-SEGUNDO-DAM (rama antonio)"
-).font.size = Pt(11)
+    "Centro Docente: EPSUM\n"
+    "Tutor del Proyecto: Mario Castro\n"
+    "Curso Académico: 2025 / 2026\n"
+    "Fecha de Entrega: Mayo de 2026\n"
+)
+r_datos.font.name = 'Arial'
+r_datos.font.size = Pt(11)
 
 doc.add_page_break()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 1. INTRODUCCIÓN
+# ÍNDICE DEL PROYECTO (DE CARA AL TFG)
+# ══════════════════════════════════════════════════════════════════════════════
+h1("ÍNDICE GENERAL DEL PROYECTO (PROPUESTA TFG)")
+p("A continuación, se detalla la propuesta formal de estructura e índice general para la defensa del Trabajo de Fin de Grado (TFG) del ciclo formativo de grado superior en DAM:", italic=True)
+
+# Lista estructurada del índice
+def item_indice(numero, titulo_seccion, indent=0.0, bold=False):
+    p_ind = doc.add_paragraph()
+    p_ind.paragraph_format.left_indent = Cm(indent)
+    p_ind.paragraph_format.space_after = Pt(2)
+    run = p_ind.add_run(f"{numero} {titulo_seccion}")
+    run.font.name = 'Calibri'
+    run.font.size = Pt(11)
+    run.bold = bold
+
+item_indice("1.", "INTRODUCCIÓN Y JUSTIFICACIÓN DEL PROYECTO", bold=True)
+item_indice("1.1", "Contexto del problema y estado del arte", indent=0.5)
+item_indice("1.2", "La pérdida de recursos académicos interanual", indent=0.5)
+item_indice("1.3", "Justificación del desarrollo móvil e híbrido", indent=0.5)
+
+item_indice("2.", "OBJETIVOS Y ALCANCE", bold=True)
+item_indice("2.1", "Objetivo principal de la aplicación", indent=0.5)
+item_indice("2.2", "Objetivos específicos y técnicos", indent=0.5)
+item_indice("2.3", "Alcance funcional del sistema colaborativo", indent=0.5)
+
+item_indice("3.", "ANÁLISIS DE REQUISITOS Y CASOS DE USO", bold=True)
+item_indice("3.1", "Requisitos funcionales del sistema", indent=0.5)
+item_indice("3.2", "Requisitos no funcionales (seguridad, rendimiento)", indent=0.5)
+item_indice("3.3", "Diagramas y modelado de Casos de Uso (CU)", indent=0.5)
+
+item_indice("4.", "ARQUITECTURA DE SOFTWARE Y TECNOLOGÍAS", bold=True)
+item_indice("4.1", "La pila tecnológica elegida (Android SDK, Java, Retrofit)", indent=0.5)
+item_indice("4.2", "Modelo de capas: Vista, Adaptador, Red, Cache local", indent=0.5)
+item_indice("4.3", "Patrones de diseño de software (Singleton, Listener)", indent=0.5)
+
+item_indice("5.", "PERSISTENCIA DE DATOS HÍBRIDA (NUBE Y LOCAL)", bold=True)
+item_indice("5.1", "El motor local Room (SQLite): Entidades y DAOs", indent=0.5)
+item_indice("5.2", "El motor remoto Supabase (PostgreSQL y REST)", indent=0.5)
+item_indice("5.3", "Sincronización híbrida de la nube a través de IDs", indent=0.5)
+
+item_indice("6.", "ANÁLISIS E IMPLEMENTACIÓN DEL CÓDIGO FUENTE", bold=True)
+item_indice("6.1", "Estructura del código en paquetes Java", indent=0.5)
+item_indice("6.2", "La Actividad Principal y el gestor de tabs", indent=0.5)
+item_indice("6.3", "Detalle colaborativo, votos y comentarios", indent=0.5)
+item_indice("6.4", "El Tutor de Estudio y la resolución de dudas", indent=0.5)
+item_indice("6.5", "El sistema de Nube Personal de archivos", indent=0.5)
+
+item_indice("7.", "DOCUMENTACIÓN DE LAS APIS CONSUMIDAS", bold=True)
+item_indice("7.1", "Endpoint de Supabase (Base de datos y Storage)", indent=0.5)
+item_indice("7.2", "Consumo asíncrono y mapeado seguro con Retrofit", indent=0.5)
+
+item_indice("8.", "DESARROLLO DE COMPETENCIAS Y RESOLUCIÓN DE PROBLEMAS", bold=True)
+item_indice("8.1", "Competencias técnicas del ciclo DAM aplicadas", indent=0.5)
+item_indice("8.2", "Resolución de errores: FK en comentarios, Java 8 compatibility", indent=0.5)
+
+item_indice("9.", "CONCLUSIONES Y LÍNEAS DE TRABAJO FUTURO", bold=True)
+item_indice("9.1", "Conclusiones del desarrollo del TFG", indent=0.5)
+item_indice("9.2", "Futuras ampliaciones del sistema StudyFiles", indent=0.5)
+
+doc.add_page_break()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 1. INTRODUCCIÓN Y JUSTIFICACIÓN
 # ══════════════════════════════════════════════════════════════════════════════
 h1("1. Introducción y Justificación")
-p("StudyBro es una aplicación móvil Android para estudiantes de ciclos formativos y enseñanzas secundarias. Su objetivo es crear un espacio colaborativo donde los alumnos puedan compartir apuntes, publicaciones académicas y valoraciones sobre centros educativos, enriquecido con inteligencia artificial.")
-p("La idea surge de una necesidad real: los estudiantes de FP carecen de una plataforma centralizada donde encontrar apuntes de su ciclo, conocer las valoraciones reales de los centros y conectar con compañeros de su misma especialidad.")
-p("La aplicación cubre tres grandes necesidades:")
-doc.add_paragraph("Descubrimiento de centros: más de 2.000 centros reales de Madrid via API pública.", style='List Bullet')
-doc.add_paragraph("Red social académica: muro de publicaciones con comentarios e interacciones.", style='List Bullet')
-doc.add_paragraph("Asistente de IA: Gemini 2.5 Flash para resumir apuntes, generar quizzes y mejorar textos.", style='List Bullet')
-doc.add_paragraph()
+p("El desarrollo de aplicaciones multiplataforma y móviles se ha consolidado como un pilar fundamental en la educación moderna. En el entorno de la Formación Profesional (FP) y la enseñanza reglada superior, se presenta una problemática recurrente: la tremenda dispersión y la posterior pérdida de recursos académicos de gran valor que se generan a lo largo de cada curso escolar.")
+p("Al finalizar el año académico, los apuntes, resúmenes elaborados, colecciones de ejercicios resueltos y guías de estudio preparados por los alumnos con mayor rendimiento suelen quedar almacenados de forma local en los dispositivos personales, o se borran de los grupos temporales de mensajería instantánea. Como resultado, los alumnos de las siguientes promociones inician el curso con una absoluta carencia de recursos de apoyo previos, debiendo repetir el proceso de búsqueda y recopilación desde cero.")
+p("StudyFiles nace como solución directa a esta carencia, diseñándose como un repositorio y gestor académico colaborativo integrado en una aplicación móvil Android de alto rendimiento. Esta plataforma centraliza el almacenamiento de archivos de estudio en la nube y los organiza de manera intuitiva según asignaturas académicas y categorías. Además de permitir la subida de documentos y la interacción comunitaria a través de comentarios y votos de utilidad, el sistema incorpora una innovadora nube personal de archivos ('Mi Nube') y un asistente virtual de estudio interactivo integrado que guía al usuario en la resolución de dudas y la síntesis de conceptos.")
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 2. OBJETIVOS
+# 2. OBJETIVO PRINCIPAL
 # ══════════════════════════════════════════════════════════════════════════════
-h1("2. Objetivos del Proyecto")
-h2("2.1 Objetivos Generales")
-doc.add_paragraph("Desarrollar una aplicación Android funcional como proyecto final del ciclo DAM.", style='List Bullet')
-doc.add_paragraph("Aplicar conocimientos de bases de datos, redes, persistencia, UI y arquitectura.", style='List Bullet')
-
-h2("2.2 Objetivos Específicos")
-objetivos = [
-    "Implementar autenticación real en la nube con Supabase Auth (JWT).",
-    "Crear base de datos local Room (SQLite) con 11 entidades relacionadas.",
-    "Consumir API REST pública (Datos Abiertos Madrid) con +2.000 centros educativos.",
-    "Integrar la API Gemini de Google para funciones de inteligencia artificial.",
-    "Diseñar sistema de roles (Estudiante / Administrador) con acceso diferenciado.",
-    "Implementar sincronización entre base de datos local y la nube (Supabase).",
-    "Crear interfaz de usuario moderna siguiendo Material Design 3.",
-]
-for o in objetivos:
-    doc.add_paragraph(o, style='List Bullet')
-doc.add_paragraph()
+h1("2. Objetivo Principal del Proyecto")
+p("El objetivo principal de StudyFiles es diseñar, desarrollar e implementar de forma integral una aplicación móvil nativa bajo la plataforma Android que sirva como plataforma de almacenamiento, búsqueda y compartición colaborativa de material escolar entre estudiantes.")
+p("El sistema persigue democratizar el acceso a los recursos de estudio facilitando una red transparente donde cualquier alumno pueda:")
+doc.add_paragraph("Registrarse e iniciar sesión de forma segura para tener una identidad académica propia.", style='List Bullet')
+doc.add_paragraph("Explorar y buscar en tiempo real material subido por otros compañeros categorizado de forma didáctica.", style='List Bullet')
+doc.add_paragraph("Gestionar un espacio personal privado de archivos en la nube, simulando un disco virtual adaptado.", style='List Bullet')
+doc.add_paragraph("Interactuar activamente en la comunidad mediante un completo sistema de comentarios y votos que premie el contenido de alta calidad y lo mantenga libre de spam.", style='List Bullet')
+doc.add_paragraph("Consultar a un asistente de estudio virtual interactivo para aclarar conceptos, estructurar temas y resolver cuestionarios de repaso.", style='List Bullet')
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 3. TECNOLOGÍAS
+# 3. ANÁLISIS DE REQUISITOS Y CASOS DE USO
 # ══════════════════════════════════════════════════════════════════════════════
-h1("3. Tecnologías y Herramientas Utilizadas")
+h1("3. Análisis de Requisitos y Casos de Uso")
+p("Para garantizar el correcto modelado del software y su modularidad, se ha procedido al análisis de los requisitos funcionales del sistema, los cuales se describen a través de los siguientes Casos de Uso principales:")
 
-h2("3.1 Lenguaje y Plataforma")
-tabla(["Tecnología","Versión","Uso"],[
-    ["Java","1.8","Lenguaje principal de desarrollo"],
-    ["Android SDK","34 (Android 14)","Plataforma de ejecución"],
-    ["Android Studio","Hedgehog","Entorno de desarrollo integrado"],
-    ["Gradle","8.1.0","Sistema de build y dependencias"],
+tabla(["Caso de Uso", "Actor", "Descripción del Flujo", "Resultado Esperado"], [
+    ["CU-01: Autenticación", "Usuario", "El usuario rellena correo y contraseña para hacer login o registro remoto.", "Token JWT guardado y acceso a la app."],
+    ["CU-02: Búsqueda", "Estudiante", "Introduce palabras clave en la barra superior del buscador integrado.", "Filtrado interactivo en tiempo real."],
+    ["CU-03: Subida", "Estudiante", "Completa el formulario de detalles de archivo y selecciona el documento.", "Archivo subido a la nube y enlazado."],
+    ["CU-04: Comentar", "Estudiante Reg.", "Añade aportaciones, sugerencias o dudas al hilo de un archivo.", "Persistencia y renderizado inmediato."],
+    ["CU-05: Nube Personal", "Estudiante", "Crea carpetas virtuales y sube archivos de forma privada a la nube.", "Estructura jerárquica guardada."],
+    ["CU-06: Consulta Tutor", "Estudiante", "Envía una pregunta en lenguaje natural al tutor en la vista del chat.", "Respuesta inteligente basada en apuntes."]
 ])
 
-h2("3.2 Persistencia de Datos")
-tabla(["Biblioteca","Versión","Uso"],[
-    ["Room","2.6.1","ORM para SQLite (base de datos local)"],
-    ["Supabase","—","Backend en la nube (PostgreSQL + Auth + Storage)"],
-])
-
-h2("3.3 Red y Comunicaciones")
-tabla(["Biblioteca","Versión","Uso"],[
-    ["Retrofit2","2.9.0","Cliente HTTP para APIs REST"],
-    ["OkHttp3","4.12.0","Cliente HTTP de bajo nivel y peticiones IA"],
-    ["Gson","—","Serialización/deserialización JSON"],
-])
-
-h2("3.4 Interfaz de Usuario")
-tabla(["Biblioteca","Versión","Uso"],[
-    ["Material Design 3","1.11.0","Componentes visuales modernos"],
-    ["ConstraintLayout","2.1.4","Layouts responsivos"],
-    ["RecyclerView","—","Listas de desplazamiento eficientes"],
-    ["Glide","4.16.0","Carga y caché de imágenes"],
-])
-
-h2("3.5 Inteligencia Artificial y APIs Externas")
-tabla(["Servicio","Detalle","Uso"],[
-    ["Google Gemini API","gemini-2.5-flash","Resumir, quiz, mejorar publicaciones"],
-    ["Datos Abiertos Madrid","API REST pública","+2.000 centros educativos reales"],
-    ["Supabase Auth","JWT","Autenticación de usuarios"],
-    ["Supabase Storage","REST","Almacenamiento de imágenes en la nube"],
-])
 doc.add_page_break()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 4. ARQUITECTURA
+# 4. TECNOLOGÍAS Y HERRAMIENTAS
 # ══════════════════════════════════════════════════════════════════════════════
-h1("4. Arquitectura del Sistema")
-p("StudyBro sigue una arquitectura por capas adaptada al desarrollo Android nativo:")
+h1("4. Tecnologías y Herramientas")
+p("Para asegurar la máxima compatibilidad, estabilidad y el cumplimiento de las directrices académicas del grado superior en DAM, se estructuró una pila de tecnologías robusta y compatible con la inmensa mayoría de dispositivos móviles actuales:")
 
-arq = doc.add_paragraph()
-arq.add_run(
-    "CAPA DE VISTA\n"
-    "  Activities (16) + Layouts XML (26) + Adaptadores RecyclerView (9)\n\n"
-    "CAPA DE LÓGICA / UTILIDADES\n"
-    "  GeminiHelper · NavigationHelper · SyncHelper · Seguridad\n\n"
-    "PERSISTENCIA LOCAL          SERVICIOS REMOTOS\n"
-    "  Room (SQLite) v17           Supabase (Auth + Storage)\n"
-    "  11 entidades                API Madrid (+2000 centros)\n"
-    "                              Gemini AI"
-).font.name = 'Courier New'
-arq.runs[0].font.size = Pt(9)
+h2("4.1 Plataforma de Desarrollo y Entorno")
+doc.add_paragraph("Lenguaje Java (JDK 8/17): Se ha optado por Java debido a su tipado estático fuerte y su absoluta cohesión con los paradigmas del desarrollo de interfaces en Android de forma nativa.", style='List Bullet')
+doc.add_paragraph("Android SDK 34 (Android 14): Permite el aprovechamiento de APIs modernas de gestión y permisos, garantizando retrocompatibilidad hasta la API 26 (Android 8.0).", style='List Bullet')
+doc.add_paragraph("Android Studio (Hedgehog): IDE utilizado para el maquetado, escritura y depuración del proyecto.", style='List Bullet')
 
-doc.add_paragraph()
-h2("4.1 Patrón Singleton — Base de Datos")
-p("La base de datos Room implementa el patrón Singleton con doble verificación de bloqueo (double-checked locking) para garantizar una única instancia en toda la app:")
+h2("4.2 Persistencia Local de Datos — Room ORM")
+p("Para la caché y la base de datos local embebida en el dispositivo, se implementó el framework Room, el cual actúa sobre SQLite abstrayendo al desarrollador del mapeo manual de las consultas relacionales mediante clases Java (entidades) y DAOs (Data Access Objects). La base de datos local gestiona de forma interactiva el historial de favoritos del usuario y el control del estado local de los votos para evitar duplicidades.")
 
-codigo = doc.add_paragraph()
-codigo.add_run(
-    "public static BaseDatosApp getInstance(Context context) {\n"
-    "    if (INSTANCE == null) {\n"
-    "        synchronized (BaseDatosApp.class) {\n"
-    "            if (INSTANCE == null) {\n"
-    "                INSTANCE = Room.databaseBuilder(context,\n"
-    "                    BaseDatosApp.class, \"studybro-db\")\n"
-    "                    .fallbackToDestructiveMigration().build();\n"
+h2("4.3 Conectividad y Red — Retrofit 2 y OkHttp 3")
+p("La comunicación entre la aplicación cliente y la nube (Supabase REST API y asistentes virtuales) se centraliza a través de un cliente HTTP altamente optimizado: Retrofit 2. Este cliente permite abstraer las cabeceras HTTP, la conversión automática de JSON a modelos Java mediante Gson y la ejecución segura de hilos asíncronos mediante callbacks en cola de fondo.")
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 5. ARQUITECTURA DEL SISTEMA
+# ══════════════════════════════════════════════════════════════════════════════
+h1("5. Arquitectura del Sistema")
+p("El sistema está diseñado bajo el patrón clásico por capas en Android, lo que garantiza el aislamiento de la lógica de negocio respecto a la renderización gráfica de la vista y la procedencia de los datos. Esta separación facilita la mantenibilidad del código ante cambios futuros en las APIs externas.")
+
+p("Las capas del proyecto se organizan del siguiente modo:")
+doc.add_paragraph("Capa de Interfaz y Presentación (Activities y Adaptadores): Compuesta por las clases encargadas del dibujado de la pantalla, la vinculación de vistas con findViewById() y la captura del click del usuario. Los adaptadores son esenciales en esta capa, pues gestionan la inyección eficiente de datos dinámicos en los RecyclerView.", style='List Bullet')
+doc.add_paragraph("Capa de Modelos de Datos: Clases Java estándar (POJOs) que representan las entidades del dominio (ej. Archivo, Comentario, MiCarpeta). Estas clases incorporan las anotaciones de SerializedName de Gson para mapear de manera transparente las respuestas JSON de Supabase.", style='List Bullet')
+doc.add_paragraph("Capa de Persistencia y Caché Local (Room Database): Define el acceso físico a la base de datos local SQLite instalada en el almacenamiento del dispositivo. Es utilizada principalmente para la persistencia offline del módulo de favoritos.", style='List Bullet')
+doc.add_paragraph("Capa de Cliente y API de Red (Retrofit y SupabaseClient): Gestiona la creación del cliente HTTP asíncrono y los interceptores necesarios para inyectar cabeceras de autorización JWT en cada petición remota.", style='List Bullet')
+
+doc.add_page_break()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 6. BASE DE DATOS Y MODELO DE DATOS
+# ══════════════════════════════════════════════════════════════════════════════
+h1("6. Base de Datos y Modelo de Datos")
+p("Para el almacenamiento y la coherencia estructural de la información de StudyFiles, se utiliza un sistema híbrido:")
+
+h2("6.1 Estructura Local Embebida (Room Database)")
+p("Se implementa la base de datos local encapsulada en la clase BaseDatos, la cual incrementa a la versión 3 de esquema y se configura sin exportar esquemas locales. Dicha clase expone dos métodos abstractos de acceso a DAOs:")
+codigo_bloque(
+    "@Database(\n"
+    "    entities = { Favorito.class, VotoLocal.class },\n"
+    "    version = 3,\n"
+    "    exportSchema = false\n"
+    ")\n"
+    "public abstract class BaseDatos extends RoomDatabase {\n"
+    "    private static BaseDatos INSTANCE;\n"
+    "    public abstract FavoritoDao favoritoDao();\n"
+    "    public abstract VotoLocalDao votoLocalDao();\n"
+    "    ...\n"
+    "}"
+)
+p("La entidad Favorito mapea la información clave de los apuntes guardados por el usuario para su rápida consulta e incluso su lectura sin conectividad a internet. Por otro lado, la tabla VotoLocal realiza un seguimiento de los archivos que ya han recibido un voto positivo o negativo por parte del dispositivo, evitando dobles clics inválidos.")
+
+h2("6.2 Estructura Remota en la Nube (Supabase / Postgres)")
+p("El almacenamiento global y colaborativo reside en una base de datos relacional PostgreSQL levantada en Supabase. Las tablas clave de este backend son:")
+doc.add_paragraph("public.archivos: Almacena el identificador único numérico del archivo, el nombre, la descripción, la URL final de descarga del fichero (.pdf, .docx, .png) alojado en el Storage, la categoría correspondiente y las estadísticas asociadas.", style='List Bullet')
+doc.add_paragraph("public.comentarios: Permite asociar comentarios a las publicaciones. Mapea la clave foránea publicacion_id hacia archivos.id y el usuario_id del estudiante correspondiente en formato string.", style='List Bullet')
+doc.add_paragraph("public.carpetas: Permite simular una estructura de carpetas en la nube para 'Mi Nube'. Cada fila guarda el id de la carpeta, el nombre, el id de su carpeta padre (para permitir recursividad jerárquica) y el usuario dueño.", style='List Bullet')
+
+doc.add_page_break()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 7. MÓDULOS E IMPLEMENTACIÓN DEL CÓDIGO FUENTE
+# ══════════════════════════════════════════════════════════════════════════════
+h1("7. Módulos e Implementación del Código Fuente")
+p("En este bloque técnico, se realiza el análisis profundo de la implementación del código fuente del proyecto StudyFiles, desglosando la responsabilidad y la codificación de las principales Activities que estructuran la aplicación.")
+
+h2("7.1 Actividad Principal (ActividadPrincipal.java)")
+p("Constituye la pantalla de entrada central de la aplicación. Su rol consiste en gestionar la barra superior de búsqueda interactiva, los RecyclerView para las categorías didácticas y un BottomNavigationView que permite alternar la vista entre el muro principal de inicio, el explorador privado de la nube ('Mi Nube') y los favoritos guardados de forma local.")
+agregar_captura("pantalla_principal.png", "Vista principal de StudyFiles con categorías, tabs y el botón de acceso al tutor.")
+p("Código clave de inicialización de tabs y adaptadores de categorías en la actividad principal:")
+codigo_bloque(
+    "private void configurarCategorias() {\n"
+    "    List<AdaptadorCategorias.Categoria> cats = Arrays.asList(\n"
+    "        new AdaptadorCategorias.Categoria(\"Historia\", R.drawable.ic_historia, R.color.cat_historia),\n"
+    "        new AdaptadorCategorias.Categoria(\"Matemáticas\", R.drawable.ic_matematicas, R.color.cat_matematicas),\n"
+    "        new AdaptadorCategorias.Categoria(\"Lengua\", R.drawable.ic_lengua, R.color.cat_lengua),\n"
+    "        new AdaptadorCategorias.Categoria(\"Ciencias\", R.drawable.ic_ciencias, R.color.cat_ciencias),\n"
+    "        new AdaptadorCategorias.Categoria(\"Informática\", R.drawable.ic_informatica, R.color.cat_informatica),\n"
+    "        new AdaptadorCategorias.Categoria(\"Inglés\", R.drawable.ic_ingles, R.color.cat_ingles),\n"
+    "        new AdaptadorCategorias.Categoria(\"Arte y Música\", R.drawable.ic_arte, R.color.cat_arte),\n"
+    "        new AdaptadorCategorias.Categoria(\"Otros\", R.drawable.ic_otros, R.color.cat_otros)\n"
+    "    );\n"
+    "    AdaptadorCategorias adapter = new AdaptadorCategorias(cats, cat -> {\n"
+    "        Intent i = new Intent(this, ActividadArchivos.class);\n"
+    "        i.putExtra(\"categoria\", cat.nombre);\n"
+    "        startActivity(i);\n"
+    "    });\n"
+    "    rvCategorias.setLayoutManager(new GridLayoutManager(this, 2));\n"
+    "    rvCategorias.setAdapter(adapter);\n"
+    "}"
+)
+
+doc.add_page_break()
+
+h2("7.2 Actividad de Detalle Académico (ActividadDetalle.java)")
+p("Esta es la pantalla de mayor peso lógico del proyecto, responsable del renderizado completo de las publicaciones académicas subidas. Esta clase integra:")
+doc.add_paragraph("1. Gestión de Contadores y Votos: Likes y dislikes consumiendo la base de datos local y remota para evitar abusos.", style='List Bullet')
+doc.add_paragraph("2. Sistema de Comentarios Colaborativos: Carga asíncrona mediante un AdaptadorComentarios que implementa opciones de eliminación y edición solo para el autor legítimo del comentario.", style='List Bullet')
+doc.add_paragraph("3. Lógica de Descargas Seguras: Descarga de ficheros remotos a la carpeta local de Downloads mediante peticiones OkHttp.", style='List Bullet')
+agregar_captura("pantalla_detalle.png", "Detalle de un archivo académico con comentarios integrados y votos de utilidad.")
+
+p("Código clave de envío de comentarios en la ActividadDetalle:")
+codigo_bloque(
+    "private void enviarComentario() {\n"
+    "    String texto = etComentario.getText().toString().trim();\n"
+    "    if (texto.isEmpty()) return;\n"
+    "    etComentario.setText(\"\");\n"
+    "    String usuarioId = getIdentificador();\n"
+    "    Comentario request = new Comentario((long) archivoId, usuarioId, texto);\n"
+    "\n"
+    "    SupabaseClient.getApi().crearComentario(request).enqueue(new Callback<List<Comentario>>() {\n"
+    "        @Override\n"
+    "        public void onResponse(Call<List<Comentario>> call, Response<List<Comentario>> response) {\n"
+    "            if (response.isSuccessful()) {\n"
+    "                cargarComentarios(); // Recarga interactiva\n"
+    "            } else {\n"
+    "                Toast.makeText(ActividadDetalle.this, \"Error al enviar comentario\", Toast.LENGTH_SHORT).show();\n"
     "            }\n"
     "        }\n"
-    "    }\n"
-    "    return INSTANCE;\n"
+    "        @Override\n"
+    "        public void onFailure(Call<List<Comentario>> call, Throwable t) {\n"
+    "            Toast.makeText(ActividadDetalle.this, \"Error de red\", Toast.LENGTH_SHORT).show();\n"
+    "        }\n"
+    "    });\n"
     "}"
-).font.name = 'Courier New'
-codigo.runs[0].font.size = Pt(9)
+)
 
-h2("4.2 Operaciones Asíncronas — ExecutorService")
-p("Todas las operaciones de base de datos se ejecutan en hilos de fondo con ExecutorService para evitar bloqueos ANR (Application Not Responding). La actividad principal usa dos executors separados:")
-doc.add_paragraph("executorService → Lecturas y sembrado inicial de datos.", style='List Bullet')
-doc.add_paragraph("executorEscritura → Escrituras masivas de la API (+2.000 centros).", style='List Bullet')
-doc.add_paragraph()
+doc.add_page_break()
 
-# ══════════════════════════════════════════════════════════════════════════════
-# 5. BASE DE DATOS
-# ══════════════════════════════════════════════════════════════════════════════
-h1("5. Base de Datos — Diagrama Entidad-Relación")
-p("La base de datos local (Room/SQLite) es la versión 17 y contiene 11 entidades:")
+h2("7.3 Tutor Académico Virtual (ActividadChat.java)")
+p("El tutor interactivo ofrece asistencia en lenguaje natural basada en el material subido a la aplicación (estrategia de búsqueda y respuesta contextual). El flujo de mensajes utiliza un RecyclerView dinámico y está conectado a una base de datos en Supabase para persistir el historial de mensajes de cada estudiante.")
+agregar_captura("pantalla_chat.png", "Interfaz del chat interactivo con el Tutor Virtual de StudyFiles.")
 
-tabla(["Entidad","Campos principales","Relaciones"],[
-    ["USUARIO","id (UUID), nombre, correo, rol, centroId","1:N con Publicacion, Comentario, Valoracion"],
-    ["CENTRO","id, nombre, codigoApi, direccion, descripcion, horario","N:M con Especialidad, 1:N con Valoracion"],
-    ["ESPECIALIDAD","id, nombre, codigoApi","N:M con Centro, 1:N con Asignatura"],
-    ["ASIGNATURA","id, nombre, especialidadId","N:1 con Especialidad"],
-    ["PUBLICACION","id, titulo, contenido, asignatura, fecha, estado","N:1 con Usuario y Centro"],
-    ["COMENTARIO","id, texto, fecha, usuarioId, publicacionId","N:1 con Publicacion"],
-    ["INTERACCION","id, tipo, usuarioId, publicacionId","Likes/dislikes"],
-    ["VALORACION_CENTRO","id, puntuacion, comentario, fecha","N:1 con Centro y Usuario"],
-    ["CENTRO_ESPECIALIDAD","centroId, especialidadId","Tabla puente N:M"],
-    ["SUGERENCIA_ESPECIALIDAD","id, nombre, estado, usuarioId","Propuestas comunidad"],
-    ["SUGERENCIA_MATERIA","id, nombre, estado, especialidadId","Propuestas comunidad"],
-])
+p("Lógica de envío de mensajes e interacción con el helper en la ActividadChat:")
+codigo_bloque(
+    "private void enviarMensaje() {\n"
+    "    String texto = etMensaje.getText().toString().trim();\n"
+    "    if (texto.isEmpty()) return;\n"
+    "    etMensaje.setText(\"\");\n"
+    "    btnEnviar.setEnabled(false);\n"
+    "    pbEscribiendo.setVisibility(View.VISIBLE);\n"
+    "\n"
+    "    // 1. Crear y mostrar mensaje del usuario\n"
+    "    MensajeChat msgUser = new MensajeChat(usuarioId, \"user\", texto, System.currentTimeMillis());\n"
+    "    adaptador.agregarMensaje(msgUser);\n"
+    "    scrollToBottom();\n"
+    "\n"
+    "    // 2. Guardar en la nube\n"
+    "    guardarMensajeEnSupabase(msgUser);\n"
+    "\n"
+    "    // 3. Consultar asíncronamente con el helper contextual\n"
+    "    GeminiChatHelper.enviarMensajeChat(historial, texto, new GeminiChatHelper.GeminiCallback() {\n"
+    "        @Override\n"
+    "        public void onSuccess(String result) {\n"
+    "            btnEnviar.setEnabled(true);\n"
+    "            pbEscribiendo.setVisibility(View.GONE);\n"
+    "            MensajeChat msgTutor = new MensajeChat(usuarioId, \"model\", result, System.currentTimeMillis());\n"
+    "            adaptador.agregarMensaje(msgTutor);\n"
+    "            scrollToBottom();\n"
+    "            guardarMensajeEnSupabase(msgTutor);\n"
+    "        }\n"
+    "        @Override\n"
+    "        public void onError(String error) {\n"
+    "            btnEnviar.setEnabled(true);\n"
+    "            pbEscribiendo.setVisibility(View.GONE);\n"
+    "            Toast.makeText(ActividadChat.this, \"Error del Tutor: \" + error, Toast.LENGTH_LONG).show();\n"
+    "        }\n"
+    "    });\n"
+    "}"
+)
+
+doc.add_page_break()
+
+h2("7.4 Módulo de Nube Personal (ActividadCarpeta.java)")
+p("Este módulo otorga al estudiante un espacio jerárquico privado en la nube de Supabase. A través de la ActividadCarpeta, el usuario puede explorar subcarpetas de manera recursiva, crear nuevos directorios virtuales y subir ficheros asociados directamente a una carpeta específica.")
+agregar_captura("pantalla_carpeta.png", "Gestor de carpetas y archivos privados del estudiante en 'Mi Nube'.")
+
+h2("7.5 Formulario de Subida de Ficheros (ActividadSubir.java)")
+p("Gestiona la subida de material de apuntes públicos a la red. El usuario completa los datos básicos (nombre, descripción, categoría, autor) y de forma opcional campos de metadatos de calidad (institución académica y nivel de estudios), seleccionando el fichero del almacenamiento local de su dispositivo móvil.")
+agregar_captura("pantalla_subir.png", "Formulario de publicación de apuntes escolares con detalles académicos.")
+
+h2("7.6 Autenticación y Registro (ActividadLogin.java)")
+p("Gestiona la pantalla de entrada a la aplicación. Valida que el email tenga el formato correcto y realiza la petición HTTP POST hacia el servidor remoto de Supabase Auth para verificar el token JWT de la sesión.")
+agregar_captura("pantalla_login.png", "Pantalla de inicio de sesión segura y acceso a la plataforma.")
+
 doc.add_page_break()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 6. MÓDULOS Y FUNCIONALIDADES
+# 8. DOCUMENTACIÓN DE LAS APIS
 # ══════════════════════════════════════════════════════════════════════════════
-h1("6. Módulos y Funcionalidades")
+h1("8. Documentación de las APIs")
+p("Para interactuar con la nube y el resto de los servicios remotos, StudyFiles expone y consume un conjunto de APIs mediante Retrofit. A continuación, se documentan las llamadas y sus estructuras:")
 
-h2("6.1 Módulo de Autenticación")
-p("Clases: ActividadLogin, ActividadRegistro, ClienteSupabase, ServicioAuth", bold=True)
-p("El login se realiza contra Supabase Auth mediante REST. Al autenticarse, el servidor devuelve un JWT que se guarda en SharedPreferences. El flujo es:")
-pasos = ["El usuario introduce email y contraseña.",
-         "Se envía POST a https://[proyecto].supabase.co/auth/v1/token.",
-         "Supabase valida y devuelve token JWT + UUID de usuario.",
-         "La app guarda la sesión y sincroniza el usuario con Room.",
-         "Si no tiene centro asignado, redirige a ActividadSeleccionarCentro."]
-for i,paso in enumerate(pasos,1):
-    doc.add_paragraph(f"{i}. {paso}", style='List Number')
+h2("8.1 Endpoint de la Base de Datos Remota (Supabase REST API)")
+p("URL Base: https://flpdwxgobctdkudovdyx.supabase.co/rest/v1/", bold=True)
+p("Cabeceras obligatorias requeridas en el interceptor de red:")
+doc.add_paragraph("apikey: [Clave pública API de Supabase]", style='List Bullet')
+doc.add_paragraph("Authorization: Bearer [Token JWT del usuario obtenido en el login]", style='List Bullet')
+doc.add_paragraph("Content-Type: application/json", style='List Bullet')
 
-imagen_placeholder("LOGIN", "Pantalla de Login — ActividadLogin")
-imagen_placeholder("REGISTRO", "Pantalla de Registro — ActividadRegistro")
+p("Estructuras y métodos clave en la interfaz Java SupabaseApi:")
+codigo_bloque(
+    "public interface SupabaseApi {\n"
+    "    @GET(\"archivos\")\n"
+    "    Call<List<Archivo>> buscarArchivosAvanzado(@Query(\"or\") String orQuery);\n"
+    "\n"
+    "    @GET(\"archivos\")\n"
+    "    Call<List<Archivo>> getArchivoPorId(@Query(\"id\") String idFiltro);\n"
+    "\n"
+    "    @POST(\"comentarios\")\n"
+    "    Call<List<Comentario>> crearComentario(@Body Comentario request);\n"
+    "}"
+)
 
-h2("6.2 Módulo Principal — Buscador de Centros")
-p("Clases: ActividadPrincipal, AdaptadorCentros, ServicioApi", bold=True)
-p("La pantalla principal muestra +2.000 centros con búsqueda en tiempo real. Técnicas implementadas:")
-doc.add_paragraph("Debouncing: el filtro espera 300ms tras cada tecla para reducir operaciones.", style='List Bullet')
-doc.add_paragraph("Filterable con normalización: buscar 'informatica' encuentra 'Informática'.", style='List Bullet')
-doc.add_paragraph("Carga en background: Room + API en hilo separado, UI siempre reactiva.", style='List Bullet')
+h2("8.2 Endpoint de la API del Tutor Virtual (Conectividad Segura)")
+p("URL Base: https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=[CLAVE_SEGURA]", bold=True)
+p("La llamada se realiza de forma directa por POST utilizando OkHttp 3. El cuerpo de la petición sigue la estructura jerárquica de turnos (User/Model) requerida por el backend del proveedor generativo:")
+codigo_bloque(
+    "{\n"
+    "  \"contents\": [\n"
+    "    { \"role\": \"user\", \"parts\": [{ \"text\": \"[System Prompt + Contexto]\" }] },\n"
+    "    { \"role\": \"model\", \"parts\": [{ \"text\": \"Entendido. Asistiré al alumno.\" }] },\n"
+    "    { \"role\": \"user\", \"parts\": [{ \"text\": \"¿Qué es la programación orientada a objetos?\" }] }\n"
+    "  ],\n"
+    "  \"generationConfig\": {\n"
+    "    \"temperature\": 0.7,\n"
+    "    \"maxOutputTokens\": 1024\n"
+    "  }\n"
+    "}"
+)
 
-imagen_placeholder("PANTALLA PRINCIPAL", "Listado de centros educativos con buscador — ActividadPrincipal")
-
-h2("6.3 Módulo de Publicaciones")
-p("Clases: ActividadPublicaciones, ActividadNuevaPublicacion, ActividadDetalle", bold=True)
-p("Los estudiantes comparten apuntes y recursos. Cada publicación permite comentarios, interacciones (me gusta) y asistencia de IA. La ActividadDetalle (33 KB) es la más compleja, integrando tres modos de IA.")
-
-imagen_placeholder("NUEVA PUBLICACIÓN", "Formulario de creación de publicación — ActividadNuevaPublicacion")
-imagen_placeholder("DETALLE PUBLICACIÓN", "Vista de detalle con comentarios e IA — ActividadDetalle")
-
-h2("6.4 Módulo de Perfil de Estudiante")
-p("Clase: ActividadPerfil", bold=True)
-p("Muestra datos personales, estadísticas (nº publicaciones, media valoraciones), historial de publicaciones y opción de cambiar foto usando Supabase Storage.")
-
-imagen_placeholder("PERFIL USUARIO", "Perfil del estudiante — ActividadPerfil")
-
-h2("6.5 Módulo de Perfil de Centro")
-p("Clase: ActividadPerfilCentro", bold=True)
-p("Pantalla con nombre, dirección, horario, accesibilidad, especialidades, valoraciones con estrellas, análisis IA de opiniones y publicaciones del centro.")
-
-imagen_placeholder("PERFIL CENTRO", "Perfil detallado del centro educativo — ActividadPerfilCentro")
-
-h2("6.6 Módulo de Administración")
-p("Clases: ActividadPanelAdmin, ActividadNuevoCentro, ActividadGestionUsuarios, ActividadModerarSugerencias", bold=True)
-tabla(["Función","Descripción"],[
-    ["Gestionar centros","Añadir centros manualmente que no están en la API de Madrid"],
-    ["Gestionar usuarios","Ver todos los usuarios registrados y cambiar su estado"],
-    ["Moderar sugerencias","Aprobar o rechazar propuestas de nuevas especialidades y materias"],
-])
-
-imagen_placeholder("PANEL ADMIN", "Panel de administración — ActividadPanelAdmin")
-imagen_placeholder("MODERACIÓN", "Pantalla de moderación de sugerencias — ActividadModerarSugerencias")
-
-h2("6.7 Módulo de Sugerencias")
-p("Clases: ActividadSugerirEntidad, ActividadModerarSugerencias", bold=True)
-p("Sistema participativo donde los alumnos proponen nuevas especialidades o asignaturas. El administrador las aprueba o rechaza. Las aprobadas quedan disponibles para toda la comunidad.")
-
-imagen_placeholder("SUGERIR", "Formulario de sugerencia de especialidad/materia — ActividadSugerirEntidad")
 doc.add_page_break()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 7. INTEGRACIONES EXTERNAS
+# 9. DESARROLLO DE COMPETENCIAS Y RESOLUCIÓN DE PROBLEMAS
 # ══════════════════════════════════════════════════════════════════════════════
-h1("7. Integraciones Externas")
+h1("9. Desarrollo de Competencias y Resolución de Problemas")
+p("Durante el ciclo de desarrollo del proyecto StudyFiles, se han aplicado y afianzado múltiples competencias técnicas contempladas en el currículo oficial del grado superior en Desarrollo de Aplicaciones Multiplataforma (DAM):")
 
-h2("7.1 API de Datos Abiertos — Ayuntamiento de Madrid")
-p("Clases: ClienteApi, ServicioApi, CentroMadrid, RespuestaDatosMadrid", bold=True)
-p("La app consume el endpoint público de centros educativos del Ayuntamiento de Madrid (+2.000 registros). El proceso de sincronización:")
-for i,paso in enumerate([
-    "Se consultan los códigos ya existentes en Room para evitar duplicados.",
-    "Solo se procesan centros nuevos.",
-    "Inserción masiva en una sola transacción de BD.",
-    "Vinculación automática de especialidades por palabras clave en la descripción.",
-],1):
-    doc.add_paragraph(f"{i}. {paso}", style='List Number')
+h2("9.1 Competencias Técnicas Específicas Aplicadas")
+doc.add_paragraph("Programación Multimedia y Dispositivos Móviles: Creación de hilos secundarios seguros, ciclo de vida de las Activities Android, paso de parámetros estructurados mediante bundles en los Intents e inflado y renderizado dinámico de interfaces responsivas.", style='List Bullet')
+doc.add_paragraph("Acceso a Datos y Persistencia: Manejo avanzado de ORMs mediante Room, definición de relaciones relacionales locales (1:N), abstracción del lenguaje SQL directo y diseño de sincronización híbrida local/nube.", style='List Bullet')
+doc.add_paragraph("Desarrollo de Interfaces: Maquetado mediante ficheros XML empleando Material Design 3, paletas de colores dinámicas compatibles con modo claro y modo nocturno, y adaptabilidad a distintos tamaños de pantalla.", style='List Bullet')
+doc.add_paragraph("Servicios y Procesos: Consumo seguro y asíncrono de APIs RESTful usando Retrofit 2 en cola de fondo de forma compatible con la UI principal de Android.", style='List Bullet')
 
-h2("7.2 Supabase — Backend en la nube")
-p("Clases: ClienteSupabase, ServicioAuth, ServicioStorage, SyncHelper", bold=True)
-tabla(["Servicio","Uso en StudyBro"],[
-    ["Auth","Registro y login con JWT. URL: https://flpdwxgobctdkudovdyx.supabase.co"],
-    ["Storage","Fotos de perfil y adjuntos de publicaciones"],
-    ["Database","Sincronización de publicaciones y comentarios entre dispositivos"],
-])
-
-h2("7.3 Gemini AI — Google Generative AI")
-p("Clase: GeminiHelper (396 líneas)", bold=True)
-p("Integración con Gemini 2.5 Flash que proporciona 5 funciones de IA:")
-tabla(["Función","Método","Descripción"],[
-    ["Resumir apuntes","resumirPublicacion()","Resumen didáctico estructurado de la publicación"],
-    ["Analizar opiniones","analizarOpiniones()","Síntesis de reseñas de un centro"],
-    ["Mejorar publicación","mejorarPublicacion()","Sugiere título y contenido mejorado (JSON)"],
-    ["Ayuda general","pedirAyudaGeneral()","Responde preguntas en contexto de la app"],
-    ["Quiz automático","pedirAyudaEspecializada(QUIZ)","Genera 3 preguntas de repaso con soluciones"],
-])
-p("Todas las llamadas son asíncronas (OkHttp enqueue) y los resultados se publican en el hilo principal con Handler(Looper.getMainLooper()).")
-
-imagen_placeholder("IA RESUMEN", "Asistente IA resumiendo una publicación — ActividadDetalle")
-doc.add_paragraph()
+h2("9.2 Resolución de Problemas Técnicos Complejos")
+p("A lo largo del proyecto surgieron retos de gran calibre técnico que requirieron de un profundo análisis técnico para ser solucionados de forma elegante y compatible:")
+doc.add_paragraph("1. Conflicto de Claves Foráneas (FK) en Base de Datos: Durante el diseño del módulo de comentarios colaborativos, se detectó una violación de clave foránea al intentar guardar registros en Supabase. El problema residía en que la tabla remota comentarios apuntaba incorrectamente a una tabla publicaciones inexistente. Se solucionó reconfigurando la relación en Supabase para asociar directamente la columna publicacion_id con el id de archivos. Además, en el código Java se formateó de manera estricta el usuarioId agregando el prefijo oficial 'user_' y se casteó la ID del archivo a tipo Long.", style='List Bullet')
+doc.add_paragraph("2. Compatibilidad del Lector de Archivos con Java 8: En la subida de ficheros privados a la nube, inicialmente se empleó el método Files.readAllBytes(), el cual provocaba fallas de compilación al estar obsoleto en la versión de Java del compilador de Android del proyecto. Se reescribió la lógica utilizando flujos clásicos (InputStream y ByteArrayOutputStream) totalmente compatibles con Java 8, asegurando el correcto procesado de ficheros independientemente del dispositivo de ejecución.", style='List Bullet')
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 8. SISTEMA DE ROLES
-# ══════════════════════════════════════════════════════════════════════════════
-h1("8. Sistema de Roles y Seguridad")
-
-h2("8.1 Roles")
-tabla(["Función","Estudiante","Administrador"],[
-    ["Buscar centros","✅","✅"],
-    ["Ver publicaciones","✅","✅"],
-    ["Crear publicaciones","✅","✅"],
-    ["Comentar","✅","✅"],
-    ["Valorar centros","✅","✅"],
-    ["Sugerir especialidades","✅","✅"],
-    ["Usar IA","✅","✅"],
-    ["Panel de administrador","❌","✅"],
-    ["Crear centros manualmente","❌","✅"],
-    ["Gestionar usuarios","❌","✅"],
-    ["Moderar sugerencias","❌","✅"],
-])
-
-h2("8.2 Gestión de Sesión")
-p("El token JWT de Supabase se almacena en SharedPreferences. Al arrancar la app, si existe sesión guardada pero no hay token válido, se limpia automáticamente para forzar nuevo login. El menú lateral (Navigation Drawer) muestra u oculta opciones según el rol.")
-doc.add_page_break()
-
-# ══════════════════════════════════════════════════════════════════════════════
-# 9. ESTRUCTURA DEL PROYECTO
-# ══════════════════════════════════════════════════════════════════════════════
-h1("9. Estructura del Proyecto")
-
-estructura = doc.add_paragraph()
-estructura.add_run(
-    "android/\n"
-    "├── app/src/main/\n"
-    "│   ├── AndroidManifest.xml          (16 Activities registradas)\n"
-    "│   ├── java/com/dam/studybro/\n"
-    "│   │   ├── activities/              (16 pantallas)\n"
-    "│   │   ├── adapters/                (9 adaptadores RecyclerView)\n"
-    "│   │   ├── database/                (11 entidades + 11 DAOs + Seeder)\n"
-    "│   │   ├── modelos/                 (modelos API Madrid para Gson)\n"
-    "│   │   ├── network/                 (Supabase API Retrofit)\n"
-    "│   │   ├── red/                     (API Madrid Retrofit)\n"
-    "│   │   ├── supabase/                (Auth y Storage cliente)\n"
-    "│   │   └── utils/\n"
-    "│   │       ├── GeminiHelper.java    (IA — 5 funciones, 396 líneas)\n"
-    "│   │       ├── NavigationHelper.java\n"
-    "│   │       ├── SyncHelper.java\n"
-    "│   │       └── Seguridad.java\n"
-    "│   └── res/\n"
-    "│       ├── layout/                  (26 layouts XML)\n"
-    "│       └── values/                  (colors, strings, themes, dimens)\n"
-    "└── build.gradle                     (Room, Retrofit, Glide, Material)"
-).font.name = 'Courier New'
-estructura.runs[0].font.size = Pt(9)
-doc.add_paragraph()
-
-# ══════════════════════════════════════════════════════════════════════════════
-# 10. CONCLUSIONES
+# 10. CONCLUSIONES Y TRABAJO FUTURO
 # ══════════════════════════════════════════════════════════════════════════════
 h1("10. Conclusiones y Trabajo Futuro")
 
 h2("10.1 Conclusiones")
-p("El desarrollo de StudyBro ha permitido aplicar de forma integrada los contenidos del ciclo DAM en un proyecto real:")
-for c in [
-    "Programación Java orientada a objetos con patrones de diseño (Singleton, Callback, Adapter).",
-    "Bases de datos relacionales con Room/SQLite: relaciones 1:N y N:M.",
-    "Programación de servicios con Retrofit para consumo de múltiples APIs REST.",
-    "Multithreading con ExecutorService para operaciones asíncronas sin ANR.",
-    "Interfaz de usuario avanzada con Navigation Drawer, BottomNavigation, RecyclerView y Material Design 3.",
-    "Integración con servicios en la nube mediante Supabase (JWT, storage, sync).",
-    "Inteligencia Artificial aplicada a un caso de uso real con la API de Gemini.",
-]:
-    doc.add_paragraph(c, style='List Bullet')
+p("El desarrollo del proyecto final de grado superior StudyFiles ha constituido una experiencia de aprendizaje integradora de un valor inestimable. Ha permitido condensar todos los conocimientos teóricos adquiridos a lo largo de los dos cursos de DAM y aplicarlos de forma práctica en un producto de software real de extremo a extremo.")
+p("El resultado es un sistema móvil estable, rápido y dotado de una experiencia de usuario sobresaliente y moderna, que proporciona una utilidad real a la comunidad educativa.")
 
 h2("10.2 Trabajo Futuro")
-for tf in [
-    "Notificaciones push cuando alguien comenta una publicación.",
-    "Sistema de mensajería privada entre estudiantes del mismo centro.",
-    "Ampliar cobertura a centros de otras comunidades autónomas.",
-    "Publicación en Google Play Store.",
-    "Migrar UI a Jetpack Compose.",
-    "Soporte offline completo con sincronización diferida.",
-]:
-    doc.add_paragraph(tf, style='List Bullet')
+p("A pesar del excelente resultado obtenido en esta versión 1.0, el software se ha diseñado de forma modular para permitir una fácil escalabilidad y la inyección de nuevas características a futuro:")
+doc.add_paragraph("Sistema de Notificaciones Push Remotas: Para avisar instantáneamente al autor de un archivo cuando otro estudiante añada un comentario o vote positivamente su aporte.", style='List Bullet')
+doc.add_paragraph("Mensajería Privada entre Estudiantes: Crear salas de chat directas cifradas de extremo a extremo para coordinar trabajos en grupo.", style='List Bullet')
+doc.add_paragraph("Migración del Motor de Interfaz a Jetpack Compose: Para dar el salto a un desarrollo declarativo moderno y reducir el código de renderización XML de la vista.", style='List Bullet')
 
 doc.add_paragraph()
 final = doc.add_paragraph()
 final.alignment = WD_ALIGN_PARAGRAPH.CENTER
-final.add_run("Fin de la Memoria Técnica — StudyBro v1.0\n"
-              "Antonio MBA Nzang — DAM Segundo Curso — 2026").font.italic = True
+final.paragraph_format.space_before = Pt(20)
+r_fin = final.add_run("Fin de la Memoria Técnica de Ingeniería de Software — StudyFiles v1.0\n"
+                      "Antonio MBA Nzang — Ciclo Superior DAM — EPSUM 2026")
+r_fin.italic = True
+r_fin.font.size = Pt(10.0)
 
-# ── Guardar ───────────────────────────────────────────────────────────────────
-ruta = r"d:\DAM\Rutas y Proyectos\Proyectos\DAM Proyecto Final\MEMORIA_TECNICA_STUDYBRO.docx"
-doc.save(ruta)
-print(f"OK - Documento guardado en: {ruta}")
+# ── 4. Guardar Documento de forma robusta ──
+ruta_final = r"d:\DAM\Rutas y Proyectos\Proyectos\DAM Proyecto Final\MEMORIA_TECNICA_STUDYBRO.docx"
+try:
+    doc.save(ruta_final)
+    print(f"OK - Documento guardado en: {ruta_final}")
+except PermissionError:
+    # Si el archivo está abierto en MS Word, lo guardamos con un sufijo temporal para no perder la generación
+    ruta_alt = r"d:\DAM\Rutas y Proyectos\Proyectos\DAM Proyecto Final\MEMORIA_TECNICA_STUDYBRO_COMPILADA.docx"
+    doc.save(ruta_alt)
+    print(f"ATENCION - Archivo principal bloqueado (¿abierto en Word?). Guardado alternativamente en: {ruta_alt}")

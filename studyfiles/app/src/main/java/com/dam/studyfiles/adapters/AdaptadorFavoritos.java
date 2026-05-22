@@ -20,14 +20,23 @@ import java.util.List;
 
 public class AdaptadorFavoritos extends RecyclerView.Adapter<AdaptadorFavoritos.ViewHolder> {
 
-    public interface OnFavoritoClick { void onClick(Favorito favorito); }
+    public interface OnFavoritoClick      { void onClick(Favorito favorito); }
+    public interface OnFavoritoLongClick  { void onLongClick(Favorito favorito); }
 
     private List<Favorito>    lista;
-    private final OnFavoritoClick listener;
+    private final OnFavoritoClick     listener;
+    private final OnFavoritoLongClick longListener;
 
     public AdaptadorFavoritos(List<Favorito> lista, OnFavoritoClick listener) {
-        this.lista    = lista;
-        this.listener = listener;
+        this.lista        = lista;
+        this.listener     = listener;
+        this.longListener = null;
+    }
+
+    public AdaptadorFavoritos(List<Favorito> lista, OnFavoritoClick listener, OnFavoritoLongClick longListener) {
+        this.lista        = lista;
+        this.listener     = listener;
+        this.longListener = longListener;
     }
 
     public Favorito getItem(int pos) { return lista.get(pos); }
@@ -54,7 +63,6 @@ public class AdaptadorFavoritos extends RecyclerView.Adapter<AdaptadorFavoritos.
 
         h.itemView.setOnClickListener(v -> {
             if (tieneLocal) {
-                // Abrir archivo local con FileProvider
                 try {
                     File file = new File(f.rutaLocal);
                     Uri uri = FileProvider.getUriForFile(v.getContext(),
@@ -69,9 +77,14 @@ public class AdaptadorFavoritos extends RecyclerView.Adapter<AdaptadorFavoritos.
                             "No se puede abrir: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             } else {
-                // Sin archivo local → callback normal (abre detalle para descargar)
                 listener.onClick(f);
             }
+        });
+
+        // Pulsación larga → menú de opciones
+        h.itemView.setOnLongClickListener(v -> {
+            if (longListener != null) longListener.onLongClick(f);
+            return true;
         });
     }
 

@@ -2,9 +2,11 @@ package com.dam.studyfiles.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +22,7 @@ import com.dam.studyfiles.models.Archivo;
 import com.dam.studyfiles.network.SupabaseClient;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import retrofit2.Call;
@@ -28,12 +31,16 @@ import retrofit2.Response;
 
 public class ActividadArchivos extends AppCompatActivity {
 
-    private RecyclerView      rv;
-    private ProgressBar       pb;
-    private TextView          tvVacio;
+    private RecyclerView       rv;
+    private ProgressBar        pb;
+    private TextView           tvVacio;
     private SwipeRefreshLayout swipe;
-    private AdaptadorArchivos adaptador;
-    private String categoria;
+    private Spinner            spOrden;
+    private AdaptadorArchivos  adaptador;
+    private String             categoria;
+    private List<Archivo>      listaCompleta = new ArrayList<>();
+
+    private static final String[] ORDENES = {"Más recientes", "Más valorados", "Título A→Z"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,17 +56,53 @@ public class ActividadArchivos extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        rv     = findViewById(R.id.rvArchivos);
-        pb     = findViewById(R.id.pbCargando);
+        rv      = findViewById(R.id.rvArchivos);
+        pb      = findViewById(R.id.pbCargando);
         tvVacio = findViewById(R.id.tvVacio);
-        swipe  = findViewById(R.id.swipeRefresh);
+        swipe   = findViewById(R.id.swipeRefresh);
+        spOrden = findViewById(R.id.spOrden);
 
         adaptador = new AdaptadorArchivos(new ArrayList<>(), this::abrirDetalle);
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setAdapter(adaptador);
 
+        // Configurar Spinner de ordenación
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, ORDENES);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spOrden.setAdapter(spinnerAdapter);
+        spOrden.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> p, View v, int pos, long id) {
+                aplicarOrden(pos);
+            }
+            @Override public void onNothingSelected(AdapterView<?> p) {}
+        });
+
         swipe.setOnRefreshListener(this::cargarArchivos);
         cargarArchivos();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refrescar la lista al volver (por si se eliminó un archivo)
+        cargarArchivos();
+    }
+
+    private void aplicarOrden(int indice) {
+        if (listaCompleta.isEmpty()) return;
+        List<Archivo> ordenada = new ArrayList<>(listaCompleta);
+        switch (indice) {
+            case 1: // Más valorados
+                ordenada.sort((a, b) -> Integer.compare(b.likes - b.dislikes, a.likes - a.dislikes));
+                break;
+            case 2: // A→Z
+                ordenada.sort(Comparator.comparing(a -> a.nombre != null ? a.nombre : ""));
+                break;
+            default: // Más recientes (ya ordenados por fecha del servidor)
+                break;
+        }
+        adaptador.actualizar(ordenada);
     }
 
     private void cargarArchivos() {
@@ -76,9 +119,10 @@ public class ActividadArchivos extends AppCompatActivity {
                 pb.setVisibility(View.GONE);
                 swipe.setRefreshing(false);
                 if (r.isSuccessful() && r.body() != null) {
-                    List<Archivo> lista = r.body();
-                    adaptador.actualizar(lista);
-                    tvVacio.setVisibility(lista.isEmpty() ? View.VISIBLE : View.GONE);
+                    listaCompleta.clear();
+                    listaCompleta.addAll(r.body());
+                    aplicarOrden(spOrden.getSelectedItemPosition());
+                    tvVacio.setVisibility(listaCompleta.isEmpty() ? View.VISIBLE : View.GONE);
                 } else {
                     Toast.makeText(ActividadArchivos.this,
                             "Error al cargar: " + r.code(), Toast.LENGTH_SHORT).show();
@@ -108,6 +152,7 @@ public class ActividadArchivos extends AppCompatActivity {
         i.putExtra("reportes",     a.reportes);
         i.putExtra("institucion",  a.institucion);
         i.putExtra("nivel_estudios", a.nivelEstudios);
+        i.putExtra("usuario_id",   a.usuarioId);
         startActivity(i);
     }
 

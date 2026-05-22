@@ -7,6 +7,7 @@ import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.PATCH;
@@ -26,4 +27,7 @@ public interface ChatApi {
 
     @PATCH("rest/v1/mensajes_chat")
     Call<Void> migrarMensajes(@Query("usuario_id") String eqUsuarioIdAntiguo, @Body Map<String, Object> body);
+
+    @DELETE("rest/v1/mensajes_chat")
+    Call<Void> eliminarHistorial(@Query("usuario_id") String eqUsuarioId);
 }
