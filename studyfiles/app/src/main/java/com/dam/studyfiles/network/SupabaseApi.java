@@ -52,6 +52,9 @@ public interface SupabaseApi {
     @DELETE("rest/v1/comentarios")
     Call<Void> eliminarComentario(@Query("id") String filtroId);
 
+    @DELETE("rest/v1/comentarios")
+    Call<Void> eliminarComentariosDePublicacion(@Query("publicacion_id") String eqPublicacionId);
+
     // ── POST ─────────────────────────────────────────────────────────────────
 
     /** Insertar nuevo archivo en la tabla */

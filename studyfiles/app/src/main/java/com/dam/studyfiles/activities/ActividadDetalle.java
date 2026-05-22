@@ -304,22 +304,44 @@ public class ActividadDetalle extends AppCompatActivity {
                 .setTitle("Eliminar Publicación")
                 .setMessage("¿Seguro que quieres borrar este archivo público? Se perderá para todos.")
                 .setPositiveButton("Borrar", (dialog, which) -> {
-                    com.dam.studyfiles.network.SupabaseClient.getApi().eliminarArchivo("eq." + archivoId)
+                    com.dam.studyfiles.network.SupabaseClient.getApi().eliminarComentariosDePublicacion("eq." + archivoId)
                             .enqueue(new Callback<Void>() {
                                 @Override
                                 public void onResponse(Call<Void> call, Response<Void> response) {
-                                    limpiarFavoritoLocal(); // Quitar de favoritos locales
-                                    Toast.makeText(ActividadDetalle.this, "Publicación eliminada", Toast.LENGTH_SHORT).show();
-                                    finish();
+                                    if (response.isSuccessful()) {
+                                        eliminarArchivoReal();
+                                    } else {
+                                        Toast.makeText(ActividadDetalle.this, "Error al eliminar comentarios: " + response.code(), Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                                 @Override
                                 public void onFailure(Call<Void> call, Throwable t) {
-                                    Toast.makeText(ActividadDetalle.this, "Error al eliminar", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(ActividadDetalle.this, "Error de red al eliminar comentarios", Toast.LENGTH_SHORT).show();
                                 }
                             });
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
+    }
+
+    private void eliminarArchivoReal() {
+        com.dam.studyfiles.network.SupabaseClient.getApi().eliminarArchivo("eq." + archivoId)
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            limpiarFavoritoLocal(); // Quitar de favoritos locales
+                            Toast.makeText(ActividadDetalle.this, "Publicación eliminada", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            Toast.makeText(ActividadDetalle.this, "Error al eliminar archivo: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(ActividadDetalle.this, "Error al eliminar", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     /** Elimina el favorito de Room y su archivo local si existía */
@@ -386,14 +408,37 @@ public class ActividadDetalle extends AppCompatActivity {
     }
 
     private void eliminarPorMalosDislikes() {
+        SupabaseClient.getApi().eliminarComentariosDePublicacion("eq." + archivoId)
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            eliminarArchivoPorReportesReal();
+                        } else {
+                            android.util.Log.e("ELIMINAR_POR_REPORTES", "Error al borrar comentarios: " + response.code());
+                            eliminarArchivoPorReportesReal();
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        eliminarArchivoPorReportesReal();
+                    }
+                });
+    }
+
+    private void eliminarArchivoPorReportesReal() {
         SupabaseClient.getApi().eliminarArchivo("eq." + archivoId)
                 .enqueue(new Callback<Void>() {
                     @Override public void onResponse(Call<Void> c, Response<Void> r) {
-                        limpiarFavoritoLocal();
-                        Toast.makeText(ActividadDetalle.this,
-                                "⚠️ Archivo eliminado por exceso de reportes de la comunidad.",
-                                Toast.LENGTH_LONG).show();
-                        finish();
+                        if (r.isSuccessful()) {
+                            limpiarFavoritoLocal();
+                            Toast.makeText(ActividadDetalle.this,
+                                    "⚠️ Archivo eliminado por exceso de reportes de la comunidad.",
+                                    Toast.LENGTH_LONG).show();
+                            finish();
+                        } else {
+                            android.util.Log.e("ELIMINAR_POR_REPORTES", "Error al borrar archivo: " + r.code());
+                        }
                     }
                     @Override public void onFailure(Call<Void> c, Throwable t) {}
                 });
